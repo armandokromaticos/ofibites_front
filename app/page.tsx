@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 
-import { useAuthStore } from "@/domain/stores";
+import { isPlatformRole } from "@/domain/models/auth.model";
+import { useAuthHydrated, useAuthStore } from "@/domain/stores";
 import { AtButton } from "@/app/lib/atomic";
 
 export default function Home() {
+  const hasHydrated = useAuthHydrated();
   const user = useAuthStore((state) => state.user);
 
   return (
@@ -20,7 +22,7 @@ export default function Home() {
             Ir a iniciar sesión
           </AtButton>
 
-          {user?.role === "ADMIN" && (
+          {hasHydrated && user && isPlatformRole(user.role) && (
             <AtButton as={Link} href="/admin" variant="bordered">
               Panel de administración
             </AtButton>

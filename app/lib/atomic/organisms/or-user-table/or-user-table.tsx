@@ -11,23 +11,19 @@ import {
 } from "@heroui/react";
 import { Pencil, Trash2 } from "lucide-react";
 
+import { USER_ROLE_LABELS } from "@/domain/models/auth.model";
 import { UserDetail, UserRole } from "@/domain/types";
 import { AtButton, AtChip } from "@/app/lib/atomic/atoms";
 
 import { OrUserTableProps } from "./or-user-table.types";
 
 const ROLE_COLOR: Record<UserRole, "primary" | "success" | "warning" | "secondary"> = {
-  ADMIN: "primary",
-  STAND_OPERATOR: "success",
-  CATALOG_MANAGER: "warning",
-  USER: "secondary",
-};
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  ADMIN: "Admin",
-  STAND_OPERATOR: "Operador",
-  CATALOG_MANAGER: "Catálogo",
-  USER: "Usuario",
+  SUPER_ADMIN: "primary",
+  OPS_ADMIN: "primary",
+  FINANCE_ADMIN: "warning",
+  KAM: "warning",
+  OPERATOR: "success",
+  CLIENT: "secondary",
 };
 
 export function OrUserTable({
@@ -59,7 +55,7 @@ export function OrUserTable({
             </TableCell>
             <TableCell>
               <AtChip size="sm" variant="flat" color={ROLE_COLOR[user.role]}>
-                {ROLE_LABEL[user.role]}
+                {USER_ROLE_LABELS[user.role]}
               </AtChip>
             </TableCell>
             <TableCell>

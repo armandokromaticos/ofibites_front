@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-import { useAuthStore } from "@/domain/stores";
+import { useRequireSession } from "@/domain/hooks/auth";
+import { PLATFORM_ROLES } from "@/domain/models/auth.model";
 import { TmAdminLayout } from "@/app/lib/atomic";
 
 export default function AdminLayout({
@@ -11,17 +9,10 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // Roles de plataforma (todos menos CLIENT). Sin sesión → /login; un cliente → /dashboard.
+  const status = useRequireSession({ roles: PLATFORM_ROLES });
 
-  useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== "ADMIN") {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, user, router]);
-
-  if (!isAuthenticated || !user || user.role !== "ADMIN") {
+  if (status !== "allowed") {
     return null;
   }
 

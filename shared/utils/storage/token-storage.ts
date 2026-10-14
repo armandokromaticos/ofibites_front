@@ -1,17 +1,6 @@
 const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
-function safeGetItem(key: string): string | null {
-  try {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(key);
-    }
-  } catch {
-    // Safari private mode, storage quota exceeded, etc.
-  }
-  return null;
-}
-
 function safeSetItem(key: string, value: string): void {
   try {
     if (typeof window !== "undefined") {
@@ -39,8 +28,29 @@ class TokenManager {
   private refreshToken: string | null = null;
 
   private constructor() {
-    this.accessToken = safeGetItem(ACCESS_TOKEN_KEY);
-    this.refreshToken = safeGetItem(REFRESH_TOKEN_KEY);
+    this.syncFromStorage();
+    // Otra pestaña refrescó o cerró la sesión: se adoptan sus tokens para no reutilizar
+    // un refresh token que Supabase ya rotó.
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", (event) => {
+        if (event.key === null || event.key === ACCESS_TOKEN_KEY || event.key === REFRESH_TOKEN_KEY) {
+          this.syncFromStorage();
+        }
+      });
+    }
+  }
+
+  /** Relee los tokens de localStorage (la fuente compartida entre pestañas). */
+  syncFromStorage(): void {
+    if (typeof window === "undefined") return;
+    try {
+      const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
+    } catch {
+      // Sin localStorage (Safari privado...): los tokens solo viven en memoria y se conservan.
+    }
   }
 
   static getInstance(): TokenManager {

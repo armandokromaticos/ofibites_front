@@ -6,8 +6,11 @@ import { useRouter } from "next/navigation";
 import { CheckCircle, Plus, Shield, Users, XCircle } from "lucide-react";
 
 import { useDeleteUser, useUsers } from "@/domain/hooks/users";
-import { UserDetail } from "@/domain/types";
+import { UserDetail, UserRole } from "@/domain/types";
 import { AtButton, MlSearchBar, MlStatCard, OrUserTable } from "@/app/lib/atomic";
+
+/** La tarjeta "Administradores" cuenta solo los roles de administración general. */
+const ADMIN_ROLES: UserRole[] = ["SUPER_ADMIN", "OPS_ADMIN"];
 
 export default function UsersPage() {
   const router = useRouter();
@@ -37,7 +40,7 @@ export default function UsersPage() {
   const stats = useMemo(() => {
     const total = users.length;
     const active = users.filter((user: UserDetail) => user.isActive).length;
-    const admins = users.filter((user: UserDetail) => user.role === "ADMIN").length;
+    const admins = users.filter((user: UserDetail) => ADMIN_ROLES.includes(user.role)).length;
     const inactive = users.filter((user: UserDetail) => !user.isActive).length;
     return { total, active, admins, inactive };
   }, [users]);
@@ -80,7 +83,7 @@ export default function UsersPage() {
         <MlStatCard
           title="Administradores"
           value={stats.admins}
-          subtitle="Rol ADMIN"
+          subtitle="Superadmin y operaciones"
           subtitleColor="warning"
           icon={<Shield className="h-6 w-6" />}
         />

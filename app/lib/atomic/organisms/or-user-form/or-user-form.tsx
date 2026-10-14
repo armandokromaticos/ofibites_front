@@ -3,18 +3,18 @@
 import { Card, CardBody, Select, SelectItem } from "@heroui/react";
 import { Info } from "lucide-react";
 
+import { USER_ROLE_LABELS } from "@/domain/models/auth.model";
 import { UserRole } from "@/domain/types";
 import { AtInput } from "@/app/lib/atomic/atoms";
 import { MlForm } from "@/app/lib/atomic/molecules";
 
 import { OrUserFormProps } from "./or-user-form.types";
 
-const ROLE_OPTIONS: { key: UserRole; label: string }[] = [
-  { key: "USER", label: "Usuario" },
-  { key: "ADMIN", label: "Administrador" },
-  { key: "STAND_OPERATOR", label: "Operador de Stand" },
-  { key: "CATALOG_MANAGER", label: "Gestor de Catálogo" },
-];
+// Sin FINANCE_ADMIN ni KAM: el `@IsEnum(Role)` del back aún no los incluye y responde 400 (T-14).
+// Cuando el enum TS del back los tenga, se añaden aquí.
+const EDITABLE_ROLES: UserRole[] = ["SUPER_ADMIN", "OPS_ADMIN", "OPERATOR", "CLIENT"];
+
+const ROLE_OPTIONS = EDITABLE_ROLES.map((key) => ({ key, label: USER_ROLE_LABELS[key] }));
 
 export function OrUserForm({
   defaultValues,
@@ -41,7 +41,7 @@ export function OrUserForm({
               email: (formData.get("email") ?? "").toString().trim(),
               ...((!isEditing && password) ? { password } : {}),
               phone: (formData.get("phone") ?? "").toString().trim(),
-              ...(isEditing ? { role: (formData.get("role") ?? "USER").toString() as UserRole } : {}),
+              ...(isEditing ? { role: (formData.get("role") ?? "CLIENT").toString() as UserRole } : {}),
             });
           }}
         >
@@ -91,7 +91,7 @@ export function OrUserForm({
                 label="Rol"
                 name="role"
                 placeholder="Selecciona un rol"
-                defaultSelectedKeys={defaultValues?.role ? [defaultValues.role] : ["USER"]}
+                defaultSelectedKeys={defaultValues?.role ? [defaultValues.role] : ["CLIENT"]}
                 isDisabled={isLoading}
               >
                 {ROLE_OPTIONS.map((option) => (
