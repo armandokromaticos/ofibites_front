@@ -2,3 +2,33 @@
 @plugin '../hero.ts';
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @custom-variant dark (&:is(.dark *));
+
+/*
+ * Tokens del design system que no son de HeroUI (skill ofibites-design → Tokens).
+ * Los de HeroUI (primary, secondary, background, foreground, content1, divider, focus) viven en hero.ts.
+ * El borde de inputs se llama border-input (y no "border") para no chocar con la utilidad border-*.
+ */
+@theme {
+  --color-brand: #555c20;
+  --color-brand-soft: #d0cd90;
+  --color-accent: #e64400;
+  --color-surface-sand: #e5d8bc;
+  --color-nav-active: #ffb93a;
+  --color-track: #ece7d9;
+  --color-border-input: #7d7561;
+  --color-muted: #5b5b5b;
+  --color-subtle: #767676;
+  --color-placeholder: #656565;
+  --color-ghost-foreground: #424242;
+  --color-border-subtle: #e5e7eb;
+  --color-nav-icon-bg: rgb(90 96 65 / 0.1);
+
+  --radius-card: 22px;
+  --radius-control: 12px;
+}
+
+/* Las fuentes vienen de variables de next/font (definidas en <html>): inline para resolverlas en el elemento. */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+}
