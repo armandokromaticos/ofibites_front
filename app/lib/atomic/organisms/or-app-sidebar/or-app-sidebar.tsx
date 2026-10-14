@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Avatar, cn } from "@heroui/react";
-import { Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 
 import { AtButton } from "@/app/lib/atomic/atoms";
 
@@ -68,6 +68,42 @@ function SidebarLink({ item, isActive, isOpen }: SidebarLinkProps) {
   );
 }
 
+interface LogoutButtonProps {
+  isOpen: boolean;
+  isLoggingOut: boolean;
+  onLogout: () => void;
+}
+
+/** Mismo aspecto que un ítem inactivo del menú, pero más bajo: es una acción, no una sección. */
+function LogoutButton({ isOpen, isLoggingOut, onLogout }: LogoutButtonProps) {
+  const label = isLoggingOut ? "Cerrando sesión…" : "Cerrar sesión";
+
+  return (
+    <button
+      type="button"
+      onClick={isLoggingOut ? undefined : onLogout}
+      // aria-disabled y no disabled: el foco no cae a <body> mientras se cierra la sesión.
+      aria-disabled={isLoggingOut || undefined}
+      aria-label={isOpen ? undefined : label}
+      title={isOpen ? undefined : label}
+      className={cn(
+        "flex h-12 items-center gap-3 rounded-control text-muted transition-colors hover:bg-background",
+        isOpen ? "w-full px-3" : "w-[60px] justify-center",
+        isLoggingOut && "cursor-wait opacity-70",
+        FOCUS_RING,
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-nav-icon-bg text-primary [&_svg]:size-5"
+      >
+        <LogOut />
+      </span>
+      {isOpen && <span className="truncate text-sm font-semibold leading-5">{label}</span>}
+    </button>
+  );
+}
+
 export function OrAppSidebar({
   items,
   activeKey,
@@ -75,6 +111,8 @@ export function OrAppSidebar({
   onToggle,
   user,
   homeHref = "/",
+  onLogout,
+  isLoggingOut = false,
   navId = "app-sidebar-nav",
   className,
 }: OrAppSidebarProps) {
@@ -126,28 +164,36 @@ export function OrAppSidebar({
         </nav>
       </div>
 
-      {user && (
-        <div
-          className={cn(
-            "flex h-[84px] w-full shrink-0 items-center gap-[15px] border-t border-divider py-4",
-            isOpen ? "px-5" : "justify-center",
-          )}
-        >
-          <Avatar
-            src={user.avatarSrc}
-            name={user.name}
-            showFallback
-            className="size-10 shrink-0"
-            imgProps={{ alt: isOpen ? "" : user.name }}
-          />
-          {isOpen && (
-            <div className="flex min-w-0 flex-col">
-              <span className="truncate text-base font-semibold text-foreground">{user.name}</span>
-              {user.role && <span className="truncate text-sm text-foreground">{user.role}</span>}
-            </div>
-          )}
-        </div>
-      )}
+      <div className="flex w-full shrink-0 flex-col">
+        {onLogout && (
+          <div className={cn("flex w-full pb-3", !isOpen && "justify-center")}>
+            <LogoutButton isOpen={isOpen} isLoggingOut={isLoggingOut} onLogout={onLogout} />
+          </div>
+        )}
+
+        {user && (
+          <div
+            className={cn(
+              "flex h-[84px] w-full shrink-0 items-center gap-[15px] border-t border-divider py-4",
+              isOpen ? "px-5" : "justify-center",
+            )}
+          >
+            <Avatar
+              src={user.avatarSrc}
+              name={user.name}
+              showFallback
+              className="size-10 shrink-0"
+              imgProps={{ alt: isOpen ? "" : user.name }}
+            />
+            {isOpen && (
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-base font-semibold text-foreground">{user.name}</span>
+                {user.role && <span className="truncate text-sm text-foreground">{user.role}</span>}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

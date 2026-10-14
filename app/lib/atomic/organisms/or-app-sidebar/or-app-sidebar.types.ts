@@ -27,6 +27,10 @@ export interface OrAppSidebarProps {
   user?: OrAppSidebarUser;
   /** Enlace del logo. Por defecto "/". */
   homeHref?: string;
+  /** Si se pasa, aparece "Cerrar sesión" al pie, sobre el usuario. */
+  onLogout?: () => void;
+  /** Cierre de sesión en curso: el botón no responde y lo anuncia. */
+  isLoggingOut?: boolean;
   /** id del `<nav>` (para `aria-controls` del botón de menú). Por defecto "app-sidebar-nav". */
   navId?: string;
   className?: string;
