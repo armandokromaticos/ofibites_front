@@ -2,22 +2,32 @@
 
 import { ReactNode, useState } from "react";
 
-import { Bell, LayoutGrid, ShoppingCart } from "lucide-react";
+import { Bell, ClipboardList, LayoutGrid, ShoppingCart, Truck } from "lucide-react";
 
 import {
   AtIconButton,
   AtProgress,
+  AtSkeleton,
+  MlActiveOrderCard,
+  MlEmptyState,
+  MlGreetingCard,
+  MlOrderRow,
   MlPromoBanner,
   MlQuantityStepper,
   OrAppSidebar,
   OrProductCard,
+  OrPromoCarousel,
+  OrRecentOrders,
   TmAppLayout,
 } from "@/app/lib/atomic";
 
 import {
+  SAMPLE_ACTIVE_ORDER,
   SAMPLE_MAIN_BANNER,
   SAMPLE_NAV_ITEMS,
+  SAMPLE_ORDERS,
   SAMPLE_PRODUCT,
+  SAMPLE_PROMO_SLIDES,
   SAMPLE_SECONDARY_BANNER,
   SAMPLE_USER,
 } from "./catalog-data";
@@ -166,6 +176,105 @@ export function UiCatalog() {
             />
           </Specimen>
         </div>
+      </Section>
+
+      <Section id="skeleton" title="AtSkeleton">
+        <div className="flex max-w-[320px] flex-col gap-3 rounded-card bg-content1 p-6">
+          <AtSkeleton className="h-6 w-40 rounded-full" />
+          <AtSkeleton className="h-3 w-full rounded-full" />
+          <AtSkeleton className="h-[120px] rounded-card" />
+        </div>
+      </Section>
+
+      <Section id="empty-state" title="MlEmptyState">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Specimen label="Vacío (md)">
+            <div className="rounded-card bg-content1">
+              <MlEmptyState
+                icon={<ClipboardList />}
+                title="Todavía no has hecho ningún pedido"
+                description="Arma el próximo coffee break de tu equipo en menos de dos minutos."
+                actionLabel="Hacer mi primer pedido"
+                onAction={() => {}}
+              />
+            </div>
+          </Specimen>
+          <Specimen label="Error con reintento">
+            <div className="rounded-card bg-content1">
+              <MlEmptyState
+                tone="error"
+                title="No pudimos cargar tu dashboard"
+                description="Puede ser un problema de conexión. Inténtalo de nuevo en unos segundos."
+                actionLabel="Reintentar"
+                onAction={() => {}}
+              />
+            </div>
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="greeting-card" title="MlGreetingCard">
+        <div className="flex flex-wrap items-start gap-6">
+          <Specimen label="Con datos">
+            <MlGreetingCard name="María Gabriela" onCtaPress={() => {}} className="w-[288px]" />
+          </Specimen>
+          <Specimen label="Cargando">
+            <MlGreetingCard name="" isLoading onCtaPress={() => {}} className="w-[288px]" />
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="order-row" title="MlOrderRow">
+        <div className="flex flex-wrap items-start gap-6">
+          <Specimen label="Repetir sin acción (deshabilitado)">
+            <div className="w-[288px] rounded-card bg-content1 p-[15px]">
+              <MlOrderRow {...SAMPLE_ORDERS[0]} detailHref="/dev/ui#order-row" />
+            </div>
+          </Specimen>
+          <Specimen label="Repetir con acción, estado con icono">
+            <div className="w-[288px] rounded-card bg-content1 p-[15px]">
+              <MlOrderRow
+                {...SAMPLE_ORDERS[1]}
+                statusLabel="En camino"
+                statusIcon={<Truck aria-hidden="true" className="size-3" />}
+                onRepeat={() => {}}
+                onDetail={() => {}}
+              />
+            </div>
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="active-order" title="MlActiveOrderCard">
+        <div className="flex flex-wrap items-start gap-6">
+          <Specimen label="Con pedido">
+            <MlActiveOrderCard order={SAMPLE_ACTIVE_ORDER} className="w-[288px]" />
+          </Specimen>
+          <Specimen label="Sin pedido">
+            <MlActiveOrderCard order={null} className="w-[288px]" />
+          </Specimen>
+          <Specimen label="Cargando">
+            <MlActiveOrderCard order={null} isLoading className="w-[288px]" />
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="recent-orders" title="OrRecentOrders">
+        <div className="flex flex-wrap items-start gap-6">
+          <Specimen label="Con órdenes">
+            <OrRecentOrders orders={SAMPLE_ORDERS} viewAllHref="/dev/ui#recent-orders" className="w-[288px]" />
+          </Specimen>
+          <Specimen label="Vacío">
+            <OrRecentOrders orders={[]} emptyActionHref="/dev/ui#recent-orders" className="w-[288px]" />
+          </Specimen>
+          <Specimen label="Cargando">
+            <OrRecentOrders orders={[]} isLoading className="w-[288px]" />
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="promo-carousel" title="OrPromoCarousel">
+        <OrPromoCarousel slides={SAMPLE_PROMO_SLIDES} />
       </Section>
 
       <Section id="sidebar" title="OrAppSidebar">

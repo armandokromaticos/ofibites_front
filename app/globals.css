@@ -28,6 +28,8 @@
   --color-foreground-strong: #111827;
   /* T-03: círculo de paso pendiente del stepper de la solicitud (Figma 3244:12471). */
   --color-step-idle: #d7d5d1;
+  /* T-04: punto inactivo del indicador del banner principal (Figma 3216:28274). */
+  --color-dot-idle: #a4bdc3;
 
   /* T-02: sombra de las imágenes de producto (las cards no llevan sombra). */
   --drop-shadow-product: 0 9px 9px rgb(0 0 0 / 0.25);
