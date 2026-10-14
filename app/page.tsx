@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 
-import { AtButton } from "@/libs/cantaritos-ui";
 import { useAuthStore } from "@/domain/stores";
+import { AtButton } from "@/app/lib/atomic";
 
 export default function Home() {
   const user = useAuthStore((state) => state.user);

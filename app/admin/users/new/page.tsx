@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 
 import { ArrowLeft } from "lucide-react";
 
+import { useCreateUser } from "@/domain/hooks/users";
 import {
   AtButton,
-  OgUserForm,
-} from "@/libs/cantaritos-ui";
-import { UserFormValues } from "@/libs/cantaritos-ui/organisms/og-user-form";
-import { useCreateUser } from "@/domain/hooks/users";
+  OrUserForm,
+} from "@/app/lib/atomic";
+import { UserFormValues } from "@/app/lib/atomic/organisms/or-user-form";
 
 export default function NewUserPage() {
   const router = useRouter();
@@ -75,7 +75,7 @@ export default function NewUserPage() {
 
       {/* Content */}
       <div className="max-w-2xl">
-        <OgUserForm onSubmit={handleSubmit} isLoading={isLoading} />
+        <OrUserForm onSubmit={handleSubmit} isLoading={isLoading} />
       </div>
 
       {/* Error */}

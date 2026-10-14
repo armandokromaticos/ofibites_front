@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 
 import { ArrowLeft } from "lucide-react";
 
+import { useCreateProduct, useUploadProductImage } from "@/domain/hooks/products";
 import {
   AtButton,
   MlAvailabilityCard,
   MlImageUpload,
-  OgProductForm,
-} from "@/libs/cantaritos-ui";
-import { ProductFormValues } from "@/libs/cantaritos-ui/organisms/og-product-form";
-import { useCreateProduct, useUploadProductImage } from "@/domain/hooks/products";
+  OrProductForm,
+} from "@/app/lib/atomic";
+import { ProductFormValues } from "@/app/lib/atomic/organisms/or-product-form";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function NewProductPage() {
       {/* Content */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <OgProductForm onSubmit={handleSubmit} isLoading={isLoading} />
+          <OrProductForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
         <div className="space-y-6">
           <MlImageUpload

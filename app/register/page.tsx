@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { AtButton, AtInput, MlForm } from "@/libs/cantaritos-ui";
 import { useRegister } from "@/domain/hooks/auth";
+import { AtButton, AtInput, MlForm } from "@/app/lib/atomic";
 
 export default function RegisterPage() {
   const router = useRouter();
