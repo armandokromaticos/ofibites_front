@@ -1,3 +1,12 @@
+import {
+  ORDER_FREQUENCIES,
+  ORDER_FREQUENCY_LABELS,
+  PEOPLE_PER_ORDER_LABELS,
+  PEOPLE_PER_ORDER_RANGES,
+  REGISTRATION_SOLUTION_LABELS,
+  REGISTRATION_SOLUTIONS,
+} from "@/domain/types";
+
 /** Prefijos del RIF venezolano (Figma 3244:12471: selector "J"). */
 export const RIF_PREFIXES = [
   { key: "J", label: "J — Persona jurídica" },
@@ -56,3 +65,19 @@ export const PHONE_COUNTRIES: PhoneCountry[] = [
   { code: "GB", name: "Reino Unido", flag: "🇬🇧", dial: "+44" },
   { code: "UY", name: "Uruguay", flag: "🇺🇾", dial: "+598" },
 ];
+
+/** Paso 3 (T-12): opciones de los chips con los textos en español de `domain/types`. */
+export const SOLUTION_OPTIONS = REGISTRATION_SOLUTIONS.map((value) => ({
+  value,
+  label: REGISTRATION_SOLUTION_LABELS[value],
+}));
+
+export const ORDER_FREQUENCY_OPTIONS = ORDER_FREQUENCIES.map((value) => ({
+  value,
+  label: ORDER_FREQUENCY_LABELS[value],
+}));
+
+export const PEOPLE_PER_ORDER_OPTIONS = PEOPLE_PER_ORDER_RANGES.map((value) => ({
+  value,
+  label: PEOPLE_PER_ORDER_LABELS[value],
+}));
