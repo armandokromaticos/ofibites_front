@@ -1,4 +1,4 @@
-import { AuthResponse, LoginRequest } from "@/domain/types";
+import { AuthResponse, LoginRequest, MeResponse } from "@/domain/types";
 import { authFetcher, fetcher } from "@/shared/utils/fetch";
 
 export const authService = {
@@ -13,6 +13,6 @@ export const authService = {
       method: "POST",
     }),
 
-  getMe: (): Promise<AuthResponse["user"]> =>
-    authFetcher<AuthResponse["user"]>("/auth/me"),
+  /** Perfil del usuario y sus empresas. Requiere `Authorization`; `X-Company-Id` no es obligatorio. */
+  getMe: (): Promise<MeResponse> => authFetcher<MeResponse>("/auth/me"),
 };

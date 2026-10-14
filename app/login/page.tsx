@@ -1,17 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Eye, EyeOff } from "lucide-react";
 
 import { useLogin } from "@/domain/hooks/auth";
+import { getHomePath } from "@/domain/models/auth.model";
+import { useAuthHydrated, useAuthStore } from "@/domain/stores";
 import { getApiErrorMessage, isApiError } from "@/shared/utils";
 import { AtButton, AtIconButton, AtInput, MlAuthHeader, MlForm, MlFormAlert, TmAuthLayout } from "@/app/lib/atomic";
 
 const ERROR_ID = "login-error";
 const PASSWORD_HINT = "Revisa tu contraseña: distingue mayúsculas de minúsculas.";
+const SIN_EMPRESA_MESSAGE =
+  "Ya no tienes acceso a ninguna empresa activa. Contacta al administrador de tu empresa.";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** El back responde 401 "Credenciales inválidas" cuando el correo o la contraseña no coinciden. */
@@ -20,7 +24,7 @@ function isCredentialsError(error: unknown): boolean {
 }
 
 /**
- * Resto de 401 ("cuenta no activada", "desactivada"...): el mensaje del back tal cual.
+ * Resto de 401 ("cuenta no activada", "desactivada", "sin empresa"...): el mensaje del back tal cual, solo en la alerta.
  * Red, 408 y 5xx: mensaje genérico de `getApiErrorMessage`.
  */
 function getLoginErrorMessage(error: unknown): string {
@@ -46,6 +50,20 @@ export default function LoginPage() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
+  // Con una sesión de cliente ya abierta (p. ej. al volver a /login), directo al dashboard.
+  const hasHydrated = useAuthHydrated();
+  const hasClientSession = useAuthStore(
+    (state) => state.isAuthenticated && state.user?.role === "CLIENT",
+  );
+  const shouldRedirect = hasHydrated && hasClientSession;
+  // La guarda cerró la sesión porque el cliente ya no tiene empresa operativa (motivo en memoria, no en la URL).
+  const signOutReason = useAuthStore((state) => state.signOutReason);
+  const clearSignOutReason = useAuthStore((state) => state.clearSignOutReason);
+
+  useEffect(() => {
+    if (shouldRedirect) router.replace("/dashboard");
+  }, [shouldRedirect, router]);
+
   // Solo un error de credenciales marca los campos; red, 5xx o "cuenta no activada" van solo en la alerta.
   const credentialsInvalid = isCredentialsError(error);
 
@@ -60,6 +78,7 @@ export default function LoginPage() {
     const email = (formData.get("email") ?? "").toString().trim();
     const password = (formData.get("password") ?? "").toString();
 
+    if (signOutReason) clearSignOutReason();
     const errors = validate(email, password);
     setFieldErrors(errors);
     const firstInvalid = errors.email ? "email" : errors.password ? "password" : null;
@@ -67,7 +86,8 @@ export default function LoginPage() {
       event.currentTarget.querySelector<HTMLInputElement>(`[name="${firstInvalid}"]`)?.focus();
       return;
     }
-    login({ email, password }, { onSuccess: () => router.push("/") });
+    // CLIENT → /dashboard; el resto (admin de plataforma, aún sin inicio propio) → /.
+    login({ email, password }, { onSuccess: (me) => router.replace(getHomePath(me.user.role)) });
   };
 
   return (
@@ -85,6 +105,9 @@ export default function LoginPage() {
               Figma 3388:2250 sin el contador de intentos ni el bloqueo: el back no tiene ninguno (T-09).
               Solo las credenciales marcan los campos; red, 5xx o "cuenta no activada" van solo en la alerta.
             */}
+            {!error && signOutReason === "sin-empresa" && (
+              <MlFormAlert title="Cerramos tu sesión.">{SIN_EMPRESA_MESSAGE}</MlFormAlert>
+            )}
             {error && (
               <MlFormAlert id={ERROR_ID} title={credentialsInvalid ? "Correo o contraseña incorrectos." : undefined}>
                 {credentialsInvalid ? undefined : getLoginErrorMessage(error)}
@@ -129,7 +152,8 @@ export default function LoginPage() {
             />
           </div>
 
-          <AtButton type="submit" size="lg" fullWidth isLoading={isPending}>
+          {/* También mientras se redirige (tras el login o con una sesión de cliente ya abierta). */}
+          <AtButton type="submit" size="lg" fullWidth isLoading={isPending || shouldRedirect}>
             Iniciar sesión
           </AtButton>
         </MlForm>

@@ -1,11 +1,7 @@
 import { User, UserRole } from "./auth.types";
 
-export interface UserDetail extends User {
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  authId: string;
-}
+/** Detalle de usuario de `/users`: mismo `UserResponseDto` que `User`. */
+export type UserDetail = User;
 
 export interface CreateUserRequest {
   name: string;

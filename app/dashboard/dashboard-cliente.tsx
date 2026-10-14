@@ -4,6 +4,7 @@ import { ReactNode, useState } from "react";
 
 import { BookOpen, CloudOff, FileText, LayoutGrid, Truck, Utensils } from "lucide-react";
 
+import { useLogout } from "@/domain/hooks/auth";
 import { useClientDashboard } from "@/domain/hooks/dashboard";
 import { ClientActiveOrder, ClientRecentOrder, ORDER_STATUS_LABELS, OrderStatus } from "@/domain/models";
 import { formatCaracasShortDate, formatCaracasTime } from "@/shared/utils";
@@ -108,6 +109,7 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const { data, isPending, isError, isFetching, refetch } = useClientDashboard({ qaState: estadoQa });
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const user = data?.user;
 
@@ -236,6 +238,8 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
         isOpen: isSidebarOpen,
         onToggle: () => setIsSidebarOpen((open) => !open),
         homeHref: "/dashboard",
+        onLogout: () => logout(),
+        isLoggingOut,
         user: user ? { name: user.shortName, role: user.role, avatarSrc: user.avatarSrc } : undefined,
       }}
       // TODO: conectar API (T-04). Contador del carrito y notificaciones sin leer.
