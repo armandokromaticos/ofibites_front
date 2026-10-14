@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin '../hero.ts';
-@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+/* Ruta relativa a este archivo (app/): ../node_modules. Con ../../ Tailwind no escanea el tema de HeroUI. */
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -22,6 +23,12 @@
   --color-ghost-foreground: #424242;
   --color-border-subtle: #e5e7eb;
   --color-nav-icon-bg: rgb(90 96 65 / 0.1);
+  /* T-02: fondo del icono dentro del ítem activo del sidebar y título de la top bar. */
+  --color-nav-active-icon-bg: rgb(0 0 0 / 0.15);
+  --color-foreground-strong: #111827;
+
+  /* T-02: sombra de las imágenes de producto (las cards no llevan sombra). */
+  --drop-shadow-product: 0 9px 9px rgb(0 0 0 / 0.25);
 
   --radius-card: 22px;
   --radius-control: 12px;

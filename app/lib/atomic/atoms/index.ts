@@ -1,5 +1,7 @@
 export * from "./at-button";
 export * from "./at-chip";
+export * from "./at-icon-button";
 export * from "./at-input";
+export * from "./at-progress";
 export * from "./at-switch";
 export * from "./at-textarea";
