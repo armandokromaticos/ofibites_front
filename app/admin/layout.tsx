@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { TpAdminLayout } from "@/libs/cantaritos-ui";
 import { useAuthStore } from "@/domain/stores";
+import { TmAdminLayout } from "@/app/lib/atomic";
 
 export default function AdminLayout({
   children,
@@ -25,5 +25,5 @@ export default function AdminLayout({
     return null;
   }
 
-  return <TpAdminLayout>{children}</TpAdminLayout>;
+  return <TmAdminLayout>{children}</TmAdminLayout>;
 }

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 
 import { AlertTriangle, CheckCircle, Package, Plus, XCircle } from "lucide-react";
 
-import { AtButton, MlSearchBar, MlStatCard, OgProductTable } from "@/libs/cantaritos-ui";
 import { useDeleteProduct, useProducts } from "@/domain/hooks/products";
 import { Product } from "@/domain/types";
+import { AtButton, MlSearchBar, MlStatCard, OrProductTable } from "@/app/lib/atomic";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -96,7 +96,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Table */}
-      <OgProductTable
+      <OrProductTable
         products={filteredProducts}
         isLoading={isLoading}
         onEdit={(product) => router.push(`/admin/products/${product.id}`)}

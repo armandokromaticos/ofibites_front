@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 
 import { CheckCircle, Plus, Shield, Users, XCircle } from "lucide-react";
 
-import { AtButton, MlSearchBar, MlStatCard, OgUserTable } from "@/libs/cantaritos-ui";
 import { useDeleteUser, useUsers } from "@/domain/hooks/users";
 import { UserDetail } from "@/domain/types";
+import { AtButton, MlSearchBar, MlStatCard, OrUserTable } from "@/app/lib/atomic";
 
 export default function UsersPage() {
   const router = useRouter();
@@ -94,7 +94,7 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <OgUserTable
+      <OrUserTable
         users={filteredUsers}
         isLoading={isLoading}
         onEdit={(user) => router.push(`/admin/users/${user.id}`)}

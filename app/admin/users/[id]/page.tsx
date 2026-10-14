@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation";
 import { Spinner } from "@heroui/react";
 import { ArrowLeft } from "lucide-react";
 
+import { useUpdateUser, useUser } from "@/domain/hooks/users";
 import {
   AtButton,
-  OgUserForm,
-} from "@/libs/cantaritos-ui";
-import { UserFormValues } from "@/libs/cantaritos-ui/organisms/og-user-form";
-import { useUpdateUser, useUser } from "@/domain/hooks/users";
+  OrUserForm,
+} from "@/app/lib/atomic";
+import { UserFormValues } from "@/app/lib/atomic/organisms/or-user-form";
 
 export default function EditUserPage({
   params,
@@ -107,7 +107,7 @@ export default function EditUserPage({
 
       {/* Content */}
       <div className="max-w-2xl">
-        <OgUserForm
+        <OrUserForm
           defaultValues={{
             name: user.name,
             email: user.email,

@@ -20,7 +20,6 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/libs/*": ["./libs/*"],
       "@/domain/*": ["./domain/*"],
       "@/shared/*": ["./shared/*"],
       "@/types/*": ["./types/*"]

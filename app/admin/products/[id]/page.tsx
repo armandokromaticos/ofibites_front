@@ -8,16 +8,16 @@ import { useRouter } from "next/navigation";
 import { Spinner } from "@heroui/react";
 import { ArrowLeft } from "lucide-react";
 
+import { useProduct, useUpdateProduct, useUploadProductImage } from "@/domain/hooks/products";
 import {
   AtButton,
   MlAvailabilityCard,
   MlImageUpload,
-  OgModifierGroupsSection,
-  OgProductForm,
-  OgSizesSection,
-} from "@/libs/cantaritos-ui";
-import { ProductFormValues } from "@/libs/cantaritos-ui/organisms/og-product-form";
-import { useProduct, useUpdateProduct, useUploadProductImage } from "@/domain/hooks/products";
+  OrModifierGroupsSection,
+  OrProductForm,
+  OrSizesSection,
+} from "@/app/lib/atomic";
+import { ProductFormValues } from "@/app/lib/atomic/organisms/or-product-form";
 
 export default function EditProductPage({
   params,
@@ -128,7 +128,7 @@ export default function EditProductPage({
       {/* Content */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <OgProductForm
+          <OrProductForm
             defaultValues={{
               name: product.name,
               description: product.description ?? "",
@@ -138,11 +138,11 @@ export default function EditProductPage({
             onSubmit={handleSubmit}
             isLoading={isSaving}
           />
-          <OgSizesSection
+          <OrSizesSection
             productId={id}
             sizes={product.sizes ?? []}
           />
-          <OgModifierGroupsSection
+          <OrModifierGroupsSection
             productId={id}
             modifierGroups={product.modifierGroups ?? []}
           />
