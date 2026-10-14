@@ -32,14 +32,28 @@ const FIELD_400_MESSAGES: Record<CompanyRequestField, string> = {
   contactEmail: "Escribe un correo válido, por ejemplo nombre@empresa.com.",
   contactPhone: "Revisa el teléfono: es obligatorio y admite hasta 50 caracteres.",
   position: "Revisa el cargo: admite hasta 100 caracteres.",
+  generalNeed: "Revisa la necesidad general: es obligatoria y admite hasta 500 caracteres.",
+  interestedSolutions: "Elige al menos una de las soluciones de la lista.",
+  orderFrequency: "Elige una de las frecuencias de pedido.",
+  peoplePerOrder: "Elige uno de los rangos de personas por pedido.",
+  additionalComments: "Revisa los comentarios: admiten hasta 1000 caracteres.",
 };
+
+/**
+ * ¿El mensaje de class-validator es de esta propiedad? Casi todos empiezan por el nombre
+ * ("generalNeed should not be empty"), pero los de arrays no: "each value in interestedSolutions
+ * must be one of…" o "All interestedSolutions's elements must be unique".
+ */
+function mentionsField(text: string, field: CompanyRequestField): boolean {
+  return new RegExp(`(^|\\s)${field}('s)?(\\s|$)`).test(text);
+}
 
 /**
  * Traduce el error de `POST /company-requests` al formato del asistente (contrato en
  * gestion/CONTRATOS-API.md):
  * - 409 por RIF: tal cual, en el campo RIF del paso 1.
  * - 400 de class-validator: en español, en el primer campo afectado (el asistente vuelve a su paso).
- * - Resto (409 de solicitud aprobada, red, 5xx): alerta en el paso 3, con `getApiErrorMessage`.
+ * - Resto (409 de solicitud aprobada, red, 5xx): alerta en el paso 4 (resumen), con `getApiErrorMessage`.
  */
 function toWizardError(error: unknown): OrCompanyRequestWizardSubmitError {
   const message = getApiErrorMessage(error, "No pudimos enviar la solicitud. Inténtalo de nuevo.");
@@ -51,7 +65,7 @@ function toWizardError(error: unknown): OrCompanyRequestWizardSubmitError {
   if (error.statusCode === 400) {
     const raw = getApiErrorMessages(error);
     const fields = Object.keys(FIELD_400_MESSAGES) as CompanyRequestField[];
-    const field = fields.find((name) => raw.some((text) => text.startsWith(`${name} `)));
+    const field = fields.find((name) => raw.some((text) => mentionsField(text, name)));
     if (field) return { message: FIELD_400_MESSAGES[field], field };
     return { message: "Algún dato no es válido. Revisa la solicitud e inténtalo de nuevo." };
   }

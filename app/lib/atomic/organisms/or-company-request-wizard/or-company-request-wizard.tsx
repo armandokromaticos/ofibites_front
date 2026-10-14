@@ -4,8 +4,23 @@ import { FormEvent, useEffect, useId, useRef, useState } from "react";
 
 import { SelectItem } from "@heroui/react";
 
-import { CreateCompanyRequest } from "@/domain/types";
-import { AtButton, AtCheckbox, AtInput, AtInputProps, AtSelect } from "@/app/lib/atomic/atoms";
+import {
+  CreateCompanyRequest,
+  ORDER_FREQUENCY_LABELS,
+  OrderFrequency,
+  PEOPLE_PER_ORDER_LABELS,
+  PeoplePerOrderRange,
+  REGISTRATION_SOLUTION_LABELS,
+  RegistrationSolution,
+} from "@/domain/types";
+import {
+  AtButton,
+  AtCheckbox,
+  AtInput,
+  AtInputProps,
+  AtSelect,
+  AtTextarea,
+} from "@/app/lib/atomic/atoms";
 import {
   MlAuthHeader,
   MlChoiceChips,
@@ -14,7 +29,14 @@ import {
   MlStepIndicator,
 } from "@/app/lib/atomic/molecules";
 
-import { EMPLOYEE_RANGES, PHONE_COUNTRIES, RIF_PREFIXES } from "./or-company-request-wizard.constants";
+import {
+  EMPLOYEE_RANGES,
+  ORDER_FREQUENCY_OPTIONS,
+  PEOPLE_PER_ORDER_OPTIONS,
+  PHONE_COUNTRIES,
+  RIF_PREFIXES,
+  SOLUTION_OPTIONS,
+} from "./or-company-request-wizard.constants";
 import {
   CompanyRequestField,
   OrCompanyRequestWizardProps,
@@ -22,17 +44,24 @@ import {
 } from "./or-company-request-wizard.types";
 
 /** Nombres de los pasos (solo para lectores de pantalla; el Figma muestra números). */
-const STEP_NAMES = ["Tu empresa", "Tu contacto", "Confirma y envía"];
+const STEP_NAMES = ["Tu empresa", "Tu contacto", "Tus necesidades", "Confirma y envía"];
 
-/** Copy literal del Figma (3244:12471 · 3346:1839 · 3346:1952). */
+/**
+ * Copy literal del Figma (3244:12471 · 3346:1839 · 3346:1952), salvo el paso 3, que no está en
+ * el Figma (T-12), y el "Cuatro pasos" del paso 1 (el Figma dice "Tres").
+ */
 const STEP_COPY = [
   {
     title: "Solicita tu acceso a la plataforma",
-    subtitle: "Tres pasos cortos. Revisamos tu solicitud en menos de 24 horas hábiles.",
+    subtitle: "Cuatro pasos cortos. Revisamos tu solicitud en menos de 24 horas hábiles.",
   },
   {
     title: "Cuéntanos de ti",
     subtitle: "Usamos estos datos para confirmar tu acceso y coordinar el primer pedido.",
+  },
+  {
+    title: "¿Qué necesita tu equipo?",
+    subtitle: "Con esto preparamos una propuesta a tu medida.",
   },
   {
     title: "Revisa antes de enviar",
@@ -47,6 +76,7 @@ type ErrorKey = CompanyRequestField | "terms";
 const STEP_FIELDS: ErrorKey[][] = [
   ["legalName", "taxId", "employeeCount"],
   ["contactName", "position", "contactEmail", "contactPhone"],
+  ["generalNeed", "interestedSolutions", "orderFrequency", "peoplePerOrder", "additionalComments"],
   ["terms"],
 ];
 
@@ -59,6 +89,11 @@ const CONTROL_NAME: Record<ErrorKey, string> = {
   position: "position",
   contactEmail: "contactEmail",
   contactPhone: "phoneNumber",
+  generalNeed: "generalNeed",
+  interestedSolutions: "interestedSolutions",
+  orderFrequency: "orderFrequency",
+  peoplePerOrder: "peoplePerOrder",
+  additionalComments: "additionalComments",
   terms: "acceptTerms",
 };
 
@@ -70,6 +105,8 @@ const MAX_LENGTH = {
   contactEmail: 150,
   contactPhone: 50,
   position: 100,
+  generalNeed: 500,
+  additionalComments: 1000,
 } as const;
 
 /** Parecido a `@IsEmail` del back: dominio con punto y TLD de al menos 2 letras (rechaza `a@b.c`). */
@@ -94,6 +131,11 @@ interface FormValues {
   contactEmail: string;
   phoneCountry: string;
   phoneNumber: string;
+  generalNeed: string;
+  interestedSolutions: RegistrationSolution[];
+  orderFrequency: OrderFrequency | null;
+  peoplePerOrder: PeoplePerOrderRange | null;
+  additionalComments: string;
   acceptTerms: boolean;
 }
 
@@ -107,6 +149,11 @@ const EMPTY_VALUES: FormValues = {
   contactEmail: "",
   phoneCountry: "VE",
   phoneNumber: "",
+  generalNeed: "",
+  interestedSolutions: [],
+  orderFrequency: null,
+  peoplePerOrder: null,
+  additionalComments: "",
   acceptTerms: false,
 };
 
@@ -174,6 +221,22 @@ function validateField(key: ErrorKey, values: FormValues): string | undefined {
       if (formatPhone(values).length > MAX_LENGTH.contactPhone) return "El teléfono es demasiado largo.";
       return undefined;
     }
+    case "generalNeed": {
+      const value = collapseSpaces(values.generalNeed);
+      if (!value) return "Cuéntanos en pocas palabras qué necesita tu equipo.";
+      if (value.length > MAX_LENGTH.generalNeed) return `Usa como máximo ${MAX_LENGTH.generalNeed} caracteres.`;
+      return undefined;
+    }
+    case "interestedSolutions":
+      return values.interestedSolutions.length > 0 ? undefined : "Elige al menos una solución.";
+    case "orderFrequency":
+      return values.orderFrequency ? undefined : "Elige cada cuánto harían pedidos.";
+    case "peoplePerOrder":
+      return values.peoplePerOrder ? undefined : "Elige para cuántas personas sería cada pedido.";
+    case "additionalComments":
+      return values.additionalComments.trim().length > MAX_LENGTH.additionalComments
+        ? `Usa como máximo ${MAX_LENGTH.additionalComments} caracteres.`
+        : undefined;
     case "terms":
       return values.acceptTerms
         ? undefined
@@ -190,9 +253,14 @@ function validateStep(step: number, values: FormValues): FieldErrors {
   return errors;
 }
 
-/** Payload según el contrato. La casilla de términos es solo del front y no se envía. */
+/**
+ * Payload según el contrato. La casilla de términos es solo del front y no se envía.
+ * Solo se llama tras validar todos los pasos: frecuencia y personas ya no son `null`.
+ */
 function toPayload(values: FormValues): CreateCompanyRequest {
   const position = collapseSpaces(values.position);
+  // Se conservan los saltos de línea de los comentarios; el back hace `trim`.
+  const additionalComments = values.additionalComments.trim();
   return {
     legalName: collapseSpaces(values.legalName),
     taxId: formatTaxId(values.taxIdPrefix, values.taxIdNumber),
@@ -201,6 +269,11 @@ function toPayload(values: FormValues): CreateCompanyRequest {
     contactPhone: formatPhone(values),
     ...(position && { position }),
     ...(values.employeeRange && { employeeCount: Number(values.employeeRange) }),
+    generalNeed: collapseSpaces(values.generalNeed),
+    interestedSolutions: values.interestedSolutions,
+    orderFrequency: values.orderFrequency as OrderFrequency,
+    peoplePerOrder: values.peoplePerOrder as PeoplePerOrderRange,
+    ...(additionalComments && { additionalComments }),
   };
 }
 
@@ -214,7 +287,8 @@ function isSubmitError(error: unknown): error is OrCompanyRequestWizardSubmitErr
 
 interface SummaryBlockProps {
   title: string;
-  rows: { label: string; value: string }[];
+  /** `isLong`: texto libre (necesidad, comentarios): va bajo la etiqueta y alineado a la izquierda. */
+  rows: { label: string; value: string; isLong?: boolean }[];
   onEdit: () => void;
   isDisabled?: boolean;
 }
@@ -238,12 +312,19 @@ function SummaryBlock({ title, rows, onEdit, isDisabled }: SummaryBlockProps) {
         </AtButton>
       </div>
       <dl className="flex flex-col gap-2.5">
-        {rows.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-3 text-[13px] font-semibold leading-4">
-            <dt className="shrink-0 text-placeholder">{row.label}</dt>
-            <dd className="min-w-0 break-words text-right text-foreground">{row.value}</dd>
-          </div>
-        ))}
+        {rows.map((row) =>
+          row.isLong ? (
+            <div key={row.label} className="flex flex-col gap-1 text-[13px] font-semibold leading-4">
+              <dt className="text-placeholder">{row.label}</dt>
+              <dd className="min-w-0 whitespace-pre-line break-words leading-[19px] text-foreground">{row.value}</dd>
+            </div>
+          ) : (
+            <div key={row.label} className="flex items-baseline justify-between gap-3 text-[13px] font-semibold leading-4">
+              <dt className="shrink-0 text-placeholder">{row.label}</dt>
+              <dd className="min-w-0 break-words text-right text-foreground">{row.value}</dd>
+            </div>
+          ),
+        )}
       </dl>
     </section>
   );
@@ -322,7 +403,7 @@ export function OrCompanyRequestWizard({
 
   /**
    * El 2.º clic de un doble clic cae sobre lo que ocupa el sitio del botón en el paso nuevo
-   * ("Enviar", "Atrás", "Editar", la casilla de términos): se ignora durante unos 400 ms.
+   * ("Enviar", "Atrás", "Editar", la casilla de términos, los chips): se ignora durante unos 400 ms.
    */
   const isJustAfterStepChange = () => Date.now() - stepChangedAt.current < STEP_CHANGE_GUARD_MS;
 
@@ -366,7 +447,7 @@ export function OrCompanyRequestWizard({
       return;
     }
 
-    // Paso 3: se revalidan los pasos anteriores por si se editó algo.
+    // Último paso (resumen): se revalidan los pasos anteriores por si se editó algo.
     for (let index = 0; index < LAST_STEP; index += 1) {
       const previousErrors = validateStep(index, values);
       const key = STEP_FIELDS[index].find((field) => previousErrors[field]);
@@ -398,7 +479,7 @@ export function OrCompanyRequestWizard({
   };
 
   const inputProps = (
-    key: Exclude<ErrorKey, "taxId" | "employeeCount" | "contactPhone" | "terms">,
+    key: "legalName" | "contactName" | "position" | "contactEmail" | "generalNeed",
     label: string,
   ): Partial<AtInputProps> => ({
     name: CONTROL_NAME[key],
@@ -416,6 +497,11 @@ export function OrCompanyRequestWizard({
   const employeeLabel = EMPLOYEE_RANGES.find((range) => range.value === values.employeeRange)?.label;
   const taxIdHelpId = `${id}-rif-help`;
   const phoneHelpId = `${id}-phone-help`;
+  const needHelpId = `${id}-need-help`;
+  const solutionsLabel = values.interestedSolutions
+    .map((solution) => REGISTRATION_SOLUTION_LABELS[solution])
+    .join(", ");
+  const additionalComments = values.additionalComments.trim();
   const termsErrorId = `${id}-terms-error`;
   const primaryLabel =
     step === LAST_STEP ? "Enviar solicitud" : isEditingFromSummary ? "Volver al resumen" : "Continuar";
@@ -482,7 +568,7 @@ export function OrCompanyRequestWizard({
                 label="¿Cuántos empleados tiene la empresa?"
                 options={[...EMPLOYEE_RANGES]}
                 value={values.employeeRange}
-                onChange={(value) => update("employeeRange", value, "employeeCount")}
+                onChange={(value) => !isJustAfterStepChange() && update("employeeRange", value, "employeeCount")}
                 isInvalid={Boolean(errors.employeeCount)}
                 errorMessage={errors.employeeCount}
               />
@@ -546,6 +632,74 @@ export function OrCompanyRequestWizard({
             </div>
           )}
 
+          {step === 2 && (
+            <div className="flex w-full flex-col gap-[25px]">
+              <div className="flex flex-col gap-2">
+                <AtInput
+                  {...inputProps("generalNeed", "Necesidad general")}
+                  autoComplete="off"
+                  aria-required="true"
+                  aria-describedby={needHelpId}
+                />
+                <p id={needHelpId} className="px-[19px] text-xs font-semibold leading-4 text-placeholder">
+                  En una frase, por ejemplo: desayunos para las reuniones de los lunes.
+                </p>
+              </div>
+
+              <MlChoiceChips
+                selectionMode="multiple"
+                name={CONTROL_NAME.interestedSolutions}
+                label="¿Qué soluciones te interesan?"
+                description="Elige todas las que apliquen."
+                options={SOLUTION_OPTIONS}
+                columns={3}
+                value={values.interestedSolutions}
+                onChange={(value) =>
+                  !isJustAfterStepChange() && update("interestedSolutions", value as RegistrationSolution[], "interestedSolutions")
+                }
+                isInvalid={Boolean(errors.interestedSolutions)}
+                errorMessage={errors.interestedSolutions}
+              />
+
+              <MlChoiceChips
+                name={CONTROL_NAME.orderFrequency}
+                label="¿Cada cuánto harían pedidos?"
+                options={ORDER_FREQUENCY_OPTIONS}
+                columns={3}
+                value={values.orderFrequency}
+                onChange={(value) => !isJustAfterStepChange() && update("orderFrequency", value as OrderFrequency, "orderFrequency")}
+                isInvalid={Boolean(errors.orderFrequency)}
+                errorMessage={errors.orderFrequency}
+              />
+
+              <MlChoiceChips
+                name={CONTROL_NAME.peoplePerOrder}
+                label="¿Para cuántas personas sería cada pedido?"
+                description="Un aproximado está bien."
+                options={PEOPLE_PER_ORDER_OPTIONS}
+                value={values.peoplePerOrder}
+                onChange={(value) => !isJustAfterStepChange() && update("peoplePerOrder", value as PeoplePerOrderRange, "peoplePerOrder")}
+                isInvalid={Boolean(errors.peoplePerOrder)}
+                errorMessage={errors.peoplePerOrder}
+              />
+
+              <AtTextarea
+                name={CONTROL_NAME.additionalComments}
+                label="Comentarios adicionales (opcional)"
+                labelPlacement="outside-top"
+                placeholder="Alergias, horarios de entrega o cualquier detalle que debamos saber."
+                minRows={3}
+                maxRows={8}
+                value={values.additionalComments}
+                onValueChange={(value) => update("additionalComments", value, "additionalComments")}
+                isInvalid={Boolean(errors.additionalComments)}
+                errorMessage={errors.additionalComments}
+                maxLength={MAX_LENGTH.additionalComments}
+                classNames={{ label: "text-[17px] font-semibold leading-[21px] text-primary pb-2.5" }}
+              />
+            </div>
+          )}
+
           {step === LAST_STEP && (
             <div className="flex w-full flex-col gap-[18px]">
               <div className="flex flex-col gap-[18px] rounded-2xl bg-content1 px-[22px] py-5">
@@ -569,6 +723,25 @@ export function OrCompanyRequestWizard({
                     { label: "Cargo", value: collapseSpaces(values.position) || "Sin indicar" },
                     { label: "Correo", value: values.contactEmail.trim() },
                     { label: "Teléfono", value: `${country.code} ${formatPhone(values)}` },
+                  ]}
+                />
+                <hr className="border-surface-sand" />
+                <SummaryBlock
+                  title="Tus necesidades"
+                  onEdit={() => !isJustAfterStepChange() && editFromSummary(2)}
+                  isDisabled={isSubmitting}
+                  rows={[
+                    { label: "Necesidad", value: collapseSpaces(values.generalNeed), isLong: true },
+                    { label: "Soluciones", value: solutionsLabel },
+                    {
+                      label: "Frecuencia",
+                      value: values.orderFrequency ? ORDER_FREQUENCY_LABELS[values.orderFrequency] : "Sin indicar",
+                    },
+                    {
+                      label: "Personas por pedido",
+                      value: values.peoplePerOrder ? PEOPLE_PER_ORDER_LABELS[values.peoplePerOrder] : "Sin indicar",
+                    },
+                    { label: "Comentarios", value: additionalComments || "Sin comentarios", isLong: Boolean(additionalComments) },
                   ]}
                 />
               </div>
