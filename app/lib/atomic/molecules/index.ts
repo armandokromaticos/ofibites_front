@@ -9,6 +9,8 @@ export * from "./ml-greeting-card";
 export * from "./ml-image-upload";
 export * from "./ml-modifier-group-card";
 export * from "./ml-order-row";
+export * from "./ml-password-checklist";
+export * from "./ml-password-strength-meter";
 export * from "./ml-promo-banner";
 export * from "./ml-quantity-stepper";
 export * from "./ml-search-bar";

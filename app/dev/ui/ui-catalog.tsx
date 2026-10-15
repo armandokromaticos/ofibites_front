@@ -4,17 +4,23 @@ import { ReactNode, useState } from "react";
 
 import { Bell, ClipboardList, LayoutGrid, ShoppingCart, Truck } from "lucide-react";
 
+import { checkPasswordRules, getPasswordStrength } from "@/shared/utils";
 import {
   AtIconButton,
+  AtPasswordToggle,
   AtProgress,
   AtSkeleton,
+  AtTextLink,
   MlActiveOrderCard,
   MlEmptyState,
   MlGreetingCard,
   MlOrderRow,
+  MlPasswordChecklist,
+  MlPasswordStrengthMeter,
   MlPromoBanner,
   MlQuantityStepper,
   OrAppSidebar,
+  OrNewPasswordForm,
   OrProductCard,
   OrPromoCarousel,
   OrRecentOrders,
@@ -75,6 +81,8 @@ function ProductCardDemo({ isHovered }: { isHovered?: boolean }) {
     />
   );
 }
+
+const PASSWORD_SAMPLES = ["", "ofibites", "Ofibites2026", "Ofibit3#", "Ofibites2026#"];
 
 const ACTIVE_VARIANTS: { label: string; key?: string }[] = [
   { label: "Dashboard", key: "dashboard" },
@@ -145,6 +153,36 @@ export function UiCatalog() {
           <Specimen label="En el máximo (10)">
             <StepperDemo initial={10} min={1} max={10} />
           </Specimen>
+        </div>
+      </Section>
+
+      <Section id="text-link" title="AtTextLink · AtPasswordToggle">
+        <div className="flex flex-wrap items-center gap-8 rounded-card bg-background p-6">
+          <Specimen label="AtTextLink (hereda tamaño y color del contenedor)">
+            <p className="text-base font-semibold text-placeholder">
+              <AtTextLink href="/login">Volver al inicio de sesión</AtTextLink>
+            </p>
+          </Specimen>
+          <Specimen label="AtPasswordToggle oculta / visible">
+            <AtPasswordToggle aria-label="Mostrar contraseña" isVisible={false} />
+            <AtPasswordToggle aria-label="Mostrar contraseña" isVisible />
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="password" title="MlPasswordStrengthMeter · MlPasswordChecklist · OrNewPasswordForm">
+        <div className="grid gap-6 rounded-card bg-background p-6 lg:grid-cols-2">
+          {PASSWORD_SAMPLES.map((sample) => (
+            <Specimen key={sample || "vacía"} label={sample ? `"${sample}"` : "Vacía"}>
+              <div className="flex w-full max-w-[502px] flex-col gap-[14px]">
+                <MlPasswordStrengthMeter strength={getPasswordStrength(sample)} />
+                <MlPasswordChecklist rules={checkPasswordRules(sample)} showStatus={sample !== ""} />
+              </div>
+            </Specimen>
+          ))}
+        </div>
+        <div className="max-w-[550px] rounded-card bg-background p-6">
+          <OrNewPasswordForm onSubmit={() => undefined} />
         </div>
       </Section>
 
