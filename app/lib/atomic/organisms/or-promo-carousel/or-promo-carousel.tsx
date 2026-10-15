@@ -1,6 +1,15 @@
 "use client";
 
-import { AnimationEvent, CSSProperties, FocusEvent, KeyboardEvent, PointerEvent, useRef, useState } from "react";
+import {
+  AnimationEvent,
+  CSSProperties,
+  FocusEvent,
+  KeyboardEvent,
+  MouseEvent,
+  PointerEvent,
+  useRef,
+  useState,
+} from "react";
 
 import { cn } from "@heroui/react";
 import { Pause, Play } from "lucide-react";
@@ -26,6 +35,7 @@ type PlayPreference = "auto" | "playing" | "paused";
  * - Cambio de diapositiva: la saliente se funde por encima (sin parpadeo del fondo) y la entrante sube
  *   escalonada con la foto deslizando (`animateEntrance` de `MlPromoBanner`).
  * - Cada punto tiene un área de 24 px de alto (WCAG 2.5.8) y se recorren con las flechas.
+ * - En pantallas táctiles, un swipe horizontal pasa a la siguiente o a la anterior.
  */
 export function OrPromoCarousel({
   slides,
@@ -45,6 +55,10 @@ export function OrPromoCarousel({
 
   const regionRef = useRef<HTMLDivElement>(null);
   const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Inicio de un gesto táctil (swipe) sobre el carrusel.
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  // Tras un swipe, el navegador puede disparar un clic sobre lo que quedó bajo el dedo (CTA, punto): se descarta.
+  const justSwiped = useRef(false);
   const isInView = useInViewport(regionRef);
   const isPageVisible = usePageVisible();
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -91,6 +105,32 @@ export function OrPromoCarousel({
     if (event.pointerType === "mouse") setIsHovered(isEntering);
   };
 
+  // Swipe (tacto y lápiz): 40 px en horizontal y más horizontal que vertical. `touch-pan-y` deja el
+  // scroll vertical (y `touch-pinch-zoom`, el zoom) al navegador y le quita el horizontal, así el gesto
+  // llega entero hasta `pointerup`.
+  const handleSwipeStart = (event: PointerEvent<HTMLDivElement>) => {
+    justSwiped.current = false;
+    swipeStart.current = event.pointerType === "mouse" ? null : { x: event.clientX, y: event.clientY };
+  };
+
+  const handleSwipeEnd = (event: PointerEvent<HTMLDivElement>) => {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start || !canRotate) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    justSwiped.current = true;
+    goTo(index + (dx < 0 ? 1 : -1));
+  };
+
+  const handleClickCapture = (event: MouseEvent<HTMLDivElement>) => {
+    if (!justSwiped.current) return;
+    justSwiped.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   const handleDotsKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     event.preventDefault();
@@ -115,9 +155,15 @@ export function OrPromoCarousel({
       aria-label={label}
       onPointerEnter={handlePointer(true)}
       onPointerLeave={handlePointer(false)}
+      onPointerDown={handleSwipeStart}
+      onPointerUp={handleSwipeEnd}
+      onClickCapture={handleClickCapture}
+      onPointerCancel={() => {
+        swipeStart.current = null;
+      }}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      className={cn("relative isolate", className)}
+      className={cn("relative isolate", canRotate && "touch-pan-y touch-pinch-zoom", className)}
     >
       {/* Mientras rota, los cambios no se anuncian (serían interrupciones cada 6 s). */}
       <div

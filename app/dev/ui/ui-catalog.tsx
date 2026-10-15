@@ -6,6 +6,7 @@ import { Bell, ClipboardList, LayoutGrid, ShoppingCart, Truck } from "lucide-rea
 
 import { checkPasswordRules, getPasswordStrength } from "@/shared/utils";
 import {
+  AtAvatar,
   AtIconButton,
   AtPasswordToggle,
   AtProgress,
@@ -132,6 +133,20 @@ export function UiCatalog() {
             <AtIconButton aria-label="Carrito" isDisabled>
               <ShoppingCart aria-hidden="true" />
             </AtIconButton>
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="avatar" title="AtAvatar">
+        <div className="flex flex-wrap gap-8 rounded-card bg-content1 p-6">
+          <Specimen label="Con foto (40 px)">
+            <AtAvatar name={SAMPLE_USER.name} src={SAMPLE_USER.avatarSrc} />
+          </Specimen>
+          <Specimen label="Sin foto: iniciales">
+            <AtAvatar name="María Gabriela" />
+          </Specimen>
+          <Specimen label="Foto que no carga">
+            <AtAvatar name="Luis Pérez" src="/images/sample/no-existe.webp" />
           </Specimen>
         </div>
       </Section>

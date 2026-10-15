@@ -46,5 +46,23 @@ export interface OrAppSidebarProps {
    * pantalla (p. ej. el catálogo `/dev/ui`), porque un nombre solo puede estar una vez.
    */
   logoTransitionName?: string | null;
+  /**
+   * Móvil (< 768 px): sin riel; el mismo panel se abre como drawer modal desde un botón externo (la
+   * hamburguesa de la top bar de `TmAppLayout`). Sin valor, en móvil no hay navegación lateral.
+   */
+  drawer?: OrAppSidebarDrawer;
   className?: string;
+}
+
+export type OrAppSidebarDrawerCloseReason = "escape" | "scrim" | "button" | "navigate" | "resize";
+
+export interface OrAppSidebarDrawer {
+  isOpen: boolean;
+  /**
+   * Cierre con su motivo: Esc, clic en el scrim, botón "Cerrar menú", al navegar o si la ventana crece a
+   * tablet (`resize`: el botón que lo abrió ya no se ve; el foco va a otro sitio).
+   */
+  onClose: (reason: OrAppSidebarDrawerCloseReason) => void;
+  /** id del drawer (para `aria-controls` del botón que lo abre). Por defecto "app-sidebar-drawer". */
+  id?: string;
 }

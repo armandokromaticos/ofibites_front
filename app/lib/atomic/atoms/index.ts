@@ -1,3 +1,4 @@
+export * from "./at-avatar";
 export * from "./at-button";
 export * from "./at-checkbox";
 export * from "./at-chip";

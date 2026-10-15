@@ -16,8 +16,10 @@ export interface MlOrderRowProps {
   dateLabel: string;
   /** Valor ISO para `<time dateTime>`. */
   dateTime?: string;
-  /** Repite el pedido. Sin `onRepeat`, el botón sale con `aria-disabled` (enfocable, inerte) y "Disponible próximamente" como descripción. */
+  /** Repite el pedido. Sin `onRepeat` ni `repeatHref`, el botón sale con `aria-disabled` (enfocable, inerte) y "Disponible próximamente" como descripción. */
   onRepeat?: () => void;
+  /** Si se pasa, "Repetir" es un enlace (tiene prioridad sobre `onRepeat`). */
+  repeatHref?: string;
   isRepeatLoading?: boolean;
   /** Si se pasa, "Ver detalle" es un enlace. */
   detailHref?: string;

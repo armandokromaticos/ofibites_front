@@ -17,4 +17,7 @@ export const VIEW_TRANSITION_NAME = {
   authPanel: "ofi-auth-panel",
   /** Sidebar de la app: grupo propio para que no se desplace con el contenido de la página. */
   appSidebar: "ofi-app-sidebar",
+  /** Drawer móvil y su scrim, solo mientras están abiertos: por encima de la página que entra. */
+  appDrawer: "ofi-app-drawer",
+  appDrawerScrim: "ofi-app-drawer-scrim",
 } as const;

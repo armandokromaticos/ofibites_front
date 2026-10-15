@@ -97,6 +97,20 @@ const IMAGE_HOVER = {
   ),
 } as const;
 
+/**
+ * Foto a sangre (`imageFit="bleed"`): girar o subir dejaría ver el borde por el lado a sangre. Se escala
+ * desde el centro lo justo para cubrir el giro (6 % cubre 2° en una caja de 216 × 188).
+ */
+const IMAGE_HOVER_BLEED = {
+  tilt: cn(
+    "motion-safe:transition-[scale,rotate] motion-safe:duration-(--duration-focal) motion-safe:ease-out",
+    "motion-safe:group-hover/banner:scale-106 motion-safe:group-hover/banner:-rotate-2",
+    "motion-safe:group-focus-within/banner:scale-106 motion-safe:group-focus-within/banner:-rotate-2",
+    "motion-safe:group-focus-visible/banner:scale-106 motion-safe:group-focus-visible/banner:-rotate-2",
+  ),
+  zoom: IMAGE_HOVER.zoom,
+} as const;
+
 export function MlPromoBanner({
   variant = "main",
   title,
@@ -110,12 +124,15 @@ export function MlPromoBanner({
   ctaHref,
   animateEntrance = false,
   imageHover,
+  imageFit = "contain",
   href,
   linkLabel,
   className,
 }: MlPromoBannerProps) {
   const isMain = variant === "main";
   const imageAtStart = (imagePosition ?? (isMain ? "end" : "start")) === "start";
+  const isBleed = !isMain && imageFit === "bleed";
+  const imageHoverClass = imageHover && (isBleed ? IMAGE_HOVER_BLEED : IMAGE_HOVER)[imageHover];
   const Heading = `h${headingLevel}` as const;
   const sectionRef = useRef<HTMLElement>(null);
   // Solo el banner principal tiene decoración que deriva: el secundario no observa nada.
@@ -225,7 +242,7 @@ export function MlPromoBanner({
               "motion-safe:transition-[translate,rotate] motion-safe:duration-(--duration-focal) motion-safe:ease-out",
               "motion-safe:group-hover/banner:-translate-y-1.5 motion-safe:group-hover/banner:-rotate-1",
             ),
-          !isMain && imageHover && IMAGE_HOVER[imageHover],
+          !isMain && imageHoverClass,
         )}
       >
         <Image
@@ -234,7 +251,10 @@ export function MlPromoBanner({
           fill
           sizes={isMain ? "463px" : "216px"}
           className={cn(
-            isMain ? "object-cover object-left" : "object-contain",
+            isMain && "object-cover object-left",
+            !isMain && "object-contain",
+            // A sangre: pegada a su lado y abajo (el banner recorta con su radio).
+            isBleed && (imageAtStart ? "object-left-bottom" : "object-right-bottom"),
             animateEntrance && "ofi-photo-in",
           )}
         />
