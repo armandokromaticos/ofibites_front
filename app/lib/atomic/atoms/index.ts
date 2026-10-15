@@ -3,6 +3,7 @@ export * from "./at-checkbox";
 export * from "./at-chip";
 export * from "./at-icon-button";
 export * from "./at-input";
+export * from "./at-modal";
 export * from "./at-password-toggle";
 export * from "./at-progress";
 export * from "./at-select";

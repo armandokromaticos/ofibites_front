@@ -1,11 +1,13 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, ViewTransition } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Avatar, cn } from "@heroui/react";
 import { Bell, ShoppingCart } from "lucide-react";
 
+import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
 import { AtIconButton } from "@/app/lib/atomic/atoms";
 import { OrAppSidebar } from "@/app/lib/atomic/organisms";
 
@@ -37,6 +39,7 @@ export function TmAppLayout({
   mainClassName,
   className,
 }: TmAppLayoutProps) {
+  const pathname = usePathname();
   const user = sidebar.user;
   const cartCount = cart?.count ?? 0;
   const unreadCount = notifications?.count ?? 0;
@@ -53,57 +56,78 @@ export function TmAppLayout({
         Saltar al contenido
       </a>
 
-      <OrAppSidebar {...sidebar} />
+      {/* Sidebar y top bar: entran con la página (desde el login) y se quedan quietos entre rutas. */}
+      <ViewTransition
+        name={VIEW_TRANSITION_NAME.appSidebar}
+        enter={VIEW_TRANSITION_CLASS.page}
+        default="none"
+      >
+        <OrAppSidebar {...sidebar} />
+      </ViewTransition>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-[72px] shrink-0 items-center justify-between gap-4 border-b border-border-subtle bg-content1 px-6 py-4">
-          <div className="flex min-w-0 items-center gap-2.5 text-foreground-strong">
-            {titleIcon && (
-              <span aria-hidden="true" className="shrink-0 [&_svg]:size-[18px]">
-                {titleIcon}
-              </span>
-            )}
-            <h1 className="truncate text-lg font-black">{title}</h1>
-          </div>
+        <ViewTransition enter={VIEW_TRANSITION_CLASS.page} default="none">
+          <header className="flex h-[72px] shrink-0 items-center justify-between gap-4 border-b border-border-subtle bg-content1 px-6 py-4">
+            <div className="flex min-w-0 items-center gap-2.5 text-foreground-strong">
+              {titleIcon && (
+                <span aria-hidden="true" className="shrink-0 [&_svg]:size-[18px]">
+                  {titleIcon}
+                </span>
+              )}
+              <h1 className="truncate text-lg font-black">{title}</h1>
+            </div>
 
-          <div className="flex shrink-0 items-center gap-4">
-            {cart && (
-              <TopBarAction
-                action={cart}
-                label={
-                  cartCount
-                    ? `Carrito, ${cartCount} ${cartCount === 1 ? "producto" : "productos"}`
-                    : "Carrito"
-                }
-                icon={<ShoppingCart aria-hidden="true" />}
-              />
-            )}
-            {notifications && (
-              <TopBarAction
-                action={notifications}
-                label={unreadCount ? `Notificaciones, ${unreadCount} sin leer` : "Notificaciones"}
-                icon={<Bell aria-hidden="true" />}
-              />
-            )}
-            {user && (
-              <Avatar
-                src={user.avatarSrc}
-                name={user.name}
-                showFallback
-                className="size-10 shrink-0"
-                imgProps={{ alt: user.name }}
-              />
-            )}
-          </div>
-        </header>
+            <div className="flex shrink-0 items-center gap-4">
+              {cart && (
+                <TopBarAction
+                  action={cart}
+                  label={
+                    cartCount
+                      ? `Carrito, ${cartCount} ${cartCount === 1 ? "producto" : "productos"}`
+                      : "Carrito"
+                  }
+                  icon={<ShoppingCart aria-hidden="true" />}
+                />
+              )}
+              {notifications && (
+                <TopBarAction
+                  action={notifications}
+                  label={unreadCount ? `Notificaciones, ${unreadCount} sin leer` : "Notificaciones"}
+                  icon={<Bell aria-hidden="true" />}
+                />
+              )}
+              {user && (
+                <Avatar
+                  src={user.avatarSrc}
+                  name={user.name}
+                  showFallback
+                  className="size-10 shrink-0"
+                  imgProps={{ alt: user.name }}
+                />
+              )}
+            </div>
+          </header>
+        </ViewTransition>
 
-        <main
-          id="app-main"
-          tabIndex={-1}
-          className={cn("flex-1 overflow-y-auto p-6 outline-none", mainClassName)}
+        {/*
+          Por ruta (key = pathname): entra y sale como página. Un cambio dentro de la misma ruta
+          (filtros, query params) no anima.
+        */}
+        <ViewTransition
+          key={pathname}
+          enter={VIEW_TRANSITION_CLASS.page}
+          exit={VIEW_TRANSITION_CLASS.page}
+          update="none"
+          default="none"
         >
-          {children}
-        </main>
+          <main
+            id="app-main"
+            tabIndex={-1}
+            className={cn("flex-1 overflow-y-auto p-6 outline-none", mainClassName)}
+          >
+            {children}
+          </main>
+        </ViewTransition>
       </div>
     </div>
   );
