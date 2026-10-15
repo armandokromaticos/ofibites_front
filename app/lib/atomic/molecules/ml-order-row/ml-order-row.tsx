@@ -29,6 +29,7 @@ export function MlOrderRow({
   dateLabel,
   dateTime,
   onRepeat,
+  repeatHref,
   isRepeatLoading,
   detailHref,
   onDetail,
@@ -36,7 +37,7 @@ export function MlOrderRow({
 }: MlOrderRowProps) {
   const orderRef = `pedido #${orderNumber}`;
   const unavailableId = useId();
-  const isRepeatUnavailable = !onRepeat;
+  const isRepeatUnavailable = !onRepeat && !repeatHref;
 
   return (
     // Sin fondo al pasar (lo trae la entrega de diseño): `subtle` sobre crema no llega a AA (skill ofibites-design).
@@ -78,19 +79,25 @@ export function MlOrderRow({
       </div>
 
       <div className="grid grid-cols-2 gap-[11px]">
-        {/* Sin `onRepeat`: enfocable pero inerte (aria-disabled, no `disabled`), con el motivo para lectores de pantalla. */}
-        <AtButton
-          size="xs"
-          fullWidth
-          onPress={isRepeatUnavailable ? undefined : onRepeat}
-          isLoading={isRepeatLoading}
-          aria-label={`Repetir ${orderRef}`}
-          aria-disabled={isRepeatUnavailable || undefined}
-          aria-describedby={isRepeatUnavailable ? unavailableId : undefined}
-          className={cn(isRepeatUnavailable && "cursor-not-allowed opacity-disabled data-[hover=true]:opacity-disabled")}
-        >
-          Repetir
-        </AtButton>
+        {/* Sin acción: enfocable pero inerte (aria-disabled, no `disabled`), con el motivo para lectores de pantalla. */}
+        {repeatHref ? (
+          <AtButton as={Link} href={repeatHref} size="xs" fullWidth aria-label={`Repetir ${orderRef}`}>
+            Repetir
+          </AtButton>
+        ) : (
+          <AtButton
+            size="xs"
+            fullWidth
+            onPress={isRepeatUnavailable ? undefined : onRepeat}
+            isLoading={isRepeatLoading}
+            aria-label={`Repetir ${orderRef}`}
+            aria-disabled={isRepeatUnavailable || undefined}
+            aria-describedby={isRepeatUnavailable ? unavailableId : undefined}
+            className={cn(isRepeatUnavailable && "cursor-not-allowed opacity-disabled data-[hover=true]:opacity-disabled")}
+          >
+            Repetir
+          </AtButton>
+        )}
         {isRepeatUnavailable && (
           <span id={unavailableId} className="sr-only">
             Disponible próximamente

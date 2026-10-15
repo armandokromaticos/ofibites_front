@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { parseCategoriaOrdenar } from "../dashboard/navegacion-cliente";
+import { parseCategoriaOrdenar, parseRepetirOrdenar } from "../dashboard/navegacion-cliente";
 
 import { OrdenarProvisional } from "./ordenar-provisional";
 
@@ -13,9 +13,17 @@ interface OrdenarPageProps {
 }
 
 // Provisional: la pantalla real llega con T-19.
-/** `?categoria=bebidas|desayunos` (desde las cards del dashboard). Un valor desconocido se ignora. */
+/**
+ * `?categoria=bebidas|desayunos` (cards del dashboard) y `?repetir=<orderId>` ("Repetir" de las últimas
+ * órdenes). Un valor desconocido se ignora.
+ */
 export default async function OrdenarPage({ searchParams }: OrdenarPageProps) {
-  const { categoria } = await searchParams;
+  const { categoria, repetir } = await searchParams;
 
-  return <OrdenarProvisional categoria={parseCategoriaOrdenar(categoria)} />;
+  return (
+    <OrdenarProvisional
+      categoria={parseCategoriaOrdenar(categoria)}
+      repetir={parseRepetirOrdenar(repetir)}
+    />
+  );
 }

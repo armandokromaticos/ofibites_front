@@ -39,3 +39,13 @@ export function parseCategoriaOrdenar(value: unknown): CategoriaOrdenar | undefi
 export function rutaOrdenarCategoria(categoria: CategoriaOrdenar): string {
   return `${RUTA_ORDENAR}?categoria=${categoria}`;
 }
+
+/** "Repetir" de las últimas órdenes: Ordenar con el pedido a repetir (`?repetir=<orderId>`). */
+export function rutaOrdenarRepetir(orderId: string): string {
+  return `${RUTA_ORDENAR}?repetir=${encodeURIComponent(orderId)}`;
+}
+
+/** id de pedido de `?repetir=`: letras, números y guiones (números de ejemplo o UUID). Otro valor se ignora. */
+export function parseRepetirOrdenar(value: unknown): string | undefined {
+  return typeof value === "string" && /^[A-Za-z0-9-]{1,64}$/.test(value) ? value : undefined;
+}

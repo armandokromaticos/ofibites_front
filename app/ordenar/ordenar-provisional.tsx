@@ -17,10 +17,12 @@ import {
 
 interface OrdenarProvisionalProps {
   categoria?: CategoriaOrdenar;
+  /** Pedido que se quiere repetir ("Repetir" del dashboard). */
+  repetir?: string;
 }
 
 // Provisional: la pantalla real llega con T-19. Sin productos ni precios: solo el aviso y la vuelta.
-export function OrdenarProvisional({ categoria }: OrdenarProvisionalProps) {
+export function OrdenarProvisional({ categoria, repetir }: OrdenarProvisionalProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // TODO: conectar API (T-04). El usuario del sidebar sale, como en el dashboard, de sus datos de ejemplo.
   const { data } = useClientDashboard({});
@@ -52,8 +54,13 @@ export function OrdenarProvisional({ categoria }: OrdenarProvisionalProps) {
         <MlEmptyState
           headingLevel={2}
           icon={<Utensils />}
-          title="Muy pronto podrás ordenar desde aquí"
-          description={`Estamos preparando el catálogo de ${catalogo}.`}
+          // TODO: repetir pedido (T-19). Con el catálogo real, "Repetir" precargará el carrito con este pedido.
+          title={repetir ? `Muy pronto podrás repetir el pedido #${repetir} desde aquí` : "Muy pronto podrás ordenar desde aquí"}
+          description={
+            repetir
+              ? "Estamos preparando el catálogo para que puedas pedir lo mismo con un clic."
+              : `Estamos preparando el catálogo de ${catalogo}.`
+          }
           actionLabel="Volver al dashboard"
           actionHref={RUTA_DASHBOARD}
         />

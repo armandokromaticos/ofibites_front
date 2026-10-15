@@ -13,7 +13,7 @@ export interface OrRecentOrdersProps {
   headingLevel?: 2 | 3;
   /** Enlace "Ver todas". Sin valor, o sin órdenes, no se pinta. */
   viewAllHref?: string;
-  /** Repetir un pedido. Sin valor, "Repetir" sale no disponible (`aria-disabled`) en todas las filas. */
+  /** Repetir un pedido (o `repeatHref` en cada fila). Sin ninguno de los dos, "Repetir" sale no disponible (`aria-disabled`) en todas las filas. */
   onRepeat?: (orderId: string) => void;
   /** id del pedido que se está repitiendo (spinner en su botón). */
   repeatingOrderId?: string;

@@ -28,6 +28,11 @@ export interface MlPromoBannerProps {
    */
   imageHover?: "tilt" | "zoom";
   /**
+   * Solo `secondary`: `contain` (por defecto) encaja la foto entera; `bleed` la lleva a sangre por su lado
+   * (`imagePosition`) y por abajo, para fotos ya recortadas para el banner (botellas, caja de bollería).
+   */
+  imageFit?: "contain" | "bleed";
+  /**
    * Solo `secondary`: la card entera es un enlace a `href` y, al pasar o enfocar, aparece `ctaLabel`
    * (por defecto "Explorar") con una flecha. Sin `href` la card no es interactiva.
    */
