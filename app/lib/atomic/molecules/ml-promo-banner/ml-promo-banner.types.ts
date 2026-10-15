@@ -12,10 +12,27 @@ export interface MlPromoBannerProps {
   imagePosition?: "start" | "end";
   /** Nivel del título dentro de la página. Por defecto 2. */
   headingLevel?: 1 | 2 | 3;
-  /** Texto del CTA. Sin `ctaLabel` no se pinta el botón. */
+  /** Texto del CTA (botón en `main`; con `href`, texto del enlace de `secondary`). Sin `ctaLabel` no se pinta el botón. */
   ctaLabel?: string;
   onCtaPress?: () => void;
   /** Si se pasa, el CTA es un enlace. */
   ctaHref?: string;
+  /**
+   * Entrada del contenido al montar: título, subtítulo y CTA suben escalonados (0/80/160 ms) y la
+   * foto entra deslizando. Para el cambio de diapositiva de un carrusel, no para la carga de la página.
+   */
+  animateEntrance?: boolean;
+  /**
+   * Solo `secondary`: cómo reacciona la imagen al pasar o enfocar el banner. `tilt` inclina desde la base
+   * (botellas), `zoom` crece y gira un poco (cajas). Sin valor, la imagen queda quieta.
+   */
+  imageHover?: "tilt" | "zoom";
+  /**
+   * Solo `secondary`: la card entera es un enlace a `href` y, al pasar o enfocar, aparece `ctaLabel`
+   * (por defecto "Explorar") con una flecha. Sin `href` la card no es interactiva.
+   */
+  href?: string;
+  /** Nombre accesible del enlace (`href`). Por defecto "Ver <título en minúsculas>". */
+  linkLabel?: string;
   className?: string;
 }

@@ -17,13 +17,15 @@ interface TopBarActionProps {
   action: TmAppLayoutTopBarAction;
   label: string;
   icon: ReactNode;
+  /** Pulso sobre el contador: avisos nuevos (notificaciones), no el carrito. */
+  badgePing?: boolean;
 }
 
-function TopBarAction({ action, label, icon }: TopBarActionProps) {
+function TopBarAction({ action, label, icon, badgePing }: TopBarActionProps) {
   const linkProps = action.href ? { as: Link, href: action.href } : { onPress: action.onPress };
 
   return (
-    <AtIconButton aria-label={label} badgeContent={action.count} {...linkProps}>
+    <AtIconButton aria-label={label} badgeContent={action.count} badgePing={badgePing} {...linkProps}>
       {icon}
     </AtIconButton>
   );
@@ -94,6 +96,7 @@ export function TmAppLayout({
                   action={notifications}
                   label={unreadCount ? `Notificaciones, ${unreadCount} sin leer` : "Notificaciones"}
                   icon={<Bell aria-hidden="true" />}
+                  badgePing
                 />
               )}
               {user && (

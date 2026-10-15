@@ -3,6 +3,7 @@ export * from "./ml-auth-header";
 export * from "./ml-availability-card";
 export * from "./ml-choice-chips";
 export * from "./ml-empty-state";
+export * from "./ml-filter-chips";
 export * from "./ml-form";
 export * from "./ml-form-alert";
 export * from "./ml-greeting-card";

@@ -39,11 +39,17 @@ export function MlOrderRow({
   const isRepeatUnavailable = !onRepeat;
 
   return (
-    <div className={cn("flex flex-col gap-[13px]", className)}>
+    // Sin fondo al pasar (lo trae la entrega de diseño): `subtle` sobre crema no llega a AA (skill ofibites-design).
+    <div className={cn("group/order flex flex-col gap-[13px]", className)}>
       <div className="flex items-start gap-2">
         <span
           aria-hidden="true"
-          className="mt-px flex size-[21px] shrink-0 items-center justify-center rounded bg-brand-soft text-brand"
+          className={cn(
+            "mt-px flex size-[21px] shrink-0 items-center justify-center rounded bg-brand-soft text-brand",
+            // El icono gira -10° al pasar (microfeedback, curva spring).
+            "motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-spring",
+            "motion-safe:group-hover/order:-rotate-10 motion-safe:group-focus-within/order:-rotate-10",
+          )}
         >
           <Coffee className="size-3" strokeWidth={2.25} />
         </span>

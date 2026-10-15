@@ -13,4 +13,9 @@ export type AtIconButtonProps = Omit<ButtonProps, "isIconOnly" | "aria-label"> &
   "aria-label": string;
   /** Contador opcional sobre el botón (p. ej. productos en el carrito). Se oculta si es 0 o vacío. */
   badgeContent?: ReactNode;
+  /**
+   * Pulso ("ping") alrededor del badge al aparecer: tres pulsos y se detiene. Para avisos nuevos
+   * (notificaciones sin leer), no para contadores. Sin pulso con movimiento reducido.
+   */
+  badgePing?: boolean;
 };

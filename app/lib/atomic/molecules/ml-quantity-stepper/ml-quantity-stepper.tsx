@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent } from "react";
+import { KeyboardEvent, useState } from "react";
 
 import { cn } from "@heroui/react";
 import { Minus, Plus } from "lucide-react";
@@ -9,7 +9,9 @@ import { AtButton } from "@/app/lib/atomic/atoms";
 
 import { MlQuantityStepperProps } from "./ml-quantity-stepper.types";
 
-const STEP_BUTTON = "text-primary data-[hover=true]:bg-background";
+// Al pulsar, el botón se encoge más que el 0.97 de HeroUI (es pequeño y redondo).
+const STEP_BUTTON =
+  "text-primary data-[hover=true]:bg-background motion-safe:data-[pressed=true]:scale-[0.85]";
 // En los extremos el botón sigue enfocable (aria-disabled): con `disabled` el foco caería a <body>.
 const AT_LIMIT = "opacity-disabled cursor-not-allowed data-[hover=true]:bg-transparent";
 
@@ -24,10 +26,16 @@ export function MlQuantityStepper({
 }: MlQuantityStepperProps) {
   const atMin = value <= min;
   const atMax = value >= max;
+  // Último cambio hecho desde aquí ({ valor resultante, dirección }). Solo anima si el valor actual es ese:
+  // un valor inicial o cambiado desde fuera no da "tick" (ni con una dirección vieja).
+  const [tick, setTick] = useState<{ value: number; delta: number } | null>(null);
+  const tickDelta = tick?.value === value ? tick.delta : 0;
 
   const change = (delta: number) => {
     const next = Math.min(max, Math.max(min, value + delta));
-    if (next !== value) onChange(next);
+    if (next === value) return;
+    setTick({ value: next, delta });
+    onChange(next);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -71,7 +79,17 @@ export function MlQuantityStepper({
         className="min-w-8 text-center text-[15px] font-bold leading-5 text-primary tabular-nums"
       >
         <span className="sr-only">{`${label}: `}</span>
-        {value}
+        {/* `key` reinicia la animación en cada cambio. */}
+        <span
+          key={value}
+          className={cn(
+            "inline-block",
+            tickDelta > 0 && "ofi-tick-up",
+            tickDelta < 0 && "ofi-tick-down",
+          )}
+        >
+          {value}
+        </span>
       </output>
       <AtButton
         isIconOnly
