@@ -27,6 +27,8 @@ export const ease = {
   in: [0.4, 0, 1, 1] as CubicBezier,
   /** Movimiento que empieza y acaba en reposo (reordenar, desplazar). */
   inOut: [0.65, 0, 0.35, 1] as CubicBezier,
+  /** Rebote corto, solo microfeedback (badges, iconos, logo). Nunca paneles, modales ni páginas. */
+  spring: [0.34, 1.56, 0.64, 1] as CubicBezier,
 };
 
 export type MotionEase = keyof typeof ease;
@@ -35,4 +37,13 @@ export type MotionEase = keyof typeof ease;
 export const stagger = {
   step: 0.04,
   maxTotal: 0.24,
+} as const;
+
+/**
+ * Carrusel con autoplay (banner principal del Dashboard): segundos por diapositiva. Espejo de
+ * `--carousel-interval` en `app/globals.css`. Más de 5 s de movimiento automático: exige botón de pausa
+ * (WCAG 2.2.2).
+ */
+export const carousel = {
+  interval: 6,
 } as const;

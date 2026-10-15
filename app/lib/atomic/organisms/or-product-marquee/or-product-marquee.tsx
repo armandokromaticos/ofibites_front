@@ -1,9 +1,11 @@
 "use client";
 
-import { CSSProperties, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 
 import { cn } from "@heroui/react";
+
+import { usePageVisible, usePrefersReducedMotion } from "@/shared/motion/hooks";
 
 import { OrProductMarqueeItem, OrProductMarqueeProps } from "./or-product-marquee.types";
 
@@ -57,41 +59,6 @@ function buildColumns(items: OrProductMarqueeItem[]): Slot[][] {
         isTall: !hasPlate && (column + row) % 2 === 0,
       };
     }),
-  );
-}
-
-function subscribeVisibility(onChange: () => void) {
-  document.addEventListener("visibilitychange", onChange);
-  return () => document.removeEventListener("visibilitychange", onChange);
-}
-
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_MOTION_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-/**
- * Preferencia de movimiento reducido. Con `useSyncExternalStore` la hidratación usa el valor del
- * servidor (`false`) y luego corrige: leerla en el primer render (como `useReducedMotion` de
- * framer-motion) descuadra los atributos del HTML del servidor.
- */
-function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
-    () => false,
-  );
-}
-
-/** La pestaña está a la vista (en el servidor, sí). */
-function usePageVisible(): boolean {
-  return useSyncExternalStore(
-    subscribeVisibility,
-    () => document.visibilityState === "visible",
-    () => true,
   );
 }
 

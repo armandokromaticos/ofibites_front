@@ -38,6 +38,12 @@
   /* T-02: sombra de las imágenes de producto (las cards no llevan sombra). */
   --drop-shadow-product: 0 9px 9px rgb(0 0 0 / 0.25);
 
+  /* T-18: elevación pasajera al hover (en reposo las cards no llevan sombra). Tono de primary (#36381c). */
+  --shadow-lift: 0 6px 14px -8px rgb(54 56 28 / 0.45);
+  --shadow-lift-card: 0 22px 36px -22px rgb(54 56 28 / 0.55);
+  /* Panel lateral abierto sobre el contenido (OrAppSidebar): sombra hacia la derecha. */
+  --shadow-panel: 16px 0 32px -18px rgb(54 56 28 / 0.35);
+
   --radius-card: 22px;
   --radius-control: 12px;
 }
@@ -57,6 +63,8 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* T-18: rebote corto SOLO para microfeedback (badges, iconos, logo). Nunca en paneles ni páginas. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Las fuentes vienen de variables de next/font (definidas en <html>): inline para resolverlas en el elemento. */
@@ -208,5 +216,206 @@
 @keyframes ofi-fade-out {
   to {
     opacity: 0;
+  }
+}
+
+/*
+ * T-18: motion del dashboard (entrega de diseño ofibites-dashboard.html) adaptado a los tokens.
+ * Microfeedback con --ease-spring; entradas con --ease-out. Los bucles (.ofi-drift, .ofi-bob, .ofi-shine)
+ * solo se aplican mientras el elemento está a la vista (useLoopActive en shared/motion/hooks).
+ * Se animan las propiedades individuales (translate, scale, rotate) para no pisar el transform de HeroUI.
+ */
+@keyframes ofi-bump {
+  35% {
+    scale: 1.35;
+  }
+}
+
+@keyframes ofi-ping {
+  0% {
+    scale: 0.6;
+    opacity: 0.7;
+  }
+  80%,
+  100% {
+    scale: 1.6;
+    opacity: 0;
+  }
+}
+
+@keyframes ofi-drift {
+  to {
+    translate: -14px 6px;
+  }
+}
+
+@keyframes ofi-slide-up {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+@keyframes ofi-photo-in {
+  from {
+    opacity: 0;
+    translate: 30px 0;
+    rotate: 2deg;
+  }
+}
+
+@keyframes ofi-tick-up {
+  40% {
+    translate: 0 -4px;
+    opacity: 0.4;
+  }
+}
+
+@keyframes ofi-tick-down {
+  40% {
+    translate: 0 4px;
+    opacity: 0.4;
+  }
+}
+
+@keyframes ofi-tick-fade {
+  40% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes ofi-bob {
+  50% {
+    translate: 0 -1.5px;
+  }
+}
+
+/* Solo `from`: termina en el transform en línea del indicador de HeroUI (el valor real de la barra). */
+@keyframes ofi-progress-fill {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes ofi-shine {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 100% 0;
+  }
+}
+
+/*
+ * Carrusel con autoplay (OrPromoCarousel). La barra del punto activo ES el temporizador: se llena con
+ * `scale` (no `width`) durante --carousel-interval (espejo de `carousel.interval`), se congela con
+ * `animation-play-state: paused` y su `animationend` pasa a la siguiente diapositiva.
+ */
+:root {
+  --carousel-interval: 6s;
+}
+
+@keyframes ofi-dot-fill {
+  from {
+    scale: 0 1;
+  }
+}
+
+.ofi-dot-fill {
+  transform-origin: left center;
+  animation: ofi-dot-fill var(--carousel-interval) linear both;
+}
+
+/* Diapositiva saliente: se funde por encima de la entrante (mismo fondo, sin parpadeo). */
+@keyframes ofi-slide-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+.ofi-slide-leave {
+  animation: ofi-slide-leave var(--duration-base) var(--ease-in) both;
+}
+
+/* Etiquetas del sidebar al abrirlo: aparecen cuando el ancho ya casi llegó. */
+.ofi-reveal-delayed {
+  animation: ofi-fade-in var(--duration-fast) var(--ease-out) var(--duration-instant) both;
+}
+
+/* Aviso nuevo (punto de notificaciones): tres pulsos y se queda quieto. */
+.ofi-ping::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  /* Sin color: lo pone el componente (after:border-*), por defecto currentColor. */
+  border-width: 2px;
+  border-style: solid;
+  opacity: 0;
+  pointer-events: none;
+  animation: ofi-ping 2.2s var(--ease-out) 3;
+}
+
+.ofi-bump {
+  animation: ofi-bump 450ms var(--ease-spring);
+}
+
+.ofi-drift {
+  animation: ofi-drift 18s var(--ease-in-out) infinite alternate;
+}
+
+.ofi-slide-up {
+  animation: ofi-slide-up var(--duration-slow) var(--ease-out) both;
+}
+
+.ofi-photo-in {
+  animation: ofi-photo-in var(--duration-focal) var(--ease-out) both;
+}
+
+.ofi-tick-up {
+  animation: ofi-tick-up 300ms var(--ease-out);
+}
+
+.ofi-tick-down {
+  animation: ofi-tick-down 300ms var(--ease-out);
+}
+
+.ofi-bob {
+  animation: ofi-bob 1.2s var(--ease-in-out) infinite;
+}
+
+/* `backwards` (no `both`): al terminar deja de aplicarse y HeroUI vuelve a transicionar los cambios de valor. */
+.ofi-progress-fill {
+  animation: ofi-progress-fill var(--duration-slow) var(--ease-out) var(--duration-instant) backwards;
+}
+
+.ofi-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.45), transparent);
+  animation: ofi-shine 2s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sin desplazamientos ni bucles; se conservan los fundidos que comunican un cambio. */
+  .ofi-ping::after,
+  .ofi-bump,
+  .ofi-drift,
+  .ofi-bob,
+  .ofi-progress-fill,
+  .ofi-shine::after {
+    animation: none;
+  }
+
+  .ofi-slide-up,
+  .ofi-photo-in {
+    animation: ofi-fade-in var(--duration-fast) linear both;
+  }
+
+  .ofi-tick-up,
+  .ofi-tick-down {
+    animation: ofi-tick-fade 300ms linear;
   }
 }

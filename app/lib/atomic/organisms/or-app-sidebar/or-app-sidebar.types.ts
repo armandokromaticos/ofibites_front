@@ -21,9 +21,16 @@ export interface OrAppSidebarProps {
   items: OrAppSidebarItem[];
   /** `key` del ítem activo. Sin valor, ningún ítem se marca (variante "Sin selección"). */
   activeKey?: string;
-  /** Abierto = 236 px con textos; cerrado = 80 px solo iconos. */
+  /**
+   * Abierto = panel de 236 px con textos que se superpone al contenido; cerrado = riel de 80 px solo
+   * iconos. En el flujo ocupa siempre 80 px: abrir no mueve la página.
+   */
   isOpen: boolean;
   onToggle: () => void;
+  /**
+   * Cierra el panel abierto (clic fuera, Esc o cambio de ruta). Por defecto llama a `onToggle`.
+   */
+  onClose?: () => void;
   user?: OrAppSidebarUser;
   /** Enlace del logo. Por defecto "/". */
   homeHref?: string;

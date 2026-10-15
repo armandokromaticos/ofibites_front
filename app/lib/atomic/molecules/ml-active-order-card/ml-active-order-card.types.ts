@@ -1,5 +1,11 @@
 import { ReactNode } from "react";
 
+export interface MlActiveOrderCardStep {
+  label: string;
+  /** Paso ya alcanzado (el actual incluido). */
+  isDone: boolean;
+}
+
 export interface MlActiveOrderCardOrder {
   productName: string;
   /** "10 boxes". */
@@ -10,6 +16,13 @@ export interface MlActiveOrderCardOrder {
   statusLabel: string;
   /** Icono del chip (decorativo). */
   statusIcon?: ReactNode;
+  /** En camino: el icono del chip se mece (bucle suave, solo mientras la card se ve). */
+  isInTransit?: boolean;
+  /**
+   * Pasos del pedido (Confirmado → … → Entregado). Se despliegan bajo la barra al pasar o enfocar la card;
+   * los lectores de pantalla los leen siempre.
+   */
+  steps?: MlActiveOrderCardStep[];
   /** Avance de 0 a 100. */
   progress: number;
 }

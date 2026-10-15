@@ -11,8 +11,10 @@ import {
   AtProgress,
   AtSkeleton,
   AtTextLink,
+  AtTooltip,
   MlActiveOrderCard,
   MlEmptyState,
+  MlFilterChips,
   MlGreetingCard,
   MlOrderRow,
   MlPasswordChecklist,
@@ -95,6 +97,7 @@ const ACTIVE_VARIANTS: { label: string; key?: string }[] = [
 export function UiCatalog() {
   const [isLayoutSidebarOpen, setLayoutSidebarOpen] = useState(false);
   const [isOpenDemoOpen, setOpenDemoOpen] = useState(true);
+  const [filterDemo, setFilterDemo] = useState("todos");
 
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-14 px-4 py-10 sm:px-8">
@@ -130,6 +133,38 @@ export function UiCatalog() {
               <ShoppingCart aria-hidden="true" />
             </AtIconButton>
           </Specimen>
+        </div>
+      </Section>
+
+      <Section id="filter-chips" title="MlFilterChips">
+        <div className="max-w-[320px] rounded-card bg-content1 p-6 sm:max-w-none">
+          <MlFilterChips
+            label="Filtrar recomendaciones"
+            options={[
+              { value: "todos", label: "Todos" },
+              { value: "desayunos", label: "Desayunos" },
+              { value: "coffee", label: "Coffee break" },
+              { value: "bebidas", label: "Bebidas" },
+            ]}
+            value={filterDemo}
+            onChange={setFilterDemo}
+          />
+        </div>
+      </Section>
+
+      <Section id="tooltip" title="AtTooltip">
+        <div className="flex flex-wrap items-center gap-8 rounded-card bg-content1 p-6">
+          {/* Pasa el cursor o enfoca con Tab: a la derecha, 14 px, fundido + 6 px. */}
+          <AtTooltip content="Notificaciones">
+            <AtIconButton aria-label="Notificaciones">
+              <Bell aria-hidden="true" />
+            </AtIconButton>
+          </AtTooltip>
+          <AtTooltip content="Abre el carrito" isRedundant={false}>
+            <AtIconButton aria-label="Carrito">
+              <ShoppingCart aria-hidden="true" />
+            </AtIconButton>
+          </AtTooltip>
         </div>
       </Section>
 
@@ -210,6 +245,15 @@ export function UiCatalog() {
               variant="secondary"
               imagePosition="end"
               ctaLabel="Ver bebidas"
+              {...SAMPLE_SECONDARY_BANNER}
+            />
+          </Specimen>
+          <Specimen label="Secundario como enlace (href): pasa el cursor o enfoca con Tab">
+            <MlPromoBanner
+              variant="secondary"
+              href="#"
+              linkLabel="Ver bebidas"
+              imageHover="tilt"
               {...SAMPLE_SECONDARY_BANNER}
             />
           </Specimen>
@@ -318,7 +362,8 @@ export function UiCatalog() {
       <Section id="sidebar" title="OrAppSidebar">
         <div className="flex flex-wrap items-start gap-6">
           <Specimen label="Abierto (236 px)">
-            <div className="h-[666px]">
+            {/* El panel abierto se superpone: el ejemplo reserva sus 236 px para no tapar al vecino. */}
+            <div className="h-[666px] w-[236px]">
               <OrAppSidebar
                 items={SAMPLE_NAV_ITEMS}
                 activeKey="ordenar"

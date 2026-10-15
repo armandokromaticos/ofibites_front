@@ -44,10 +44,27 @@ export interface ClientDashboardCategory {
   imagePosition: "start" | "end";
 }
 
+/**
+ * Categoría de una recomendación (filtros "Según tus preferencias").
+ * PROPUESTA para el contrato del dashboard (T-04): el back aún no la expone; ver DECISIONES 2026-10-15.
+ */
+export type ClientRecommendationCategory = "desayunos" | "coffee" | "bebidas";
+
+/** Nombre visible de cada categoría (chips de filtro y anuncios). */
+export const RECOMMENDATION_CATEGORY_LABELS: Record<ClientRecommendationCategory, string> = {
+  desayunos: "Desayunos",
+  coffee: "Coffee break",
+  bebidas: "Bebidas",
+};
+
 export interface ClientDashboardRecommendation {
   id: string;
   name: string;
   description: string;
+  /** Propuesta (T-04): categoría para filtrar las recomendaciones. */
+  category: ClientRecommendationCategory;
+  /** Solo UI: tipo de foto (recorte, caja sobre fondo de marca o foto a sangre). Por defecto recorte. */
+  imageKind?: "cutout" | "plate" | "photo";
   imageSrc: string;
   imageAlt: string;
 }

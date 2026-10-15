@@ -1,10 +1,11 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 
 import { cn } from "@heroui/react";
 import { PackageOpen } from "lucide-react";
 
+import { useLoopActive } from "@/shared/motion/hooks";
 import { AtChip, AtProgress, AtSkeleton } from "@/app/lib/atomic/atoms";
 
 import { MlActiveOrderCardProps } from "./ml-active-order-card.types";
@@ -28,6 +29,8 @@ export function MlActiveOrderCard({
 }: MlActiveOrderCardProps) {
   const Heading = `h${headingLevel}` as const;
   const titleId = useId();
+  const sectionRef = useRef<HTMLElement>(null);
+  const isLoopActive = useLoopActive(sectionRef);
 
   let body;
   if (isLoading) {
@@ -48,11 +51,41 @@ export function MlActiveOrderCard({
           <Dot />
           <span>{order.etaLabel}</span>
         </p>
-        <AtProgress
-          aria-label={`Avance del pedido: ${order.statusLabel}`}
-          value={order.progress}
-          classNames={{ track: "h-[11px]" }}
-        />
+        <div className="flex flex-col">
+          <AtProgress
+            aria-label={`Avance del pedido: ${order.statusLabel}`}
+            value={order.progress}
+            fillOnMount
+            isLive={order.progress > 0 && order.progress < 100}
+            classNames={{ track: "h-[11px]" }}
+          />
+          {order.steps && order.steps.length > 0 && (
+            // Se despliega con grid-template-rows 0fr → 1fr (sin max-height). Plegado sigue en el árbol
+            // accesible: el lector de pantalla lee los pasos aunque no se vean.
+            <div
+              className={cn(
+                "grid grid-rows-[0fr] group-hover/live:grid-rows-[1fr] group-focus-within/live:grid-rows-[1fr]",
+                "motion-safe:transition-[grid-template-rows] motion-safe:duration-(--duration-base) motion-safe:ease-out",
+              )}
+            >
+              <ol
+                aria-label="Pasos del pedido"
+                className={cn(
+                  "flex min-h-0 justify-between gap-1 overflow-hidden px-0.5 text-[10px] leading-4 text-subtle",
+                  "opacity-0 transition-opacity duration-(--duration-fast) ease-out",
+                  "group-hover/live:opacity-100 group-focus-within/live:opacity-100",
+                )}
+              >
+                {order.steps.map((step) => (
+                  <li key={step.label} className={cn("pt-1.5", step.isDone && "font-semibold text-brand")}>
+                    {step.label}
+                    {step.isDone && <span className="sr-only"> (hecho)</span>}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
       </div>
     );
   } else {
@@ -66,9 +99,15 @@ export function MlActiveOrderCard({
 
   return (
     <section
+      ref={sectionRef}
       aria-labelledby={titleId}
       aria-busy={isLoading || undefined}
-      className={cn("flex flex-col gap-5 rounded-card bg-content1 px-[15px] py-[14px]", className)}
+      className={cn(
+        "group/live flex flex-col gap-5 rounded-card bg-content1 px-[15px] py-[14px]",
+        // Panel de estado: al pasar, solo una sombra suave (no se desplaza).
+        "transition-shadow duration-(--duration-base) ease-out hover:shadow-lift-card focus-within:shadow-lift-card",
+        className,
+      )}
     >
       <div className="flex items-center justify-between gap-3 pt-[5px]">
         <Heading id={titleId} className="text-base font-bold leading-[26px] text-foreground">
@@ -76,7 +115,16 @@ export function MlActiveOrderCard({
         </Heading>
         {isLoading && <AtSkeleton className="h-[18px] w-20 rounded-full" />}
         {!isLoading && order && (
-          <AtChip startContent={order.statusIcon} className="shrink-0">
+          <AtChip
+            startContent={
+              order.statusIcon && (
+                <span className={cn("inline-flex", order.isInTransit && isLoopActive && "ofi-bob")}>
+                  {order.statusIcon}
+                </span>
+              )
+            }
+            className="shrink-0"
+          >
             {order.statusLabel}
           </AtChip>
         )}
