@@ -42,6 +42,7 @@ import {
   RUTA_ORDENAR,
   RUTA_PEDIDOS,
   rutaOrdenarCategoria,
+  rutaOrdenarRepetir,
 } from "./navegacion-cliente";
 
 // Reacción de la imagen de cada categoría al pasar (entrega de diseño): botellas que se inclinan, cajas que crecen.
@@ -117,10 +118,12 @@ function toRecentOrderItem(order: ClientRecentOrder): OrRecentOrdersItem {
     dateLabel: formatCaracasShortDate(order.createdAt),
     dateTime: order.createdAt,
     detailHref: `${RUTA_PEDIDOS}/${order.id}`,
+    // TODO: repetir pedido (T-19). Aún no hay carrito: Ordenar recibe el pedido y avisa de que llega pronto.
+    repeatHref: rutaOrdenarRepetir(order.id),
   };
 }
 
-function MainColumnSkeleton() {
+function TopSkeleton() {
   return (
     <div className="flex flex-col gap-[27px]">
       <AtSkeleton className="h-[307px] rounded-card" />
@@ -128,13 +131,18 @@ function MainColumnSkeleton() {
         <AtSkeleton className="h-[188px] rounded-card" />
         <AtSkeleton className="h-[188px] rounded-card" />
       </div>
-      <div className="flex flex-col gap-6">
-        <AtSkeleton className="h-9 w-72 max-w-full rounded-full" />
-        <div className="grid gap-[21px] sm:grid-cols-2 lg:grid-cols-3">
-          <AtSkeleton className="h-[407px] rounded-card" />
-          <AtSkeleton className="h-[407px] rounded-card" />
-          <AtSkeleton className="hidden h-[407px] rounded-card lg:block" />
-        </div>
+    </div>
+  );
+}
+
+function RecommendationsSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <AtSkeleton className="h-9 w-72 max-w-full rounded-full" />
+      <div className="grid gap-[21px] sm:grid-cols-2 lg:grid-cols-3">
+        <AtSkeleton className="h-[407px] rounded-card" />
+        <AtSkeleton className="hidden h-[407px] rounded-card sm:block" />
+        <AtSkeleton className="hidden h-[407px] rounded-card lg:block" />
       </div>
     </div>
   );
@@ -183,11 +191,18 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
       </div>
     );
   } else {
+    /*
+     * Una sola rejilla con las cuatro piezas en orden de lectura (promos y categorías, saludo y pedido en
+     * curso, recomendaciones, últimas órdenes):
+     * - Hasta xl, una columna en ese orden; desde md, saludo y pedido en curso van lado a lado.
+     * - xl (≥ 1280): las dos columnas del Figma. La de 288 px apila saludo y últimas órdenes sin depender de
+     *   la altura de las promos: estas ocupan las filas 1-2 y las órdenes las filas 2-3.
+     */
     content = (
-      <div className="grid grid-cols-1 items-start gap-[29px] xl:grid-cols-[minmax(0,1fr)_288px]">
+      <div className="flex flex-col gap-[27px]">
         {/* Falló una actualización pero hay datos previos: aviso discreto y se siguen mostrando. */}
         {isError && (
-          <MlFormAlert title="No pudimos actualizar tu dashboard." className="xl:col-span-2">
+          <MlFormAlert title="No pudimos actualizar tu dashboard.">
             Te mostramos los últimos datos cargados.{" "}
             <AtButton
               size="xs"
@@ -201,40 +216,78 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
             </AtButton>
           </MlFormAlert>
         )}
-        <div aria-busy={isPending || undefined}>
-          {isPending ? (
-            <>
-              <span className="sr-only">Cargando promociones y recomendaciones</span>
-              <MainColumnSkeleton />
-            </>
-          ) : (
-            <div className="flex flex-col gap-[27px]">
-              <OrPromoCarousel slides={data.promotions} />
+        <div className="grid grid-cols-1 items-start gap-[27px] xl:grid-cols-[minmax(0,1fr)_288px] xl:gap-x-[29px] xl:gap-y-[14px]">
+          <div
+            aria-busy={isPending || undefined}
+            className="min-w-0 xl:col-start-1 xl:row-span-2 xl:row-start-1"
+          >
+            {isPending ? (
+              <>
+                <span className="sr-only">Cargando promociones y recomendaciones</span>
+                <TopSkeleton />
+              </>
+            ) : (
+              <div className="flex flex-col gap-[27px]">
+                <OrPromoCarousel slides={data.promotions} />
 
-              {/* Cada categoría enlaza a Ordenar filtrado (la pantalla real llega con T-19). */}
-              <motion.div
-                className="grid gap-[27px] lg:grid-cols-2"
-                variants={categoriesMotion.container}
-                initial={startedLoading ? "hidden" : false}
-                animate="visible"
-              >
-                {data.categories.map((category) => (
-                  <motion.div key={category.id} variants={categoriesMotion.item} className="flex">
-                    <MlPromoBanner
-                      variant="secondary"
-                      title={category.title}
-                      subtitle={category.subtitle}
-                      imageSrc={category.imageSrc}
-                      imageAlt={category.imageAlt}
-                      imagePosition={category.imagePosition}
-                      imageHover={CATEGORY_IMAGE_HOVER[category.id] ?? "zoom"}
-                      href={categoryHref(category.id)}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+                {/* Cada categoría enlaza a Ordenar filtrado (la pantalla real llega con T-19). */}
+                <motion.div
+                  className="grid gap-[27px] lg:grid-cols-2"
+                  variants={categoriesMotion.container}
+                  initial={startedLoading ? "hidden" : false}
+                  animate="visible"
+                >
+                  {data.categories.map((category) => (
+                    <motion.div key={category.id} variants={categoriesMotion.item} className="flex">
+                      <MlPromoBanner
+                        variant="secondary"
+                        title={category.title}
+                        subtitle={category.subtitle}
+                        imageSrc={category.imageSrc}
+                        imageAlt={category.imageAlt}
+                        imagePosition={category.imagePosition}
+                        imageFit={category.imageFit}
+                        imageHover={CATEGORY_IMAGE_HOVER[category.id] ?? "zoom"}
+                        href={categoryHref(category.id)}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+            )}
+          </div>
 
-              {data.recommendations.length > 0 && (
+          <section
+            aria-label="Tu actividad"
+            className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:col-start-2 xl:row-start-1 xl:flex xl:gap-[14px]"
+          >
+            <MlGreetingCard name={user?.displayName ?? ""} isLoading={isPending} ctaHref={RUTA_ORDENAR} />
+            {/* Al llegar los datos (tras el esqueleto), la card entra con fadeRise. */}
+            <motion.div
+              key={isPending ? "cargando" : "lista"}
+              variants={fadeRise}
+              initial={startedLoading && !isPending ? "hidden" : false}
+              animate="visible"
+              // En md va junto al saludo: misma altura.
+              className="flex flex-col"
+            >
+              <MlActiveOrderCard
+                className="flex-1"
+                isLoading={isPending}
+                order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
+              />
+            </motion.div>
+          </section>
+
+          {(isPending || data.recommendations.length > 0) && (
+            <div
+              aria-busy={isPending || undefined}
+              // En xl la separación entre filas es la de la columna derecha (14 px): 13 más hasta los 27.
+              className="min-w-0 xl:col-start-1 xl:row-start-3 xl:mt-[13px]"
+            >
+              {isPending ? (
+                <RecommendationsSkeleton />
+              ) : (
                 <section aria-labelledby="preferencias-titulo" className="flex flex-col gap-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                     <h2
@@ -265,7 +318,10 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
                       exit="exit"
                     >
                       {visibleRecommendations.length === 0 ? (
-                        <motion.div variants={recommendationsMotion.item} className="rounded-card bg-content1 sm:col-span-2 lg:col-span-3">
+                        <motion.div
+                          variants={recommendationsMotion.item}
+                          className="rounded-card bg-content1 sm:col-span-2 lg:col-span-3"
+                        >
                           <MlEmptyState
                             size="sm"
                             headingLevel={3}
@@ -304,33 +360,15 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
               )}
             </div>
           )}
-        </div>
 
-        {/* Bajo xl la columna derecha baja debajo de la principal; en tablet se reparte en dos columnas. */}
-        <aside aria-label="Tu actividad" className="grid items-start gap-[11px] md:grid-cols-2 md:gap-x-[27px] xl:grid-cols-1">
-          <div className="flex flex-col gap-[14px] md:gap-[11px] xl:gap-[14px]">
-            <MlGreetingCard name={user?.displayName ?? ""} isLoading={isPending} ctaHref={RUTA_ORDENAR} />
-            {/* Al llegar los datos (tras el esqueleto), la card entra con fadeRise. */}
-            <motion.div
-              key={isPending ? "cargando" : "lista"}
-              variants={fadeRise}
-              initial={startedLoading && !isPending ? "hidden" : false}
-              animate="visible"
-            >
-              <MlActiveOrderCard
-                isLoading={isPending}
-                order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
-              />
-            </motion.div>
-          </div>
-          {/* TODO: conectar API (T-04). Sin `onRepeat`, "Repetir" sale deshabilitado: aún no hay carrito. */}
           <OrRecentOrders
+            className="min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-2"
             isLoading={isPending}
             orders={data?.recentOrders.map(toRecentOrderItem) ?? []}
             viewAllHref={RUTA_PEDIDOS}
             emptyActionHref={RUTA_ORDENAR}
-            />
-        </aside>
+          />
+        </div>
       </div>
     );
   }

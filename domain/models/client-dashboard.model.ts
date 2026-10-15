@@ -42,6 +42,8 @@ export interface ClientDashboardCategory {
   imageSrc: string;
   imageAlt: string;
   imagePosition: "start" | "end";
+  /** `bleed`: foto recortada para el banner, a sangre por su lado y por abajo (Figma). Por defecto `contain`. */
+  imageFit?: "contain" | "bleed";
 }
 
 /**

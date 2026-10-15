@@ -62,18 +62,20 @@ const DASHBOARD_EJEMPLO: ClientDashboard = {
       id: "bebidas",
       title: "Bebidas",
       subtitle: "Bebidas naturales o de contenido saludable",
-      imageSrc: "/images/products/bebidas.png",
+      // Fotos recortadas para el banner (Figma 3220:28597): a sangre por su lado y por abajo.
+      imageSrc: "/images/banners/dashboard-bebidas.png",
       imageAlt: "Tres botellas de jugo natural",
       imagePosition: "start",
+      imageFit: "bleed",
     },
     {
       id: "desayunos",
       title: "Desayunos",
       subtitle: "Ideal para reuniones de 4 a 15 personas",
-      // No hay foto de desayunos (el Figma usa una caja de hojaldres): la más cercana es Morning Bite.
-      imageSrc: "/images/products/morning-bite.webp",
-      imageAlt: "Caja de desayuno con croissant, sándwiches, magdalenas, fruta y café",
+      imageSrc: "/images/banners/dashboard-bolleria.png",
+      imageAlt: "Caja abierta con seis hojaldres rellenos",
       imagePosition: "end",
+      imageFit: "bleed",
     },
   ],
 
