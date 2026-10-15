@@ -1,7 +1,7 @@
 ---
 version: 1
 slug: "app-login-page-tsx"
-primary_target: "app/login/page.tsx"
+primary_target: "app/(auth)/login/page.tsx"
 related_targets: []
 ---
 
