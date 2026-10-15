@@ -78,13 +78,61 @@ const DASHBOARD_EJEMPLO: ClientDashboard = {
   ],
 
   // TODO: conectar API (T-04). Recomendaciones "Según tus preferencias": no hay endpoint.
-  recommendations: [1, 2, 3].map((n) => ({
-    id: `morning-bite-${n}`,
-    name: "Morning Bite",
-    description: "Comienza la jornada con opciones frescas, energéticas y listas para compartir.",
-    imageSrc: "/images/products/morning-bite.webp",
-    imageAlt: "Caja Morning Bite con croissant, sándwiches, magdalenas, fruta y café",
-  })),
+  recommendations: [
+    // Los 6 productos de la entrega de diseño (ofibites-dashboard.html), con su categoría y descripción.
+    // Fotos: recortes de products, cajas igualadas a surface-sand de T-17 (images/login) y una foto a sangre.
+    {
+      id: "morning-bite",
+      name: "Morning Bite",
+      description: "Comienza la jornada con opciones frescas, energéticas y listas para compartir.",
+      category: "desayunos",
+      imageSrc: "/images/products/morning-bite.webp",
+      imageAlt: "Caja Morning Bite con croissant, sándwiches, magdalenas, fruta y café",
+    },
+    {
+      id: "recharge-bite",
+      name: "Recharge Bite",
+      description: "Una pausa a media tarde con dulces, salados y café para recargar al equipo.",
+      category: "coffee",
+      imageSrc: "/images/products/gallery/cafe-bolleria.png",
+      imageAlt: "Bollería dulce y una taza de café sobre una mesa de madera",
+      imageKind: "photo",
+    },
+    {
+      id: "desayuno-ejecutivo",
+      name: "Desayuno Ejecutivo",
+      description: "Croissants, quiches y fruta fresca para reuniones de directorio.",
+      category: "desayunos",
+      imageSrc: "/images/login/caja-desayuno.webp",
+      imageKind: "plate",
+      imageAlt: "Caja de desayuno con croissant, quiche, magdalena, sándwiches, fruta y café",
+    },
+    {
+      id: "coffee-break-ejecutivo",
+      name: "Coffee Break Ejecutivo",
+      description: "Mini sándwiches, bagels y canapés para reuniones de 4 a 15 personas.",
+      category: "coffee",
+      imageSrc: "/images/products/coffee-break-box.webp",
+      imageAlt: "Caja de coffee break con bagels, sándwiches y canapés",
+    },
+    {
+      id: "pausa-saludable",
+      name: "Pausa Saludable",
+      description: "Fruta picada, yogurt con granola y jugos naturales para equipos que cuidan su energía.",
+      category: "bebidas",
+      imageSrc: "/images/login/caja-bowl.webp",
+      imageKind: "plate",
+      imageAlt: "Caja con bowl de pollo y quinoa, vaso de fruta picada y jugo verde",
+    },
+    {
+      id: "pack-de-jugos",
+      name: "Pack de jugos",
+      description: "Jugos naturales prensados en frío, ideales para acompañar cualquier box.",
+      category: "bebidas",
+      imageSrc: "/images/products/bebidas.png",
+      imageAlt: "Tres botellas de jugo natural",
+    },
+  ],
 
   // TODO: conectar API (T-04). Pedido en curso: el back tiene el grupo "en curso", pero no la
   // hora estimada de llegada ni el avance.

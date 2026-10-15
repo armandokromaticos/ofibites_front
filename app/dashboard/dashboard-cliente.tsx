@@ -2,22 +2,32 @@
 
 import { ReactNode, useState } from "react";
 
-import { BookOpen, CloudOff, FileText, LayoutGrid, Truck, Utensils } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CloudOff, LayoutGrid, Truck } from "lucide-react";
 
 import { useLogout } from "@/domain/hooks/auth";
 import { useClientDashboard } from "@/domain/hooks/dashboard";
-import { ClientActiveOrder, ClientRecentOrder, ORDER_STATUS_LABELS, OrderStatus } from "@/domain/models";
+import {
+  ClientActiveOrder,
+  ClientRecentOrder,
+  ClientRecommendationCategory,
+  ORDER_STATUS_LABELS,
+  OrderStatus,
+  RECOMMENDATION_CATEGORY_LABELS,
+} from "@/domain/models";
+import { duration, ease, fadeRise, listStagger } from "@/shared/motion";
 import { formatCaracasShortDate, formatCaracasTime } from "@/shared/utils";
 import {
   AtButton,
   AtSkeleton,
   MlActiveOrderCard,
   MlActiveOrderCardOrder,
+  MlActiveOrderCardStep,
   MlEmptyState,
+  MlFilterChips,
   MlFormAlert,
   MlGreetingCard,
   MlPromoBanner,
-  OrAppSidebarItem,
   OrProductCard,
   OrPromoCarousel,
   OrRecentOrders,
@@ -26,25 +36,53 @@ import {
 } from "@/app/lib/atomic";
 
 import { EstadoQaDashboard } from "./datos-ejemplo";
+import {
+  NAV_ITEMS_CLIENTE,
+  parseCategoriaOrdenar,
+  RUTA_ORDENAR,
+  RUTA_PEDIDOS,
+  rutaOrdenarCategoria,
+} from "./navegacion-cliente";
 
-// Rutas del cliente que aún no existen (Ordenar, Pedidos...): los enlaces ya apuntan a su sitio.
-const RUTA_ORDENAR = "/ordenar";
-const RUTA_PEDIDOS = "/pedidos";
-// TODO: conectar API (T-04). El Figma no fija la ruta de "Data y consumo": provisional.
-const RUTA_CONSUMO = "/consumo";
+// Reacción de la imagen de cada categoría al pasar (entrega de diseño): botellas que se inclinan, cajas que crecen.
+// TODO: conectar API (T-04). Si las categorías vienen del back, esto pasa a ser un dato de la categoría.
+const CATEGORY_IMAGE_HOVER: Record<string, "tilt" | "zoom"> = {
+  bebidas: "tilt",
+  desayunos: "zoom",
+};
 
-const NAV_ITEMS: OrAppSidebarItem[] = [
-  { key: "dashboard", label: "Dashboard", description: "Panel de control", href: "/dashboard", icon: <LayoutGrid /> },
-  { key: "ordenar", label: "Ordenar", description: "Pide comida a la oficina", href: RUTA_ORDENAR, icon: <Utensils /> },
-  { key: "consumo", label: "Data y consumo", description: "Reportes y consumo", href: RUTA_CONSUMO, icon: <FileText /> },
-  {
-    key: "administracion",
-    label: "Administración",
-    description: "Control de usuarios",
-    href: "/administracion",
-    icon: <BookOpen />,
-  },
+/** Enlace de una categoría a Ordenar; con un id que Ordenar no conoce, a Ordenar sin filtro. */
+function categoryHref(id: string): string {
+  const categoria = parseCategoriaOrdenar(id);
+  return categoria ? rutaOrdenarCategoria(categoria) : RUTA_ORDENAR;
+}
+
+// Filtros de "Según tus preferencias" (entrega de diseño): Todos · Desayunos · Coffee break · Bebidas.
+type RecommendationFilter = "todos" | ClientRecommendationCategory;
+
+const RECOMMENDATION_FILTERS: { value: RecommendationFilter; label: string }[] = [
+  { value: "todos", label: "Todos" },
+  ...(Object.keys(RECOMMENDATION_CATEGORY_LABELS) as ClientRecommendationCategory[]).map((value) => ({
+    value,
+    label: RECOMMENDATION_CATEGORY_LABELS[value],
+  })),
 ];
+
+/** Salida de la lista al cambiar de filtro: fundido corto que acelera. */
+const LIST_EXIT = { opacity: 0, transition: { duration: duration.fast, ease: ease.in } };
+
+// Camino principal del pedido (OrderStateMachine): Confirmado → En preparación → En camino → Entregado.
+// Antes de confirmar (creado, por aprobar, por confirmar, en ajuste) ningún paso está hecho.
+const ORDER_STEPS: OrderStatus[] = ["CONFIRMED", "IN_PREPARATION", "IN_TRANSIT", "DELIVERED"];
+
+function toOrderSteps(status: OrderStatus): MlActiveOrderCardStep[] | undefined {
+  if (status === "REJECTED" || status === "CANCELLED") return undefined;
+  const reached = ORDER_STEPS.indexOf(status);
+  return ORDER_STEPS.map((step, stepIndex) => ({
+    label: ORDER_STATUS_LABELS[step],
+    isDone: stepIndex <= reached,
+  }));
+}
 
 const STATUS_ICONS: Partial<Record<OrderStatus, ReactNode>> = {
   IN_TRANSIT: <Truck aria-hidden="true" className="size-3" />,
@@ -61,6 +99,8 @@ function toActiveOrderCard(order: ClientActiveOrder): MlActiveOrderCardOrder {
     etaLabel: `Llega a las ${formatCaracasTime(order.estimatedArrival)}`,
     statusLabel: ORDER_STATUS_LABELS[order.status],
     statusIcon: STATUS_ICONS[order.status],
+    isInTransit: order.status === "IN_TRANSIT",
+    steps: toOrderSteps(order.status),
     progress: order.progress,
   };
 }
@@ -110,6 +150,19 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
 
   const { data, isPending, isError, isFetching, refetch } = useClientDashboard({ qaState: estadoQa });
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  // Las recomendaciones entran escalonadas solo cuando sustituyen al esqueleto de carga. Con datos ya
+  // en caché llegan con la página, sin una segunda entrada encima de la transición de ruta.
+  const [startedLoading] = useState(isPending);
+  const [filter, setFilter] = useState<RecommendationFilter>("todos");
+  const recommendations = data?.recommendations ?? [];
+  const visibleRecommendations =
+    filter === "todos" ? recommendations : recommendations.filter((product) => product.category === filter);
+  const filterLabel = filter === "todos" ? "Todos" : RECOMMENDATION_CATEGORY_LABELS[filter];
+  const filterAnnouncement = filter === "todos"
+    ? `Todas las recomendaciones: ${visibleRecommendations.length}`
+    : `${visibleRecommendations.length} ${visibleRecommendations.length === 1 ? "recomendación" : "recomendaciones"} de ${filterLabel}`;
+  const recommendationsMotion = listStagger(visibleRecommendations.length);
+  const categoriesMotion = listStagger(data?.categories.length ?? 0);
 
   const user = data?.user;
 
@@ -158,49 +211,95 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
             <div className="flex flex-col gap-[27px]">
               <OrPromoCarousel slides={data.promotions} />
 
-              <div className="grid gap-[27px] lg:grid-cols-2">
+              {/* Cada categoría enlaza a Ordenar filtrado (la pantalla real llega con T-19). */}
+              <motion.div
+                className="grid gap-[27px] lg:grid-cols-2"
+                variants={categoriesMotion.container}
+                initial={startedLoading ? "hidden" : false}
+                animate="visible"
+              >
                 {data.categories.map((category) => (
-                  <MlPromoBanner
-                    key={category.id}
-                    variant="secondary"
-                    title={category.title}
-                    subtitle={category.subtitle}
-                    imageSrc={category.imageSrc}
-                    imageAlt={category.imageAlt}
-                    imagePosition={category.imagePosition}
-                  />
+                  <motion.div key={category.id} variants={categoriesMotion.item} className="flex">
+                    <MlPromoBanner
+                      variant="secondary"
+                      title={category.title}
+                      subtitle={category.subtitle}
+                      imageSrc={category.imageSrc}
+                      imageAlt={category.imageAlt}
+                      imagePosition={category.imagePosition}
+                      imageHover={CATEGORY_IMAGE_HOVER[category.id] ?? "zoom"}
+                      href={categoryHref(category.id)}
+                    />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
               {data.recommendations.length > 0 && (
                 <section aria-labelledby="preferencias-titulo" className="flex flex-col gap-6">
-                  <h2
-                    id="preferencias-titulo"
-                    className="font-display text-[28px] font-bold leading-[37px] tracking-[-0.04em] text-foreground"
-                  >
-                    Según tus preferencias
-                  </h2>
-                  <div className="grid gap-[21px] sm:grid-cols-2 lg:grid-cols-3">
-                    {data.recommendations.map((product) => {
-                      const quantity = quantities[product.id] ?? 1;
-                      return (
-                        <OrProductCard
-                          key={product.id}
-                          className="w-full"
-                          title={product.name}
-                          description={product.description}
-                          imageSrc={product.imageSrc}
-                          imageAlt={product.imageAlt}
-                          quantity={quantity}
-                          onQuantityChange={(value) =>
-                            setQuantities((prev) => ({ ...prev, [product.id]: value }))
-                          }
-                          // TODO: conectar API (T-04). Añadir al carrito cuando exista; hoy lleva a Ordenar.
-                          ctaHref={`${RUTA_ORDENAR}?producto=${product.id}&cantidad=${quantity}`}
-                        />
-                      );
-                    })}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+                    <h2
+                      id="preferencias-titulo"
+                      className="font-display text-[28px] font-bold leading-[37px] tracking-[-0.04em] text-foreground"
+                    >
+                      Según tus preferencias
+                    </h2>
+                    <MlFilterChips
+                      label="Filtrar recomendaciones"
+                      options={RECOMMENDATION_FILTERS}
+                      value={filter}
+                      onChange={setFilter}
+                    />
                   </div>
+                  {/* Resultado del filtro para lectores de pantalla (no se anuncia al cargar). */}
+                  <p aria-live="polite" className="sr-only">
+                    {filterAnnouncement}
+                  </p>
+                  {/* Al filtrar: la lista sale con un fundido corto y la nueva entra escalonada. */}
+                  <AnimatePresence mode="wait" initial={startedLoading}>
+                    <motion.div
+                      key={filter}
+                      className="grid gap-[21px] sm:grid-cols-2 lg:grid-cols-3"
+                      variants={{ ...recommendationsMotion.container, exit: LIST_EXIT }}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                    >
+                      {visibleRecommendations.length === 0 ? (
+                        <motion.div variants={recommendationsMotion.item} className="rounded-card bg-content1 sm:col-span-2 lg:col-span-3">
+                          <MlEmptyState
+                            size="sm"
+                            headingLevel={3}
+                            title={`Aún no tenemos recomendaciones de ${filterLabel.toLowerCase()}`}
+                            description="Prueba con otra categoría o mira todas las recomendaciones."
+                            actionLabel="Ver todas"
+                            onAction={() => setFilter("todos")}
+                          />
+                        </motion.div>
+                      ) : (
+                        visibleRecommendations.map((product) => {
+                          const quantity = quantities[product.id] ?? 1;
+                          return (
+                            <motion.div key={product.id} variants={recommendationsMotion.item} className="flex">
+                              <OrProductCard
+                                className="w-full"
+                                title={product.name}
+                                description={product.description}
+                                imageSrc={product.imageSrc}
+                                imageAlt={product.imageAlt}
+                                imageKind={product.imageKind}
+                                quantity={quantity}
+                                onQuantityChange={(value) =>
+                                  setQuantities((prev) => ({ ...prev, [product.id]: value }))
+                                }
+                                // TODO: conectar API (T-04). Añadir al carrito cuando exista; hoy lleva a Ordenar.
+                                ctaHref={`${RUTA_ORDENAR}?producto=${product.id}&cantidad=${quantity}`}
+                              />
+                            </motion.div>
+                          );
+                        })
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </section>
               )}
             </div>
@@ -211,10 +310,18 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
         <aside aria-label="Tu actividad" className="grid items-start gap-[11px] md:grid-cols-2 md:gap-x-[27px] xl:grid-cols-1">
           <div className="flex flex-col gap-[14px] md:gap-[11px] xl:gap-[14px]">
             <MlGreetingCard name={user?.displayName ?? ""} isLoading={isPending} ctaHref={RUTA_ORDENAR} />
-            <MlActiveOrderCard
-              isLoading={isPending}
-              order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
-            />
+            {/* Al llegar los datos (tras el esqueleto), la card entra con fadeRise. */}
+            <motion.div
+              key={isPending ? "cargando" : "lista"}
+              variants={fadeRise}
+              initial={startedLoading && !isPending ? "hidden" : false}
+              animate="visible"
+            >
+              <MlActiveOrderCard
+                isLoading={isPending}
+                order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
+              />
+            </motion.div>
           </div>
           {/* TODO: conectar API (T-04). Sin `onRepeat`, "Repetir" sale deshabilitado: aún no hay carrito. */}
           <OrRecentOrders
@@ -233,10 +340,11 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
       title="Dashboard"
       titleIcon={<LayoutGrid />}
       sidebar={{
-        items: NAV_ITEMS,
+        items: NAV_ITEMS_CLIENTE,
         activeKey: "dashboard",
         isOpen: isSidebarOpen,
         onToggle: () => setIsSidebarOpen((open) => !open),
+        onClose: () => setIsSidebarOpen(false),
         homeHref: "/dashboard",
         onLogout: () => logout(),
         isLoggingOut,
