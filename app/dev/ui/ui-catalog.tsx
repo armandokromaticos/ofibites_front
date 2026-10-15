@@ -327,6 +327,7 @@ export function UiCatalog() {
                 user={SAMPLE_USER}
                 homeHref="/dev/ui"
                 navId="sidebar-demo-open"
+                logoTransitionName={null}
               />
             </div>
           </Specimen>
@@ -341,6 +342,7 @@ export function UiCatalog() {
                   user={SAMPLE_USER}
                   homeHref="/dev/ui"
                   navId={`sidebar-demo-${variant.key ?? "none"}`}
+                  logoTransitionName={null}
                 />
               </div>
             </Specimen>

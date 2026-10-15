@@ -33,5 +33,11 @@ export interface OrAppSidebarProps {
   isLoggingOut?: boolean;
   /** id del `<nav>` (para `aria-controls` del botón de menú). Por defecto "app-sidebar-nav". */
   navId?: string;
+  /**
+   * Nombre de View Transition del logo. Por defecto el del logo de las pantallas de acceso (tras el
+   * login, el logo viaja hasta aquí). `null` = sin nombre: úsalo si hay más de un sidebar en
+   * pantalla (p. ej. el catálogo `/dev/ui`), porque un nombre solo puede estar una vez.
+   */
+  logoTransitionName?: string | null;
   className?: string;
 }

@@ -1,11 +1,13 @@
 "use client";
 
+import { ViewTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { Avatar, cn } from "@heroui/react";
 import { LogOut, Menu } from "lucide-react";
 
+import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
 import { AtButton } from "@/app/lib/atomic/atoms";
 
 import { OrAppSidebarItem, OrAppSidebarProps } from "./or-app-sidebar.types";
@@ -114,8 +116,15 @@ export function OrAppSidebar({
   onLogout,
   isLoggingOut = false,
   navId = "app-sidebar-nav",
+  logoTransitionName = VIEW_TRANSITION_NAME.logo,
   className,
 }: OrAppSidebarProps) {
+  const logo = isOpen ? (
+    <Image src="/images/brand/logo-ofibites.svg" alt="" width={110} height={32} preload />
+  ) : (
+    <Image src="/images/brand/logo-mark.png" alt="" width={25} height={33} preload />
+  );
+
   return (
     <aside
       className={cn(
@@ -132,10 +141,13 @@ export function OrAppSidebar({
             aria-label="Ofibites, ir al inicio"
             className={cn("rounded-sm", FOCUS_RING)}
           >
-            {isOpen ? (
-              <Image src="/images/brand/logo-ofibites.svg" alt="" width={110} height={32} preload />
+            {/* Mismo nombre que el logo de las pantallas de acceso: tras el login, viaja hasta aquí. */}
+            {logoTransitionName ? (
+              <ViewTransition name={logoTransitionName} share={VIEW_TRANSITION_CLASS.shared}>
+                {logo}
+              </ViewTransition>
             ) : (
-              <Image src="/images/brand/logo-mark.png" alt="" width={25} height={33} preload />
+              logo
             )}
           </Link>
           <AtButton

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { HeroUIProvider } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "framer-motion";
 
 import { useAuthStore } from "@/domain/stores";
 import { createQueryClient } from "@/shared/config";
@@ -35,7 +36,10 @@ export function Providers(
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HeroUIProvider>{children}</HeroUIProvider>
+      {/* Con prefers-reduced-motion, framer-motion (y los componentes de HeroUI) quitan el desplazamiento y dejan el fundido. */}
+      <MotionConfig reducedMotion="user">
+        <HeroUIProvider>{children}</HeroUIProvider>
+      </MotionConfig>
     </QueryClientProvider>
   );
 }

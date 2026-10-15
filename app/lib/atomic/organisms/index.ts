@@ -5,6 +5,7 @@ export * from "./or-modifier-groups-section";
 export * from "./or-new-password-form";
 export * from "./or-product-card";
 export * from "./or-product-form";
+export * from "./or-product-marquee";
 export * from "./or-product-table";
 export * from "./or-promo-carousel";
 export * from "./or-recent-orders";

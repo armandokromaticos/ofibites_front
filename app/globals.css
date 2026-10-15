@@ -42,8 +42,171 @@
   --radius-control: 12px;
 }
 
+/*
+ * T-17: tokens de motion (espejo TS en shared/motion). `static` para que las variables existan aunque
+ * ninguna utilidad las use (las leen keyframes y ::view-transition-*). Sobrescribe los ease-* de Tailwind.
+ * Regla: la salida dura menos que la entrada y acelera; la entrada decelera.
+ */
+@theme static {
+  --duration-instant: 120ms;
+  --duration-fast: 200ms;
+  --duration-base: 320ms;
+  --duration-slow: 480ms;
+  --duration-focal: 700ms;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
 /* Las fuentes vienen de variables de next/font (definidas en <html>): inline para resolverlas en el elemento. */
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+/* Selección de texto con la paleta (no el azul del navegador). */
+::selection {
+  background-color: var(--color-brand-soft);
+  color: var(--color-foreground-strong);
+}
+
+/*
+ * T-17: View Transitions entre rutas (React ViewTransition, nombres y clases en shared/motion).
+ * La raíz no se anima: solo el contenido de la página (.ofi-page) y los elementos compartidos.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(.ofi-page) {
+  animation-duration: var(--duration-base);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(.ofi-page) {
+  animation: ofi-page-out var(--duration-fast) var(--ease-in) both;
+}
+
+::view-transition-new(.ofi-page) {
+  animation: ofi-page-in var(--duration-base) var(--ease-out) both;
+}
+
+::view-transition-group(.ofi-shared) {
+  animation-duration: var(--duration-base);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(.ofi-shared) {
+  animation-duration: var(--duration-fast);
+  animation-timing-function: var(--ease-in);
+}
+
+::view-transition-new(.ofi-shared) {
+  animation-duration: var(--duration-base);
+  animation-timing-function: var(--ease-out);
+}
+
+@keyframes ofi-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes ofi-page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* Login v2: el título entra engordando el eje de peso de Playfair (variable, 400 → 900). */
+@keyframes ofi-title-weight {
+  from {
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+}
+
+.ofi-title-weight {
+  animation: ofi-title-weight var(--duration-focal) var(--ease-out) both;
+}
+
+/* Login v2: mosaico de surtidos. La pista lleva la lista dos veces: -50 % es un ciclo exacto. */
+@keyframes ofi-marquee-up {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+@keyframes ofi-marquee-down {
+  from {
+    transform: translate3d(0, -50%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ofi-marquee-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.ofi-marquee-up {
+  animation: ofi-marquee-up 50s linear infinite;
+}
+
+.ofi-marquee-down {
+  animation: ofi-marquee-down 50s linear infinite;
+}
+
+.ofi-marquee-left {
+  animation: ofi-marquee-left 60s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Entre rutas, solo un fundido corto: sin desplazamiento ni cambio de tamaño. */
+  ::view-transition-group(*) {
+    animation-duration: 0s;
+  }
+
+  ::view-transition-old(.ofi-page),
+  ::view-transition-old(.ofi-shared) {
+    animation: ofi-fade-out var(--duration-instant) linear both;
+  }
+
+  ::view-transition-new(.ofi-page),
+  ::view-transition-new(.ofi-shared) {
+    animation: ofi-fade-in var(--duration-fast) linear both;
+  }
+
+  /* Login v2: título con su peso final y mosaico estático. */
+  .ofi-title-weight,
+  .ofi-marquee-up,
+  .ofi-marquee-down,
+  .ofi-marquee-left {
+    animation: none;
+  }
+}
+
+@keyframes ofi-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ofi-fade-out {
+  to {
+    opacity: 0;
+  }
 }

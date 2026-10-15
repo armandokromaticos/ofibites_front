@@ -45,3 +45,8 @@ next-env.d.ts
 
 # docs
 /docs
+
+# impeccable: estado local de la página de decisión y capturas de revisión
+/.impeccable/questions/
+/.impeccable/review/
+/.impeccable/mocks/
