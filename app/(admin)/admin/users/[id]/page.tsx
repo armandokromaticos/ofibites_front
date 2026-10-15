@@ -11,8 +11,8 @@ import { useUpdateUser, useUser } from "@/domain/hooks/users";
 import {
   AtButton,
   OrUserForm,
-} from "@/app/lib/atomic";
-import { UserFormValues } from "@/app/lib/atomic/organisms/or-user-form";
+} from "@/ui/atomic";
+import { UserFormValues } from "@/ui/atomic/organisms/or-user-form";
 
 export default function EditUserPage({
   params,

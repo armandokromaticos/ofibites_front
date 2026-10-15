@@ -78,6 +78,7 @@ const eslintConfig = defineConfig([
               "^@/shared",
               "^@/types",
               "^@/app",
+              "^@/ui",
             ],
             // Parent imports
             ["^\\.\\."],

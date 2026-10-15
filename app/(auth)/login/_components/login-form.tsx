@@ -17,7 +17,7 @@ import {
   MlAuthHeader,
   MlForm,
   MlFormAlert,
-} from "@/app/lib/atomic";
+} from "@/ui/atomic";
 
 const ERROR_ID = "login-error";
 const PASSWORD_HINT = "Revisa tu contraseña: distingue mayúsculas de minúsculas.";

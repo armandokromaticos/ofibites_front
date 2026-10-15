@@ -16,8 +16,8 @@ import {
   OrModifierGroupsSection,
   OrProductForm,
   OrSizesSection,
-} from "@/app/lib/atomic";
-import { ProductFormValues } from "@/app/lib/atomic/organisms/or-product-form";
+} from "@/ui/atomic";
+import { ProductFormValues } from "@/ui/atomic/organisms/or-product-form";
 
 export default function EditProductPage({
   params,

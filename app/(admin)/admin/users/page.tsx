@@ -7,7 +7,7 @@ import { CheckCircle, Plus, Shield, Users, XCircle } from "lucide-react";
 
 import { useDeleteUser, useUsers } from "@/domain/hooks/users";
 import { UserDetail, UserRole } from "@/domain/types";
-import { AtButton, MlSearchBar, MlStatCard, OrUserTable } from "@/app/lib/atomic";
+import { AtButton, MlSearchBar, MlStatCard, OrUserTable } from "@/ui/atomic";
 
 /** La tarjeta "Administradores" cuenta solo los roles de administración general. */
 const ADMIN_ROLES: UserRole[] = ["SUPER_ADMIN", "OPS_ADMIN"];

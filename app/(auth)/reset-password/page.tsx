@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useResetPassword } from "@/domain/hooks/auth";
 import { parseRecoveryLink, RecoveryLink } from "@/domain/models";
 import { getApiErrorMessage, getApiErrorMessages, isApiError } from "@/shared/utils";
-import { AtButton, AtTextLink, MlAuthHeader, OrNewPasswordForm, TmAuthLayout } from "@/app/lib/atomic";
+import { AtButton, AtTextLink, MlAuthHeader, OrNewPasswordForm, TmAuthLayout } from "@/ui/atomic";
 
 const GENERIC_ERROR = "No pudimos cambiar la contraseña. Inténtalo de nuevo en unos minutos.";
 

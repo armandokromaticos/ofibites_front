@@ -1,7 +1,7 @@
 // Datos de ejemplo para el catálogo (T-02)
 import { BookOpen, FileText, LayoutGrid, Truck, Utensils } from "lucide-react";
 
-import { OrAppSidebarItem, OrAppSidebarUser } from "@/app/lib/atomic";
+import { OrAppSidebarItem, OrAppSidebarUser } from "@/ui/atomic";
 
 export const SAMPLE_NAV_ITEMS: OrAppSidebarItem[] = [
   {

@@ -2,7 +2,7 @@
 
 import { useRequireSession } from "@/domain/hooks/auth";
 import { PLATFORM_ROLES } from "@/domain/models/auth.model";
-import { TmAdminLayout } from "@/app/lib/atomic";
+import { TmAdminLayout } from "@/ui/atomic";
 
 export default function AdminLayout({
   children,

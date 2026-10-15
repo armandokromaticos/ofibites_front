@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 
 import { BookOpen, ClipboardList, FileText, LayoutGrid, ShoppingCart, Utensils } from "lucide-react";
 
-import { OrAppSidebarItem } from "@/app/lib/atomic";
+import { OrAppSidebarItem } from "@/ui/atomic";
 
 // Navegación del cliente, compartida por /dashboard, /ordenar y su layout (`(cliente)/layout.tsx`).
 export const RUTA_DASHBOARD = "/dashboard";

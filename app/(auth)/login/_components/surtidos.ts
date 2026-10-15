@@ -1,4 +1,4 @@
-import type { OrProductMarqueeItem } from "@/app/lib/atomic";
+import type { OrProductMarqueeItem } from "@/ui/atomic";
 
 /**
  * Surtidos del mosaico del login v2: diez sujetos distintos, sin precios ni claims. Los nombres

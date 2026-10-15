@@ -7,7 +7,7 @@ import { AlertTriangle, CheckCircle, Package, Plus, XCircle } from "lucide-react
 
 import { useDeleteProduct, useProducts } from "@/domain/hooks/products";
 import { Product } from "@/domain/types";
-import { AtButton, MlSearchBar, MlStatCard, OrProductTable } from "@/app/lib/atomic";
+import { AtButton, MlSearchBar, MlStatCard, OrProductTable } from "@/ui/atomic";
 
 export default function ProductsPage() {
   const router = useRouter();

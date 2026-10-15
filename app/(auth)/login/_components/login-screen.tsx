@@ -1,6 +1,6 @@
 "use client";
 
-import { OrProductMarquee, TmAuthLayout, TmAuthShowcaseLayout } from "@/app/lib/atomic";
+import { OrProductMarquee, TmAuthLayout, TmAuthShowcaseLayout } from "@/ui/atomic";
 
 import { LoginForm } from "./login-form";
 import { LoginVariant } from "./login-variant";

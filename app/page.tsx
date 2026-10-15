@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { isPlatformRole } from "@/domain/models/auth.model";
 import { useAuthHydrated, useAuthStore } from "@/domain/stores";
-import { AtButton } from "@/app/lib/atomic";
+import { AtButton } from "@/ui/atomic";
 
 export default function Home() {
   const hasHydrated = useAuthHydrated();

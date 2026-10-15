@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { useLogout } from "@/domain/hooks/auth";
 import { useClientDashboard } from "@/domain/hooks/dashboard";
-import { TmAppLayout } from "@/app/lib/atomic";
+import { TmAppLayout } from "@/ui/atomic";
 
 import { NAV_ITEMS_CLIENTE, paginaClienteActual, RUTA_CARRITO, RUTA_DASHBOARD } from "../_navegacion";
 

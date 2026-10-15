@@ -1,6 +1,6 @@
 import { Utensils } from "lucide-react";
 
-import { MlEmptyState } from "@/app/lib/atomic";
+import { MlEmptyState } from "@/ui/atomic";
 
 import { CategoriaOrdenar, CATEGORIAS_ORDENAR, RUTA_DASHBOARD } from "../../_navegacion";
 

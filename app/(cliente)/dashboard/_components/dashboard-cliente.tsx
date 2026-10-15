@@ -32,7 +32,7 @@ import {
   OrPromoCarousel,
   OrRecentOrders,
   OrRecentOrdersItem,
-} from "@/app/lib/atomic";
+} from "@/ui/atomic";
 
 import {
   parseCategoriaOrdenar,

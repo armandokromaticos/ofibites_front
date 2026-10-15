@@ -13,7 +13,7 @@ import {
   MlForm,
   MlFormAlert,
   TmAuthLayout,
-} from "@/app/lib/atomic";
+} from "@/ui/atomic";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INVALID_EMAIL_MESSAGE = "Escribe un correo válido, por ejemplo nombre@empresa.com.";

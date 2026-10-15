@@ -28,7 +28,7 @@ import {
   OrPromoCarousel,
   OrRecentOrders,
   TmAppLayout,
-} from "@/app/lib/atomic";
+} from "@/ui/atomic";
 
 import {
   SAMPLE_ACTIVE_ORDER,
