@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
-import { DashboardCliente } from "./dashboard-cliente";
-import { parseEstadoQa } from "./datos-ejemplo";
+import { parseEstadoQa } from "@/domain/hooks/dashboard/datos-ejemplo";
+
+import { DashboardCliente } from "./_components/dashboard-cliente";
 
 export const metadata: Metadata = {
   title: "Dashboard · Ofibites",

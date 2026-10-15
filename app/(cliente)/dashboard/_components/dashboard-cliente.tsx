@@ -3,10 +3,10 @@
 import { ReactNode, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { CloudOff, LayoutGrid, Truck } from "lucide-react";
+import { CloudOff, Truck } from "lucide-react";
 
-import { useLogout } from "@/domain/hooks/auth";
 import { useClientDashboard } from "@/domain/hooks/dashboard";
+import { EstadoQaDashboard } from "@/domain/hooks/dashboard/datos-ejemplo";
 import {
   ClientActiveOrder,
   ClientRecentOrder,
@@ -32,18 +32,15 @@ import {
   OrPromoCarousel,
   OrRecentOrders,
   OrRecentOrdersItem,
-  TmAppLayout,
 } from "@/app/lib/atomic";
 
-import { EstadoQaDashboard } from "./datos-ejemplo";
 import {
-  NAV_ITEMS_CLIENTE,
   parseCategoriaOrdenar,
   RUTA_ORDENAR,
   RUTA_PEDIDOS,
   rutaOrdenarCategoria,
   rutaOrdenarRepetir,
-} from "./navegacion-cliente";
+} from "../../_navegacion";
 
 // Reacción de la imagen de cada categoría al pasar (entrega de diseño): botellas que se inclinan, cajas que crecen.
 // TODO: conectar API (T-04). Si las categorías vienen del back, esto pasa a ser un dato de la categoría.
@@ -153,11 +150,9 @@ interface DashboardClienteProps {
 }
 
 export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const { data, isPending, isError, isFetching, refetch } = useClientDashboard({ qaState: estadoQa });
-  const { mutate: logout, isPending: isLoggingOut } = useLogout();
   // Las recomendaciones entran escalonadas solo cuando sustituyen al esqueleto de carga. Con datos ya
   // en caché llegan con la página, sin una segunda entrada encima de la transición de ruta.
   const [startedLoading] = useState(isPending);
@@ -373,27 +368,5 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
     );
   }
 
-  return (
-    <TmAppLayout
-      title="Dashboard"
-      titleIcon={<LayoutGrid />}
-      sidebar={{
-        items: NAV_ITEMS_CLIENTE,
-        activeKey: "dashboard",
-        isOpen: isSidebarOpen,
-        onToggle: () => setIsSidebarOpen((open) => !open),
-        onClose: () => setIsSidebarOpen(false),
-        homeHref: "/dashboard",
-        onLogout: () => logout(),
-        isLoggingOut,
-        user: user ? { name: user.shortName, role: user.role, avatarSrc: user.avatarSrc } : undefined,
-      }}
-      // TODO: conectar API (T-04). Contador del carrito y notificaciones sin leer.
-      cart={{ href: "/carrito" }}
-      notifications={{}}
-      mainClassName="px-4 pb-10 pt-6 sm:px-8 xl:pt-[42px]"
-    >
-      {content}
-    </TmAppLayout>
-  );
+  return content;
 }

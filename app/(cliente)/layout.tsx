@@ -5,8 +5,13 @@ import { ReactNode } from "react";
 import { useRequireSession } from "@/domain/hooks/auth";
 import { CLIENT_ROLES } from "@/domain/models/auth.model";
 
-/** Guarda de `/ordenar`: solo `CLIENT` (igual que `/dashboard`). Sin sesión → `/login`; otro rol → `/`. */
-export default function OrdenarLayout({ children }: { children: ReactNode }) {
+import { AppCliente } from "./_components/app-cliente";
+
+/**
+ * Layout de la app del cliente (`/dashboard`, `/ordenar`): guarda solo `CLIENT` (sin sesión → `/login`; otro
+ * rol → `/`) y el esqueleto (`TmAppLayout`), persistente entre sus rutas.
+ */
+export default function ClienteLayout({ children }: { children: ReactNode }) {
   const status = useRequireSession({ roles: CLIENT_ROLES });
 
   if (status !== "allowed") {
@@ -18,5 +23,5 @@ export default function OrdenarLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  return children;
+  return <AppCliente>{children}</AppCliente>;
 }

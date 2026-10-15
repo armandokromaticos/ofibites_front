@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { parseCategoriaOrdenar, parseRepetirOrdenar } from "../dashboard/navegacion-cliente";
+import { parseCategoriaOrdenar, parseRepetirOrdenar } from "../_navegacion";
 
-import { OrdenarProvisional } from "./ordenar-provisional";
+import { OrdenarProvisional } from "./_components/ordenar-provisional";
 
 export const metadata: Metadata = {
   title: "Ordenar · Ofibites",

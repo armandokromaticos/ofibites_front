@@ -1,5 +1,5 @@
-import { LoginScreen } from "./login-screen";
-import { resolveLoginVariant } from "./login-variant";
+import { LoginScreen } from "./_components/login-screen";
+import { resolveLoginVariant } from "./_components/login-variant";
 
 interface LoginPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
