@@ -1,16 +1,22 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { Eye, EyeOff } from "lucide-react";
 
 import { useLogin } from "@/domain/hooks/auth";
 import { getHomePath } from "@/domain/models/auth.model";
 import { useAuthHydrated, useAuthStore } from "@/domain/stores";
 import { getApiErrorMessage, isApiError } from "@/shared/utils";
-import { AtButton, AtIconButton, AtInput, MlAuthHeader, MlForm, MlFormAlert, TmAuthLayout } from "@/app/lib/atomic";
+import {
+  AtButton,
+  AtInput,
+  AtPasswordToggle,
+  AtTextLink,
+  MlAuthHeader,
+  MlForm,
+  MlFormAlert,
+  TmAuthLayout,
+} from "@/app/lib/atomic";
 
 const ERROR_ID = "login-error";
 const PASSWORD_HINT = "Revisa tu contraseña: distingue mayúsculas de minúsculas.";
@@ -140,14 +146,11 @@ export default function LoginPage() {
               onValueChange={() => clearErrors("password")}
               classNames={{ inputWrapper: "pr-2" }}
               endContent={
-                <AtIconButton
+                <AtPasswordToggle
                   aria-label="Mostrar contraseña"
-                  aria-pressed={isPasswordVisible}
-                  className="border-0 bg-transparent text-muted data-[hover=true]:bg-surface-sand"
+                  isVisible={isPasswordVisible}
                   onPress={() => setIsPasswordVisible((visible) => !visible)}
-                >
-                  {isPasswordVisible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-                </AtIconButton>
+                />
               }
             />
           </div>
@@ -158,14 +161,12 @@ export default function LoginPage() {
           </AtButton>
         </MlForm>
 
-        {/* "Olvidé la contraseña" del Figma: sin ruta ni endpoint todavía. En su lugar, la solicitud de acceso. */}
+        {/* Figma 3236:11719: "Olvidé la contraseña". La solicitud de acceso no está en el Figma del login. */}
         <p className="mt-3 text-center text-base font-semibold text-placeholder">
-          <Link
-            href="/register"
-            className="rounded-sm underline underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            Solicitar acceso para mi empresa
-          </Link>
+          <AtTextLink href="/forgot-password">Olvidé la contraseña</AtTextLink>
+        </p>
+        <p className="text-center text-base font-semibold text-placeholder">
+          <AtTextLink href="/register">Solicitar acceso para mi empresa</AtTextLink>
         </p>
       </div>
     </TmAuthLayout>

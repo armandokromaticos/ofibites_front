@@ -72,3 +72,17 @@ export interface RefreshTokenRequest {
 
 /** `POST /auth/refresh` devuelve un `AuthResponseDto` completo. */
 export type RefreshTokenResponse = AuthResponse;
+
+/** `ForgotPasswordDto` (`POST /auth/forgot-password`, público). Responde 204 exista o no el correo. */
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+/**
+ * `ResetPasswordDto` (`POST /auth/reset-password`, público). `accessToken` es el de la sesión de
+ * recuperación que Supabase deja en el hash de `/reset-password`. Responde 204.
+ */
+export interface ResetPasswordRequest {
+  accessToken: string;
+  password: string;
+}
