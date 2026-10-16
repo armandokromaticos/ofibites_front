@@ -2,6 +2,7 @@ export * from "./auth.types";
 export * from "./banner.types";
 export * from "./cart.types";
 export * from "./catalog.types";
+export * from "./company.types";
 export * from "./company-address.types";
 export * from "./company-request.types";
 export * from "./notification.types";

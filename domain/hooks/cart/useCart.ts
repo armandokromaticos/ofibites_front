@@ -12,10 +12,15 @@ interface UseCartOptions {
    * `POST /cart/items`). Por defecto `true`.
    */
   enabled?: boolean;
+  /**
+   * `true`: vuelve a pedir el carrito al montar aunque la caché sea reciente (el checkout cotiza con el estado
+   * actual del servidor: el carrito es compartido por los compradores de la empresa). Por defecto `false`.
+   */
+  fresh?: boolean;
 }
 
 /** Carrito de la empresa activa (`GET /cart`, con `X-Company-Id`). */
-export function useCart({ enabled = true }: UseCartOptions = {}) {
+export function useCart({ enabled = true, fresh = false }: UseCartOptions = {}) {
   const companyId = useAuthStore((state) => state.activeCompanyId);
   return useQuery({
     queryKey: cartQueryKey(companyId),
@@ -23,6 +28,7 @@ export function useCart({ enabled = true }: UseCartOptions = {}) {
     enabled: enabled && Boolean(companyId),
     // El contador no necesita estar al segundo; "Añadir al carrito" lo actualiza con su respuesta.
     staleTime: 30_000,
+    refetchOnMount: fresh ? "always" : true,
     // Un 403 (rol sin carrito) o un 400 no mejoran al reintentar: el contador simplemente no se muestra.
     retry: false,
   });

@@ -20,6 +20,7 @@ async function parseErrorResponse(
       message:
         body.message ?? body.error ?? response.statusText,
       error: body.error,
+      body,
     };
   } catch {
     return {

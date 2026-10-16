@@ -211,7 +211,7 @@ export function toDashboardOrders(
 
   const recentOrders: ClientRecentOrder[] = conocidas.slice(0, MAX_RECENT_ORDERS).map((order) => ({
     id: order.id,
-    number: order.id.slice(-8).toUpperCase(),
+    number: order.orderNumber ?? order.id.slice(-8).toUpperCase(),
     productName: orderProductName(order, nombres),
     boxes: boxes(order),
     status: order.status,
