@@ -9,6 +9,7 @@ import { MlFilterChipsProps } from "./ml-filter-chips.types";
  * borde `surface-sand`, fondo blanco, 12 px semibold `primary`; hover con borde `primary`; activo relleno
  * `primary` con texto blanco. Botones con `aria-pressed` dentro de un `role="group"`, navegables con Tab.
  * En pantallas estrechas el grupo hace scroll horizontal (no desborda la página).
+ * Con `appearance="pills"`, los filtros de Ordenar (Figma 3067:17606): blancas de 40 px, activa en `nav-active`.
  * No es un formulario: para elegir un valor en un formulario usa `MlChoiceChips`.
  */
 export function MlFilterChips<T extends string>({
@@ -16,13 +17,23 @@ export function MlFilterChips<T extends string>({
   options,
   value,
   onChange,
+  appearance = "chips",
+  orientation = "horizontal",
   className,
 }: MlFilterChipsProps<T>) {
+  const isPills = appearance === "pills";
+
   return (
     <div
       role="group"
       aria-label={label}
-      className={cn("flex max-w-full gap-2 overflow-x-auto p-0.5 [scrollbar-width:none]", className)}
+      className={cn(
+        "flex max-w-full p-0.5",
+        orientation === "vertical"
+          ? "flex-col items-start gap-2.5"
+          : "gap-2 overflow-x-auto [scrollbar-width:none]",
+        className,
+      )}
     >
       {options.map((option) => {
         const isActive = option.value === value;
@@ -33,12 +44,22 @@ export function MlFilterChips<T extends string>({
             aria-pressed={isActive}
             onClick={() => onChange(option.value)}
             className={cn(
-              "h-[30px] shrink-0 whitespace-nowrap rounded-full border px-3.5 text-xs font-semibold",
+              "shrink-0 whitespace-nowrap rounded-full border",
               "transition-colors duration-(--duration-fast) ease-out",
               "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-              isActive
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-surface-sand bg-content1 text-primary hover:border-primary",
+              isPills
+                ? cn(
+                    "h-10 px-5 text-sm text-foreground",
+                    isActive
+                      ? "border-nav-active bg-nav-active font-bold"
+                      : "border-content1 bg-content1 hover:border-surface-sand",
+                  )
+                : cn(
+                    "h-[30px] px-3.5 text-xs font-semibold",
+                    isActive
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-surface-sand bg-content1 text-primary hover:border-primary",
+                  ),
             )}
           >
             {option.label}

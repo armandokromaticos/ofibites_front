@@ -9,6 +9,10 @@ export interface Product {
   stock?: number;
   isActive: boolean;
   standId?: string;
+  /** Badge "POPULAR" en el catálogo (T-19). Default `false`. */
+  isFeatured?: boolean;
+  /** "En oferta" en el catálogo (T-19; aún no cambia el precio). Default `false`. */
+  isOnSale?: boolean;
   createdAt: string;
   updatedAt: string;
   sizes: ProductSize[];
@@ -23,6 +27,8 @@ export interface CreateProductRequest {
   stock?: number;
   isActive?: boolean;
   standId?: string;
+  isFeatured?: boolean;
+  isOnSale?: boolean;
 }
 
 export interface UpdateProductRequest {
@@ -33,6 +39,8 @@ export interface UpdateProductRequest {
   stock?: number;
   isActive?: boolean;
   standId?: string;
+  isFeatured?: boolean;
+  isOnSale?: boolean;
 }
 
 // --- Product Size ---

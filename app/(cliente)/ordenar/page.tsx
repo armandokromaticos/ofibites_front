@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { parseCategoriaOrdenar, parseRepetirOrdenar } from "../_navegacion";
+import { parseEstadoQaCatalogo } from "@/domain/hooks/catalog";
 
-import { OrdenarProvisional } from "./_components/ordenar-provisional";
+import { OrdenarCatalogo } from "./_components/ordenar-catalogo";
 
 export const metadata: Metadata = {
   title: "Ordenar · Ofibites",
@@ -12,18 +12,13 @@ interface OrdenarPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-// Provisional: la pantalla real llega con T-19.
 /**
- * `?categoria=bebidas|desayunos` (cards del dashboard) y `?repetir=<orderId>` ("Repetir" de las últimas
- * órdenes). Un valor desconocido se ignora.
+ * Catálogo del cliente. Los filtros (`?categoria=`, `?tags=`, `?filtro=`, `?q=`, `?pagina=`) y `?repetir=` los
+ * lee el componente desde la URL. `?estado=cargando|vacio|error` fuerza un estado para QA, solo en desarrollo.
  */
 export default async function OrdenarPage({ searchParams }: OrdenarPageProps) {
-  const { categoria, repetir } = await searchParams;
+  const { estado } = await searchParams;
+  const estadoQa = process.env.NODE_ENV === "production" ? undefined : parseEstadoQaCatalogo(estado);
 
-  return (
-    <OrdenarProvisional
-      categoria={parseCategoriaOrdenar(categoria)}
-      repetir={parseRepetirOrdenar(repetir)}
-    />
-  );
+  return <OrdenarCatalogo estadoQa={estadoQa} />;
 }

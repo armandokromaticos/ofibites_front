@@ -1,7 +1,11 @@
-export type MlPromoBannerVariant = "main" | "secondary";
+export type MlPromoBannerVariant = "main" | "secondary" | "hero";
 
 export interface MlPromoBannerProps {
-  /** `main`: banner grande del Dashboard (h307, display 53). `secondary`: banner de categoría (h188, h2 35). */
+  /**
+   * `main`: banner grande del Dashboard (h307, display 53). `secondary`: banner de categoría (h188, h2 35).
+   * `hero`: cabecera de una sección (Ordenar, h266, display 73 en xl): `imageSrc` es el fondo ya compuesto
+   * (foto y decoración, Figma 3067:17606), anclado a la derecha; por debajo de `lg` solo queda el texto.
+   */
   variant?: MlPromoBannerVariant;
   title: string;
   subtitle?: string;

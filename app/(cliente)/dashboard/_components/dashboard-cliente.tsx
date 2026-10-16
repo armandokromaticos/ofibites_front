@@ -5,8 +5,7 @@ import { ReactNode, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
-import { useClientDashboard } from "@/domain/hooks/dashboard";
-import { EstadoQaDashboard } from "@/domain/hooks/dashboard/datos-ejemplo";
+import { EstadoQaDashboard, useClientDashboard } from "@/domain/hooks/dashboard";
 import {
   ClientActiveOrder,
   ClientRecentOrder,
@@ -34,16 +33,19 @@ import {
   OrRecentOrdersItem,
 } from "@/ui/atomic";
 
+import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
 import {
   parseCategoriaOrdenar,
   RUTA_ORDENAR,
   RUTA_PEDIDOS,
   rutaOrdenarCategoria,
   rutaOrdenarRepetir,
+  rutaProducto,
 } from "../../_navegacion";
+import { CATEGORIAS_DASHBOARD } from "../_data/categorias";
 
 // Reacción de la imagen de cada categoría al pasar (entrega de diseño): botellas que se inclinan, cajas que crecen.
-// TODO: conectar API (T-04). Si las categorías vienen del back, esto pasa a ser un dato de la categoría.
+// Si las categorías llegan a venir del back, esto pasa a ser un dato de la categoría.
 const CATEGORY_IMAGE_HOVER: Record<string, "tilt" | "zoom"> = {
   bebidas: "tilt",
   desayunos: "zoom",
@@ -94,7 +96,9 @@ function toActiveOrderCard(order: ClientActiveOrder): MlActiveOrderCardOrder {
   return {
     productName: order.productName,
     quantityLabel: formatBoxes(order.boxes),
-    etaLabel: `Llega a las ${formatCaracasTime(order.estimatedArrival)}`,
+    etaLabel: order.estimatedArrival
+      ? `Llega a las ${formatCaracasTime(order.estimatedArrival)}`
+      : "Hora de entrega por confirmar",
     statusLabel: ORDER_STATUS_LABELS[order.status],
     statusIcon: STATUS_ICONS[order.status],
     isInTransit: order.status === "IN_TRANSIT",
@@ -165,7 +169,7 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
     ? `Todas las recomendaciones: ${visibleRecommendations.length}`
     : `${visibleRecommendations.length} ${visibleRecommendations.length === 1 ? "recomendación" : "recomendaciones"} de ${filterLabel}`;
   const recommendationsMotion = listStagger(visibleRecommendations.length);
-  const categoriesMotion = listStagger(data?.categories.length ?? 0);
+  const categoriesMotion = listStagger(CATEGORIAS_DASHBOARD.length);
 
   const user = data?.user;
 
@@ -232,7 +236,7 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
                   initial={startedLoading ? "hidden" : false}
                   animate="visible"
                 >
-                  {data.categories.map((category) => (
+                  {CATEGORIAS_DASHBOARD.map((category) => (
                     <motion.div key={category.id} variants={categoriesMotion.item} className="flex">
                       <MlPromoBanner
                         variant="secondary"
@@ -335,15 +339,15 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
                                 className="w-full"
                                 title={product.name}
                                 description={product.description}
-                                imageSrc={product.imageSrc}
+                                imageSrc={product.imageSrc ?? IMAGEN_PRODUCTO_POR_DEFECTO}
                                 imageAlt={product.imageAlt}
                                 imageKind={product.imageKind}
                                 quantity={quantity}
                                 onQuantityChange={(value) =>
                                   setQuantities((prev) => ({ ...prev, [product.id]: value }))
                                 }
-                                // TODO: conectar API (T-04). Añadir al carrito cuando exista; hoy lleva a Ordenar.
-                                ctaHref={`${RUTA_ORDENAR}?producto=${product.id}&cantidad=${quantity}`}
+                                // TODO: añadir al carrito desde la card (la cantidad aún no viaja a la ficha).
+                                ctaHref={rutaProducto(product.id, product.kind)}
                               />
                             </motion.div>
                           );
