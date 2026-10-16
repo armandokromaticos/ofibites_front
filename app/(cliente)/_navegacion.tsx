@@ -25,11 +25,23 @@ export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
   },
 ];
 
-// Rutas que la app ya enlaza fuera del menú (top bar). Aún no existen.
+// Rutas que la app enlaza fuera del menú (top bar).
 export const RUTA_CARRITO = "/carrito";
 
 /** Ficha de un producto del catálogo (el "+" de Ordenar). Provisional hasta su tarea. */
 export const RUTA_PRODUCTO = "/producto";
+
+/**
+ * Rutas del grupo que ya tienen página. Un enlace que llega de la API (p. ej. el `link` de una notificación,
+ * `/pedidos/<id>`) solo se sigue si cae aquí: al crear una página nueva del grupo, añádela.
+ */
+const RUTAS_CON_PAGINA = [RUTA_DASHBOARD, RUTA_ORDENAR, RUTA_PRODUCTO, RUTA_CARRITO];
+
+/** `true` si `link` (ruta relativa) lleva a una página del cliente que existe. */
+export function tienePaginaCliente(link: string): boolean {
+  const pathname = link.split(/[?#]/)[0];
+  return RUTAS_CON_PAGINA.some((ruta) => pathname === ruta || pathname.startsWith(`${ruta}/`));
+}
 
 /** Tipo de ítem del catálogo que abre la ficha: el id de un combo no es un id de producto. */
 export type TipoFicha = "product" | "combo";
@@ -101,12 +113,3 @@ export function rutaOrdenarCategoria(categoria: CategoriaOrdenar): string {
   return `${RUTA_ORDENAR}?categoria=${CATEGORIAS_ORDENAR[categoria]}`;
 }
 
-/** "Repetir" de las últimas órdenes: Ordenar con el pedido a repetir (`?repetir=<orderId>`). */
-export function rutaOrdenarRepetir(orderId: string): string {
-  return `${RUTA_ORDENAR}?repetir=${encodeURIComponent(orderId)}`;
-}
-
-/** id de pedido de `?repetir=`: letras, números y guiones (números de ejemplo o UUID). Otro valor se ignora. */
-export function parseRepetirOrdenar(value: unknown): string | undefined {
-  return typeof value === "string" && /^[A-Za-z0-9-]{1,64}$/.test(value) ? value : undefined;
-}

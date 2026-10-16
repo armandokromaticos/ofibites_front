@@ -1,10 +1,12 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
+import { useRepeatOrder } from "@/domain/hooks/cart";
 import { EstadoQaDashboard, useClientDashboard } from "@/domain/hooks/dashboard";
 import {
   ClientActiveOrder,
@@ -14,6 +16,7 @@ import {
   OrderStatus,
   RECOMMENDATION_CATEGORY_LABELS,
 } from "@/domain/models";
+import { useCartNoticeStore } from "@/domain/stores";
 import { duration, ease, fadeRise, listStagger } from "@/shared/motion";
 import { formatCaracasShortDate, formatCaracasTime } from "@/shared/utils";
 import {
@@ -34,12 +37,13 @@ import {
 } from "@/ui/atomic";
 
 import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
+import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pedido";
 import {
   parseCategoriaOrdenar,
+  RUTA_CARRITO,
   RUTA_ORDENAR,
   RUTA_PEDIDOS,
   rutaOrdenarCategoria,
-  rutaOrdenarRepetir,
   rutaProducto,
 } from "../../_navegacion";
 import { CATEGORIAS_DASHBOARD } from "../_data/categorias";
@@ -119,8 +123,6 @@ function toRecentOrderItem(order: ClientRecentOrder): OrRecentOrdersItem {
     dateLabel: formatCaracasShortDate(order.createdAt),
     dateTime: order.createdAt,
     detailHref: `${RUTA_PEDIDOS}/${order.id}`,
-    // TODO: repetir pedido (T-19). Aún no hay carrito: Ordenar recibe el pedido y avisa de que llega pronto.
-    repeatHref: rutaOrdenarRepetir(order.id),
   };
 }
 
@@ -155,8 +157,38 @@ interface DashboardClienteProps {
 
 export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const router = useRouter();
+  const repeat = useRepeatOrder();
+  const setCartNotice = useCartNoticeStore((state) => state.setNotice);
+  const [repeatingOrderId, setRepeatingOrderId] = useState<string | undefined>();
+  // Doble clic: el segundo llega antes de que `isPending` se pinte.
+  const repitiendo = useRef(false);
+  const [repeatError, setRepeatError] = useState<{ orderId: string; message: string } | null>(null);
 
   const { data, isPending, isError, isFetching, refetch } = useClientDashboard({ qaState: estadoQa });
+
+  // "Repetir" de una orden: copia sus líneas disponibles al carrito y lleva a `/carrito` con el aviso (qué se
+  // añadió y qué no). Con error no navega: el mensaje sale bajo la fila. Un segundo clic mientras repite no hace
+  // nada; tras un éxito el bloqueo y el spinner siguen hasta que la navegación desmonta el dashboard (si no, un
+  // clic durante la navegación volvería a sumar el pedido al carrito).
+  const repetirPedido = (orderId: string) => {
+    if (repitiendo.current) return;
+    repitiendo.current = true;
+    const orderNumber = data?.recentOrders.find((order) => order.id === orderId)?.number;
+    setRepeatError(null);
+    setRepeatingOrderId(orderId);
+    repeat
+      .mutateAsync(orderId)
+      .then((result) => {
+        setCartNotice(avisoPedidoRepetido(result, orderNumber));
+        router.push(RUTA_CARRITO);
+      })
+      .catch((error: unknown) => {
+        repitiendo.current = false;
+        setRepeatingOrderId(undefined);
+        setRepeatError({ orderId, message: mensajeErrorRepetir(error) });
+      });
+  };
   // Las recomendaciones entran escalonadas solo cuando sustituyen al esqueleto de carga. Con datos ya
   // en caché llegan con la página, sin una segunda entrada encima de la transición de ruta.
   const [startedLoading] = useState(isPending);
@@ -365,6 +397,9 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
             isLoading={isPending}
             orders={data?.recentOrders.map(toRecentOrderItem) ?? []}
             viewAllHref={RUTA_PEDIDOS}
+            onRepeat={repetirPedido}
+            repeatingOrderId={repeatingOrderId}
+            repeatError={repeatError}
             emptyActionHref={RUTA_ORDENAR}
           />
         </div>

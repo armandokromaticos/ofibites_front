@@ -13,7 +13,7 @@ interface OrdenarPageProps {
 }
 
 /**
- * Catálogo del cliente. Los filtros (`?categoria=`, `?tags=`, `?filtro=`, `?q=`, `?pagina=`) y `?repetir=` los
+ * Catálogo del cliente. Los filtros (`?categoria=`, `?tags=`, `?filtro=`, `?q=`, `?pagina=`) los
  * lee el componente desde la URL. `?estado=cargando|vacio|error` fuerza un estado para QA, solo en desarrollo.
  */
 export default async function OrdenarPage({ searchParams }: OrdenarPageProps) {

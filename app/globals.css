@@ -45,6 +45,8 @@
   --shadow-lift-card: 0 22px 36px -22px rgb(54 56 28 / 0.55);
   /* Panel lateral abierto sobre el contenido (OrAppSidebar): sombra hacia la derecha. */
   --shadow-panel: 16px 0 32px -18px rgb(54 56 28 / 0.35);
+  /* T-22b: popovers de la top bar (carrito, notificaciones), suspendidos bajo el botón. */
+  --shadow-popover: 0 24px 48px -20px rgb(54 56 28 / 0.35);
 
   --radius-card: 22px;
   --radius-control: 12px;
@@ -416,10 +418,44 @@
   pointer-events: none;
 }
 
+/* T-22b: la campana "suena" al abrir sus notificaciones (microfeedback, una vez). */
+@keyframes ofi-ring {
+  20% {
+    rotate: 14deg;
+  }
+  40% {
+    rotate: -12deg;
+  }
+  60% {
+    rotate: 8deg;
+  }
+  80% {
+    rotate: -4deg;
+  }
+}
+
+.ofi-ring {
+  transform-origin: 50% 15%;
+  animation: ofi-ring 800ms var(--ease-out);
+}
+
+/* T-22b: línea del carrito que aparece en el resumen de la top bar. */
+@keyframes ofi-slide-in {
+  from {
+    opacity: 0;
+    translate: 10px 0;
+  }
+}
+
+.ofi-slide-in {
+  animation: ofi-slide-in var(--duration-base) var(--ease-out) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Sin desplazamientos ni bucles; se conservan los fundidos que comunican un cambio. */
   .ofi-ping::after,
   .ofi-bump,
+  .ofi-ring,
   .ofi-drift,
   .ofi-bob,
   .ofi-progress-fill,
@@ -428,6 +464,7 @@
   }
 
   .ofi-slide-up,
+  .ofi-slide-in,
   .ofi-photo-in {
     animation: ofi-fade-in var(--duration-fast) linear both;
   }

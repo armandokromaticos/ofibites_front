@@ -13,13 +13,14 @@ function hasContent(content: AtIconButtonProps["badgeContent"]): boolean {
 export function AtIconButton({
   badgeContent,
   badgePing = false,
+  badgeDot = false,
   className,
   children,
   ...props
 }: AtIconButtonProps) {
   const badgeRef = useRef<HTMLSpanElement>(null);
   const previousContent = useRef(badgeContent);
-  const hasBadge = hasContent(badgeContent);
+  const hasBadge = badgeDot || hasContent(badgeContent);
 
   // "Bump" al cambiar el contador (no al montar ni al aparecer: eso ya lo hace la escala de entrada).
   useEffect(() => {
@@ -60,12 +61,13 @@ export function AtIconButton({
   return (
     <Badge
       ref={badgeRef}
-      content={hasBadge ? badgeContent : ""}
+      // Contenido vacío = punto (HeroUI `isDot`).
+      content={badgeDot || !hasBadge ? "" : badgeContent}
       isInvisible={!hasBadge}
-      color="primary"
+      color={badgeDot ? "secondary" : "primary"}
       size="sm"
       placement="top-right"
-      shape="rectangle"
+      shape={badgeDot ? "circle" : "rectangle"}
       classNames={{
         base: cn(
           "transition-[translate] duration-(--duration-fast) ease-out",
@@ -75,7 +77,9 @@ export function AtIconButton({
           "text-[11px] font-semibold border-content1",
           "transition-[scale,opacity]! duration-(--duration-base)! ease-spring!",
           "motion-reduce:transition-[opacity]!",
-          hasBadge && badgePing && "ofi-ping after:border-primary",
+          // Punto de 10 px (8 + borde blanco de 2) dentro de la esquina del botón, como en la entrega de diseño.
+          badgeDot && "size-3 min-w-3 border-2 top-[9px] right-[10px]",
+          hasBadge && badgePing && (badgeDot ? "ofi-ping after:border-secondary" : "ofi-ping after:border-primary"),
         ),
       }}
       aria-hidden="true"

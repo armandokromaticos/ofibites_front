@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { DrawerBody, DrawerContent, DrawerFooter, DrawerHeader } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CloudOff, RotateCcw, SearchX, SlidersHorizontal, TriangleAlert, Utensils } from "lucide-react";
+import { CloudOff, SearchX, SlidersHorizontal, TriangleAlert, Utensils } from "lucide-react";
 
 import { EstadoQaCatalogo, useCatalog } from "@/domain/hooks/catalog";
 import { CatalogFilter, CatalogQuery, CatalogResponse } from "@/domain/types";
@@ -367,22 +367,13 @@ export function OrdenarCatalogo({ estadoQa }: OrdenarCatalogoProps) {
 
   return (
     <div className="flex flex-col gap-10 xl:gap-[50px]">
-      {(filtros.repetir || aviso) && (
+      {aviso && (
         <div className="-mb-4 flex flex-col gap-3 xl:-mb-6">
-          {filtros.repetir && (
-            // TODO: repetir pedido (T-19). Con el carrito, "Repetir" lo precargará con este pedido.
-            <AvisoCatalogo icon={<RotateCcw />} onClose={() => actualizar({ repetir: undefined })}>
-              Repetir el pedido #{filtros.repetir} llegará pronto. Mientras tanto, puedes elegir tus
-              surtidos aquí.
-            </AvisoCatalogo>
-          )}
-          {aviso && (
-            <AvisoCatalogo icon={<TriangleAlert />} onClose={() => setAviso(undefined)}>
-              {aviso.tipo === "categoria"
-                ? `No encontramos la categoría «${aviso.slug}». Te mostramos todo el catálogo.`
-                : "Algunos filtros del enlace no son válidos y los quitamos. Te mostramos el catálogo sin ellos."}
-            </AvisoCatalogo>
-          )}
+          <AvisoCatalogo icon={<TriangleAlert />} onClose={() => setAviso(undefined)}>
+            {aviso.tipo === "categoria"
+              ? `No encontramos la categoría «${aviso.slug}». Te mostramos todo el catálogo.`
+              : "Algunos filtros del enlace no son válidos y los quitamos. Te mostramos el catálogo sin ellos."}
+          </AvisoCatalogo>
         </div>
       )}
 

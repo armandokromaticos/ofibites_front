@@ -4,11 +4,10 @@ import { ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { useLogout } from "@/domain/hooks/auth";
-import { useCart } from "@/domain/hooks/cart";
 import { useClientUser } from "@/domain/hooks/dashboard";
 import { TmAppLayout } from "@/ui/atomic";
 
-import { NAV_ITEMS_CLIENTE, paginaClienteActual, RUTA_CARRITO, RUTA_DASHBOARD } from "../_navegacion";
+import { NAV_ITEMS_CLIENTE, paginaClienteActual, RUTA_DASHBOARD } from "../_navegacion";
 
 import {
   marcarVueltaCliente,
@@ -16,6 +15,7 @@ import {
   registrarRutaCliente,
   reiniciarRutasCliente,
 } from "./ruta-anterior";
+import { useTopBarCliente } from "./use-top-bar-cliente";
 
 /**
  * Esqueleto de la app del cliente, montado UNA vez por el layout de `(cliente)`: el sidebar y la top bar no se
@@ -29,9 +29,9 @@ export function AppCliente({ children }: { children: ReactNode }) {
   // Usuario del sidebar: de la sesión (nombre y rol en la empresa activa), sin pedir el Dashboard en cada página.
   const user = useClientUser();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
-  // Contador del carrito (`GET /cart`); "Añadir al carrito" lo actualiza con su respuesta. Si falla (p. ej. 403),
-  // no se muestra.
-  const { data: cart } = useCart();
+  // Carrito y notificaciones de la top bar (`GET /cart`, `GET /notifications`); "Añadir al carrito" actualiza
+  // el contador con su respuesta.
+  const topBar = useTopBarCliente();
 
   // Rutas anteriores para los "‹ Volver" (`ruta-anterior.ts`): el clic en un enlace (en captura, antes de que
   // navegue) recoge la query actual, que Ordenar cambia sin navegar; atrás/adelante del navegador cuentan como
@@ -68,9 +68,8 @@ export function AppCliente({ children }: { children: ReactNode }) {
         isLoggingOut,
         user: user ? { name: user.shortName, role: user.role, avatarSrc: user.avatarSrc } : undefined,
       }}
-      // TODO: conectar API (T-04). Notificaciones sin leer.
-      cart={{ href: RUTA_CARRITO, count: cart?.totalUnits }}
-      notifications={{}}
+      cart={topBar.cart}
+      notifications={topBar.notifications}
       mainClassName="px-4 pb-10 pt-6 sm:px-8 xl:pt-[42px]"
     >
       {children}

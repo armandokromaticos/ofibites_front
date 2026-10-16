@@ -4,6 +4,7 @@ export { cartService } from "./cart.service";
 export { catalogService } from "./catalog.service";
 export { companyAddressService } from "./company-address.service";
 export { companyRequestService } from "./company-request.service";
+export { notificationService } from "./notification.service";
 export { orderService } from "./order.service";
 export type { OrderQrValidation } from "./order-qr.service";
 export { orderQrService } from "./order-qr.service";

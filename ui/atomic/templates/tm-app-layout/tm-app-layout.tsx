@@ -1,37 +1,23 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState, ViewTransition } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState, ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@heroui/react";
-import { Bell, Menu, ShoppingCart } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
-import { AtAvatar, AtButton, AtIconButton } from "@/ui/atomic/atoms";
-import { OrAppSidebar, OrAppSidebarDrawerCloseReason } from "@/ui/atomic/organisms";
+import { AtAvatar, AtButton } from "@/ui/atomic/atoms";
+import {
+  OrAppSidebar,
+  OrAppSidebarDrawerCloseReason,
+  OrCartPopover,
+  OrNotificationsPopover,
+} from "@/ui/atomic/organisms";
 
-import { TmAppLayoutProps, TmAppLayoutTopBarAction } from "./tm-app-layout.types";
+import { TmAppLayoutProps } from "./tm-app-layout.types";
 
 const DRAWER_ID = "app-drawer";
-
-interface TopBarActionProps {
-  action: TmAppLayoutTopBarAction;
-  label: string;
-  icon: ReactNode;
-  /** Pulso sobre el contador: avisos nuevos (notificaciones), no el carrito. */
-  badgePing?: boolean;
-}
-
-function TopBarAction({ action, label, icon, badgePing }: TopBarActionProps) {
-  const linkProps = action.href ? { as: Link, href: action.href } : { onPress: action.onPress };
-
-  return (
-    <AtIconButton aria-label={label} badgeContent={action.count} badgePing={badgePing} {...linkProps}>
-      {icon}
-    </AtIconButton>
-  );
-}
 
 /**
  * Layout de la app del cliente: sidebar + top bar + contenido.
@@ -51,8 +37,6 @@ export function TmAppLayout({
 }: TmAppLayoutProps) {
   const pathname = usePathname();
   const user = sidebar.user;
-  const cartCount = cart?.count ?? 0;
-  const unreadCount = notifications?.count ?? 0;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -143,25 +127,9 @@ export function TmAppLayout({
             </div>
 
             <div className="flex shrink-0 items-center gap-2 md:gap-4">
-              {cart && (
-                <TopBarAction
-                  action={cart}
-                  label={
-                    cartCount
-                      ? `Carrito, ${cartCount} ${cartCount === 1 ? "producto" : "productos"}`
-                      : "Carrito"
-                  }
-                  icon={<ShoppingCart aria-hidden="true" />}
-                />
-              )}
-              {notifications && (
-                <TopBarAction
-                  action={notifications}
-                  label={unreadCount ? `Notificaciones, ${unreadCount} sin leer` : "Notificaciones"}
-                  icon={<Bell aria-hidden="true" />}
-                  badgePing
-                />
-              )}
+              {/* Popovers: el panel va en un portal (fuera del `inert` del drawer) y solo hay uno abierto. */}
+              {cart && <OrCartPopover {...cart} />}
+              {notifications && <OrNotificationsPopover {...notifications} />}
               {user && <AtAvatar src={user.avatarSrc} name={user.name} />}
             </div>
           </header>

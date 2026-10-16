@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
 
 import { cn } from "@heroui/react";
@@ -43,6 +43,7 @@ export function OrRecentOrders({
   viewAllHref,
   onRepeat,
   repeatingOrderId,
+  repeatError,
   skeletonRows = 3,
   emptyTitle = "Todavía no has hecho ningún pedido",
   emptyDescription = "Arma el próximo coffee break de tu equipo en menos de dos minutos. Tus pedidos aparecerán aquí.",
@@ -53,6 +54,12 @@ export function OrRecentOrders({
   const Heading = `h${headingLevel}` as const;
   const titleId = useId();
   const isEmpty = !isLoading && orders.length === 0;
+  const errorRef = useRef<HTMLParagraphElement>(null);
+
+  // "Repetir" queda inerte mientras carga y el foco se pierde: con un error, el foco pasa al mensaje.
+  useEffect(() => {
+    if (repeatError) errorRef.current?.focus();
+  }, [repeatError]);
 
   return (
     <section
@@ -110,6 +117,16 @@ export function OrRecentOrders({
                 onRepeat={onRepeat ? () => onRepeat(id) : undefined}
                 isRepeatLoading={repeatingOrderId === id}
               />
+              {repeatError?.orderId === id && (
+                <p
+                  ref={errorRef}
+                  role="alert"
+                  tabIndex={-1}
+                  className="mt-2 rounded-control bg-danger-50 px-3 py-2 text-xs leading-5 text-danger-700 outline-none"
+                >
+                  {repeatError.message}
+                </p>
+              )}
             </li>
           ))}
         </ul>

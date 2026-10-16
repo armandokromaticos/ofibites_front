@@ -1,14 +1,6 @@
 import { ReactNode } from "react";
 
-import { OrAppSidebarProps } from "@/ui/atomic/organisms";
-
-export interface TmAppLayoutTopBarAction {
-  /** Si se pasa, el botón es un enlace. */
-  href?: string;
-  onPress?: () => void;
-  /** Contador del badge. 0 o vacío lo oculta. */
-  count?: number;
-}
+import { OrAppSidebarProps, OrCartPopoverProps, OrNotificationsPopoverProps } from "@/ui/atomic/organisms";
 
 export interface TmAppLayoutProps {
   /** Props del sidebar (ítems, ítem activo, abierto/cerrado, usuario). */
@@ -17,10 +9,10 @@ export interface TmAppLayoutProps {
   title: string;
   /** Icono de 18 px junto al título (decorativo). */
   titleIcon?: ReactNode;
-  /** Botón del carrito. Sin valor no se pinta. */
-  cart?: TmAppLayoutTopBarAction;
-  /** Botón de notificaciones. Sin valor no se pinta. */
-  notifications?: TmAppLayoutTopBarAction;
+  /** Carrito de la top bar (botón con contador + popover "Tu pedido"). Sin valor no se pinta. */
+  cart?: OrCartPopoverProps;
+  /** Notificaciones de la top bar (campana con punto + popover). Sin valor no se pinta. */
+  notifications?: OrNotificationsPopoverProps;
   children: ReactNode;
   /** Clases del `<main>` (padding, fondo). */
   mainClassName?: string;

@@ -4,6 +4,7 @@ export * from "./cart.types";
 export * from "./catalog.types";
 export * from "./company-address.types";
 export * from "./company-request.types";
+export * from "./notification.types";
 export * from "./order.types";
 export * from "./product.types";
 export * from "./user.types";

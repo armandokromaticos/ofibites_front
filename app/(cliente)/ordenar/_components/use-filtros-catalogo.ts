@@ -3,8 +3,6 @@
 import { useCallback, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-import { parseRepetirOrdenar } from "../../_navegacion";
-
 /** Filtro de lista en la URL (`?filtro=`): sin valor = "Todo". */
 export type FiltroLista = "todo" | "oferta" | "nuevos";
 
@@ -20,13 +18,11 @@ export interface FiltrosCatalogo {
   q: string;
   /** `?pagina=`, desde 1. */
   pagina: number;
-  /** `?repetir=<orderId>` ("Repetir" del dashboard). */
-  repetir?: string;
   /** Parámetros de filtro con un valor que el catálogo rechazaría: se ignoran y se quitan de la URL. */
   invalidos: string[];
 }
 
-/** Lo que identifica un estado de filtros (sin `?repetir=` ni `invalidos`). */
+/** Lo que identifica un estado de filtros (sin `invalidos`). */
 export function firmaFiltros(
   filtros: Pick<FiltrosCatalogo, "categoria" | "tags" | "filtro" | "q" | "pagina">,
 ): string {
@@ -68,7 +64,6 @@ export function leerFiltros(params: URLSearchParams): FiltrosCatalogo {
     filtro,
     q: (params.get("q") ?? "").trim().slice(0, MAX_BUSQUEDA),
     pagina: Number.isInteger(pagina) && pagina > 1 ? pagina : 1,
-    repetir: parseRepetirOrdenar(params.get("repetir") ?? undefined),
     invalidos,
   };
 }
@@ -99,9 +94,8 @@ export function useFiltrosCatalogo() {
       if (cambios.tags) escribir(params, "tags", cambios.tags.join(","));
       if (cambios.filtro) escribir(params, "filtro", cambios.filtro === "todo" ? undefined : cambios.filtro);
       if (cambios.q !== undefined) escribir(params, "q", cambios.q.trim());
-      if ("repetir" in cambios) escribir(params, "repetir", cambios.repetir);
 
-      const cambiaFiltros = Object.keys(cambios).some((clave) => clave !== "repetir" && clave !== "pagina");
+      const cambiaFiltros = Object.keys(cambios).some((clave) => clave !== "pagina");
       if (cambios.pagina !== undefined) {
         escribir(params, "pagina", cambios.pagina > 1 ? String(cambios.pagina) : undefined);
       } else if (cambiaFiltros) {

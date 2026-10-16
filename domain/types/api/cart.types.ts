@@ -35,9 +35,22 @@ export interface CartItem {
   subtotal: number;
   addedById: string | null;
   modifiers: CartItemModifier[];
+  /** Nombre del combo (si hay `comboId`) o del producto, en el idioma pedido; también si está inactivo. */
+  name: string;
+  /** Imagen principal del producto o combo (la misma que `GET /catalog`). */
+  image: string | null;
+  /** Nombre del tamaño elegido, o `null` sin tamaño. */
+  sizeLabel: string | null;
+  /** Personas del tamaño, o `null`. */
+  servings: number | null;
+  /**
+   * Si la línea se podría añadir hoy (producto/combo, tamaño y extras activos). Solo informativo: el carrito
+   * cotiza todas las líneas.
+   */
+  isAvailable: boolean;
 }
 
-/** Carrito único y compartido de la empresa, con precios recalculados por el servidor. */
+/** Carrito único y compartido de la empresa, con precios recalculados por el servidor. Líneas por `createdAt` asc. */
 export interface CartResponse {
   id: string;
   companyId: string;
@@ -47,4 +60,21 @@ export interface CartResponse {
   totalUnits: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Línea de un pedido que no se pudo copiar al carrito al repetir. */
+export interface RepeatCartSkippedLine {
+  productId: string;
+  comboId: string | null;
+  name: string;
+  /** En español: "Ya no está disponible", "Ya no existe en el catálogo"… */
+  reason: string;
+}
+
+/** `POST /cart/repeat/last` y `POST /cart/repeat/:orderId` (copian al carrito; no crean pedido). */
+export interface RepeatCartResponse {
+  cart: CartResponse;
+  /** Líneas del pedido copiadas (no unidades). */
+  added: number;
+  skipped: RepeatCartSkippedLine[];
 }

@@ -41,3 +41,22 @@ export function listStagger(count: number): { container: Variants; item: Variant
     item: fadeRise,
   };
 }
+
+/**
+ * Popover de la top bar (T-22b): baja 6 px y crece de 0.98 desde la esquina del botón (el origen lo pone HeroUI
+ * según la colocación). Entra en 320 ms (fundido en 200) y sale en 200 ms. Claves `initial`/`enter`/`exit`:
+ * las de `PopoverContent` de HeroUI. Con movimiento reducido queda el fundido.
+ */
+export const popover: Variants = {
+  initial: { opacity: 0, y: -6, scale: 0.98 },
+  enter: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { ...enter(), opacity: enter(duration.fast) },
+  },
+  exit: { opacity: 0, y: -6, scale: 0.98, transition: exit() },
+};
+
+/** `motionProps` listo para `Popover` de HeroUI (lo aplica `AtPopover`). */
+export const popoverMotionProps = { variants: popover } as const;
