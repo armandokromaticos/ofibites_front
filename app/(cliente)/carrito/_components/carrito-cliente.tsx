@@ -4,21 +4,26 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { ChevronLeft, ShoppingBag } from "lucide-react";
+import { ChevronLeft, Truck } from "lucide-react";
 
 import { useCart, useCartLines, useClearCart, useRepeatOrder } from "@/domain/hooks/cart";
 import { useCatalog } from "@/domain/hooks/catalog";
+import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
+import { firstDeliveryDate } from "@/domain/models";
 import { CartLineModel } from "@/domain/models";
 import { useAuthStore, useCartNoticeStore } from "@/domain/stores";
 import { duration } from "@/shared/motion";
-import { formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
-import { AtButton, AtSkeleton, MlEmptyState, MlProductMiniCard, OrConfirmModal } from "@/ui/atomic";
+import { formatDateOnlyLong, formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
+import { AtButton, AtSkeleton, MlEmptyState, MlProductMiniCard, OrConfirmModal, OrOrderSummary } from "@/ui/atomic";
 
+import { lineaDireccion } from "../../_data/direcciones";
 import { mensajeErrorCarrito } from "../../_data/errores-carrito";
 import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
 import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pedido";
-import { RUTA_ORDENAR, rutaProducto } from "../../_navegacion";
+import { filasResumenCarrito } from "../../_data/resumen-pedido";
+import { RUTA_CHECKOUT, RUTA_ORDENAR, rutaProducto } from "../../_navegacion";
 
+import { EnvioGratis } from "./envio-gratis";
 import { LineaCarrito } from "./linea-carrito";
 
 const CHECKOUT_NOTE_ID = "carrito-checkout-nota";
@@ -33,7 +38,7 @@ function productos(n: number): string {
 }
 
 /** Cabecera de la página: título de marca, número de productos y vuelta al catálogo. */
-function CabeceraCarrito({ lineCount }: { lineCount?: number }) {
+function CabeceraCarrito({ lineCount, entrega }: { lineCount?: number; entrega: string }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div className="flex flex-col gap-2.5">
@@ -42,8 +47,8 @@ function CabeceraCarrito({ lineCount }: { lineCount?: number }) {
         </h2>
         {lineCount !== undefined && lineCount > 0 && (
           <p className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-sand px-5 py-1 text-sm leading-5 text-brand">
-            <ShoppingBag aria-hidden="true" className="size-4" />
-            {productos(lineCount)}
+            <Truck aria-hidden="true" className="size-4" />
+            {productos(lineCount)} · entrega estimada para el {entrega}
           </p>
         )}
       </div>
@@ -177,8 +182,8 @@ function CarritoEsqueleto() {
 }
 
 /**
- * Página del carrito: líneas con cantidad y "Eliminar", "Vaciar" con confirmación, resumen con el subtotal del
- * servidor y "Agrega a tu pedido". IVA, envío y cupones no se pintan ni se calculan aquí (decisión 2026-10-16).
+ * Página del carrito: líneas con cantidad y "Eliminar", "Vaciar" con confirmación, resumen del servidor (subtotal,
+ * envío, IVA y total de `summary`, T-26a), "Continuar al checkout" y "Agrega a tu pedido".
  */
 export function CarritoCliente() {
   const companyId = useAuthStore((state) => state.activeCompanyId);
@@ -202,6 +207,13 @@ export function CarritoCliente() {
     avisoRef.current?.focus();
   }, [aviso]);
   const cart = cartQuery.data;
+  // Primera fecha que permite el corte de las 15:00 de Caracas (la misma regla que el selector del checkout).
+  const [entrega] = useState(() => formatDateOnlyLong(firstDeliveryDate()).toLowerCase());
+  // "Sede: …" del resumen: la primera sede de entrega de la agenda; sin sedes o con error, no se pinta.
+  const addressesQuery = useCompanyAddresses();
+  const sede = addressesQuery.data?.find((address) => address.isShipping) ?? null;
+  // El checkout rechaza líneas no disponibles (400): se avisa antes de entrar.
+  const hayNoDisponibles = lines.some((line) => !line.isAvailable);
 
   const isUnavailable =
     !companyId ||
@@ -308,38 +320,49 @@ export function CarritoCliente() {
           <AgregaATuPedido lines={lines} />
         </div>
 
-        <aside
-          aria-labelledby="carrito-resumen"
-          className="flex flex-col gap-4 rounded-card bg-content1 p-6 lg:sticky lg:top-0"
+        <OrOrderSummary
+          titleId="carrito-resumen"
+          subtitle={sede ? `Sede: ${lineaDireccion(sede)}` : undefined}
+          rows={filasResumenCarrito(cart.summary, `Subtotal (${unidades(cart.totalUnits)})`)}
+          totalLabel={formatPrice(cart.summary.total)}
+          className="lg:sticky lg:top-0"
         >
-          <h2 id="carrito-resumen" className="font-display text-xl font-bold leading-7 text-foreground">
-            Resumen del pedido
-          </h2>
-          <dl className="flex items-baseline justify-between gap-4 border-b border-divider pb-4 text-[15px] leading-6">
-            <dt className="text-muted">Subtotal ({unidades(cart.totalUnits)})</dt>
-            <dd className="text-lg font-bold text-foreground tabular-nums">{formatPrice(cart.subtotal)}</dd>
-          </dl>
-          <p className="text-[13px] leading-5 text-muted">IVA, envío y cupones se calculan en el checkout.</p>
-          <AtButton
-            size="md"
-            className="h-[41px] w-full cursor-not-allowed opacity-60"
-            aria-disabled="true"
-            aria-describedby={CHECKOUT_NOTE_ID}
-            onPress={() => undefined}
-          >
-            Continuar al checkout
-          </AtButton>
-          <p id={CHECKOUT_NOTE_ID} className="-mt-1 text-center text-xs leading-5 text-muted">
-            El checkout estará disponible muy pronto.
-          </p>
-        </aside>
+          <EnvioGratis summary={cart.summary} />
+          {hayNoDisponibles ? (
+            <>
+              <AtButton
+                size="md"
+                className="h-[41px] w-full cursor-not-allowed opacity-60"
+                aria-disabled="true"
+                aria-describedby={CHECKOUT_NOTE_ID}
+                onPress={() => undefined}
+              >
+                Continuar al checkout
+              </AtButton>
+              <p id={CHECKOUT_NOTE_ID} className="-mt-1 text-center text-xs leading-5 text-danger-700">
+                Quita los productos que ya no están disponibles para continuar.
+              </p>
+            </>
+          ) : (
+            <AtButton as={Link} href={RUTA_CHECKOUT} size="md" className="h-[41px] w-full">
+              Continuar al checkout
+            </AtButton>
+          )}
+        </OrOrderSummary>
       </div>
     );
   }
 
   return (
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-6">
-      <CabeceraCarrito lineCount={cart && !isUnavailable ? lines.length : undefined} />
+      <CabeceraCarrito lineCount={cart && !isUnavailable ? lines.length : undefined} entrega={entrega} />
+      <p className="flex items-center gap-2.5 rounded-control bg-content1 px-4 py-3 text-xs leading-5 text-muted sm:px-5">
+        <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-accent" />
+        <span>
+          Los pedidos se agendan hasta las{" "}
+          <strong className="font-semibold text-secondary-600">3:00 p.m. del día anterior</strong>
+        </span>
+      </p>
       {aviso && (
         <p
           ref={avisoRef}

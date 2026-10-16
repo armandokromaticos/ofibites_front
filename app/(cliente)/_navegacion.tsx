@@ -28,6 +28,15 @@ export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
 // Rutas que la app enlaza fuera del menú (top bar).
 export const RUTA_CARRITO = "/carrito";
 
+/** Checkout: paso 1 "Entrega" (`/checkout`), paso 2 "Revisión" y "Pedido confirmado". */
+export const RUTA_CHECKOUT = "/checkout";
+export const RUTA_CHECKOUT_REVISION = "/checkout/revision";
+
+/** "Pedido confirmado" de un pedido recién creado en el checkout. */
+export function rutaPedidoConfirmado(orderId: string): string {
+  return `${RUTA_CHECKOUT}/confirmado/${encodeURIComponent(orderId)}`;
+}
+
 /** Ficha de un producto del catálogo (el "+" de Ordenar). Provisional hasta su tarea. */
 export const RUTA_PRODUCTO = "/producto";
 
@@ -35,7 +44,7 @@ export const RUTA_PRODUCTO = "/producto";
  * Rutas del grupo que ya tienen página. Un enlace que llega de la API (p. ej. el `link` de una notificación,
  * `/pedidos/<id>`) solo se sigue si cae aquí: al crear una página nueva del grupo, añádela.
  */
-const RUTAS_CON_PAGINA = [RUTA_DASHBOARD, RUTA_ORDENAR, RUTA_PRODUCTO, RUTA_CARRITO];
+const RUTAS_CON_PAGINA = [RUTA_DASHBOARD, RUTA_ORDENAR, RUTA_PRODUCTO, RUTA_CARRITO, RUTA_CHECKOUT];
 
 /** `true` si `link` (ruta relativa) lleva a una página del cliente que existe. */
 export function tienePaginaCliente(link: string): boolean {
@@ -76,6 +85,8 @@ export const PAGINAS_CLIENTE: PaginaCliente[] = [
   // Provisional: título de la sección "Pedidos realizados" del Figma, hasta que exista la pantalla.
   { href: RUTA_PEDIDOS, label: "Pedidos realizados", icon: <ClipboardList /> },
   { href: RUTA_CARRITO, label: "Carrito", icon: <ShoppingCart /> },
+  // Figma 3462:2094: título "Checkout" con el icono de Ordenar, que sigue activo en el sidebar.
+  { href: RUTA_CHECKOUT, label: "Checkout", icon: <Utensils />, navKey: "ordenar" },
   // Se llega desde Ordenar: su ítem sigue activo.
   { href: RUTA_PRODUCTO, label: "Detalle del producto", icon: <Package />, navKey: "ordenar" },
 ];

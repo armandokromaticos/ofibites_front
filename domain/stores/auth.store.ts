@@ -7,6 +7,8 @@ import { pickActiveCompanyId } from "@/domain/models/auth.model";
 import { Membership, MeResponse, User } from "@/domain/types";
 import { tokenManager } from "@/shared/utils/storage";
 
+import { useCheckoutDraftStore } from "./checkout.store";
+
 const noopStorage: StateStorage = {
   getItem: () => null,
   setItem: () => {},
@@ -80,6 +82,8 @@ export const useAuthStore = create<AuthStore>()(
 
       logout: (reason) => {
         tokenManager.clearTokens();
+        // El borrador del checkout (datos del receptor) no sobrevive a la sesión.
+        useCheckoutDraftStore.getState().reset();
         set({ ...EMPTY_SESSION, signOutReason: reason ?? null });
       },
 

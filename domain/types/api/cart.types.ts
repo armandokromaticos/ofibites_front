@@ -50,6 +50,23 @@ export interface CartItem {
   isAvailable: boolean;
 }
 
+/**
+ * Resumen del carrito (contrato "Checkout fase 1", T-26a). Todo lo calcula el servidor en céntimos; el front solo
+ * lo pinta. `tax` = (subtotal − discount) × taxRate; `shipping` = 0 desde `freeShippingThreshold` (150), si no la
+ * tarifa fija ($5 por defecto), y 0 con el carrito vacío; `total` = subtotal − discount + tax + shipping.
+ * `discount` = 0 en la fase 1 (sin cupón).
+ */
+export interface CartSummary {
+  subtotal: number;
+  discount: number;
+  /** Fracción: 0.16 = 16 %. */
+  taxRate: number;
+  tax: number;
+  shipping: number;
+  freeShippingThreshold: number;
+  total: number;
+}
+
 /** Carrito único y compartido de la empresa, con precios recalculados por el servidor. Líneas por `createdAt` asc. */
 export interface CartResponse {
   id: string;
@@ -58,6 +75,8 @@ export interface CartResponse {
   subtotal: number;
   /** Unidades totales: el contador del carrito de la top bar. */
   totalUnits: number;
+  /** Subtotal, IVA, envío y total del servidor. Va en todas las respuestas que devuelven el carrito (T-26a). */
+  summary: CartSummary;
   createdAt: string;
   updatedAt: string;
 }
