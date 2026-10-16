@@ -18,4 +18,9 @@ export type AtIconButtonProps = Omit<ButtonProps, "isIconOnly" | "aria-label"> &
    * (notificaciones sin leer), no para contadores. Sin pulso con movimiento reducido.
    */
   badgePing?: boolean;
+  /**
+   * Punto sin número (`accent`) en lugar del contador: "hay avisos sin leer" (campana). Ignora `badgeContent`.
+   * El número, si importa, va en el `aria-label`.
+   */
+  badgeDot?: boolean;
 };

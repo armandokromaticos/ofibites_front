@@ -14,6 +14,14 @@ interface UseCatalogItemOptions {
   qaState?: EstadoQaFicha;
 }
 
+/** Clave de la ficha (la comparten la ficha y las líneas del carrito de la top bar). */
+export const catalogItemQueryKey = (
+  kind: CatalogItemKind,
+  id: string,
+  lang?: "es" | "en",
+  qaState?: EstadoQaFicha,
+) => [...CATALOG_QUERY_KEY, "item", kind, id, lang ?? "es", qaState ?? "real"] as const;
+
 /** Ficha de un producto o combo del catálogo (`GET /catalog/items/:kind/:id`). */
 export function useCatalogItem(
   kind: CatalogItemKind,
@@ -21,7 +29,7 @@ export function useCatalogItem(
   { lang, qaState }: UseCatalogItemOptions = {},
 ) {
   return useQuery({
-    queryKey: [...CATALOG_QUERY_KEY, "item", kind, id, lang ?? "es", qaState ?? "real"],
+    queryKey: catalogItemQueryKey(kind, id, lang, qaState),
     queryFn: conEstadoQaFicha(qaState, () => catalogService.getItem(kind, id, lang)),
     // 400 (id inválido) y 404 (inexistente o inactivo) no mejoran al reintentar.
     retry: (failureCount, error) =>

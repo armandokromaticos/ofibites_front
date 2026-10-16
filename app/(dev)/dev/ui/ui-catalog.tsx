@@ -23,7 +23,11 @@ import {
   MlPromoBanner,
   MlQuantityStepper,
   OrAppSidebar,
+  OrCartPopover,
+  OrCartPopoverLine,
   OrNewPasswordForm,
+  OrNotificationsPopover,
+  OrNotificationsPopoverItem,
   OrProductCard,
   OrPromoCarousel,
   OrRecentOrders,
@@ -32,8 +36,10 @@ import {
 
 import {
   SAMPLE_ACTIVE_ORDER,
+  SAMPLE_CART_LINES,
   SAMPLE_MAIN_BANNER,
   SAMPLE_NAV_ITEMS,
+  SAMPLE_NOTIFICATIONS,
   SAMPLE_ORDERS,
   SAMPLE_PRODUCT,
   SAMPLE_PROMO_SLIDES,
@@ -95,6 +101,61 @@ const ACTIVE_VARIANTS: { label: string; key?: string }[] = [
   { label: "Sin selección" },
 ];
 
+/** Carrito con estado local: quitar y vaciar simulan la latencia de la API. */
+function CartPopoverDemo() {
+  const [lines, setLines] = useState<OrCartPopoverLine[]>(SAMPLE_CART_LINES);
+  const [removingLineId, setRemovingLineId] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
+
+  return (
+    <OrCartPopover
+      id="cart-demo"
+      count={lines.length * 2}
+      status="ready"
+      lines={lines}
+      cartHref="/dev/ui#popovers"
+      browseHref="/dev/ui#popovers"
+      removingLineId={removingLineId}
+      onRemoveLine={(lineId) => {
+        setRemovingLineId(lineId);
+        setTimeout(() => {
+          setLines((current) => current.filter((line) => line.id !== lineId));
+          setRemovingLineId(null);
+        }, 500);
+      }}
+      isClearing={isClearing}
+      onClear={() => {
+        setIsClearing(true);
+        setTimeout(() => {
+          setLines([]);
+          setIsClearing(false);
+        }, 600);
+      }}
+    />
+  );
+}
+
+/** Notificaciones con estado local: pulsar marca leída; "Marcar como leídas", todas. */
+function NotificationsPopoverDemo() {
+  const [items, setItems] = useState<OrNotificationsPopoverItem[]>(SAMPLE_NOTIFICATIONS);
+  const unreadCount = items.filter((item) => item.isUnread).length;
+
+  return (
+    <OrNotificationsPopover
+      id="notifications-demo"
+      items={items}
+      unreadCount={unreadCount}
+      status="ready"
+      onSelect={(selected) =>
+        setItems((current) =>
+          current.map((item) => (item.id === selected.id ? { ...item, isUnread: false } : item)),
+        )
+      }
+      onMarkAllRead={() => setItems((current) => current.map((item) => ({ ...item, isUnread: false })))}
+    />
+  );
+}
+
 export function UiCatalog() {
   const [isLayoutSidebarOpen, setLayoutSidebarOpen] = useState(false);
   const [isOpenDemoOpen, setOpenDemoOpen] = useState(true);
@@ -129,10 +190,60 @@ export function UiCatalog() {
               <Bell aria-hidden="true" />
             </AtIconButton>
           </Specimen>
+          <Specimen label="Con punto (sin leer)">
+            <AtIconButton aria-label="Notificaciones, 2 sin leer" badgeDot badgePing>
+              <Bell aria-hidden="true" />
+            </AtIconButton>
+          </Specimen>
           <Specimen label="Deshabilitado">
             <AtIconButton aria-label="Carrito" isDisabled>
               <ShoppingCart aria-hidden="true" />
             </AtIconButton>
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="popovers" title="OrCartPopover · OrNotificationsPopover">
+        <div className="flex flex-wrap gap-8 rounded-card bg-content1 p-6">
+          <Specimen label="Carrito (quitar, vaciar)">
+            <CartPopoverDemo />
+          </Specimen>
+          <Specimen label="Carrito vacío">
+            <OrCartPopover id="cart-empty" status="ready" lines={[]} cartHref="/dev/ui" browseHref="/dev/ui" />
+          </Specimen>
+          <Specimen label="Carrito cargando">
+            <OrCartPopover id="cart-loading" status="loading" lines={[]} cartHref="/dev/ui" browseHref="/dev/ui" />
+          </Specimen>
+          <Specimen label="Carrito con error">
+            <OrCartPopover
+              id="cart-error"
+              status="error"
+              lines={[]}
+              cartHref="/dev/ui"
+              browseHref="/dev/ui"
+              onRetry={() => undefined}
+            />
+          </Specimen>
+          <Specimen label="Sin carrito (403)">
+            <OrCartPopover id="cart-403" status="unavailable" lines={[]} cartHref="/dev/ui" browseHref="/dev/ui" />
+          </Specimen>
+          <Specimen label="Notificaciones">
+            <NotificationsPopoverDemo />
+          </Specimen>
+          <Specimen label="Sin avisos">
+            <OrNotificationsPopover id="notifications-empty" items={[]} unreadCount={0} status="ready" />
+          </Specimen>
+          <Specimen label="Cargando">
+            <OrNotificationsPopover id="notifications-loading" items={[]} unreadCount={0} status="loading" />
+          </Specimen>
+          <Specimen label="Con error">
+            <OrNotificationsPopover
+              id="notifications-error"
+              items={[]}
+              unreadCount={0}
+              status="error"
+              onRetry={() => undefined}
+            />
           </Specimen>
         </div>
       </Section>
@@ -425,8 +536,20 @@ export function UiCatalog() {
             }}
             title="Dashboard"
             titleIcon={<LayoutGrid />}
-            cart={{ href: "/dev/ui#layout", count: 3 }}
-            notifications={{ onPress: () => undefined, count: 2 }}
+            cart={{
+              id: "cart-layout",
+              count: 3,
+              status: "ready",
+              lines: SAMPLE_CART_LINES,
+              cartHref: "/dev/ui#layout",
+              browseHref: "/dev/ui#layout",
+            }}
+            notifications={{
+              id: "notifications-layout",
+              items: SAMPLE_NOTIFICATIONS,
+              unreadCount: 2,
+              status: "ready",
+            }}
           >
             <div className="flex flex-col gap-[27px]">
               <MlPromoBanner {...SAMPLE_MAIN_BANNER} />

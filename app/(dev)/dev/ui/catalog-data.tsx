@@ -1,7 +1,7 @@
 // Datos de ejemplo para el catálogo (T-02)
 import { BookOpen, FileText, LayoutGrid, Truck, Utensils } from "lucide-react";
 
-import { OrAppSidebarItem, OrAppSidebarUser } from "@/ui/atomic";
+import { OrAppSidebarItem, OrAppSidebarUser, OrCartPopoverLine, OrNotificationsPopoverItem } from "@/ui/atomic";
 
 export const SAMPLE_NAV_ITEMS: OrAppSidebarItem[] = [
   {
@@ -103,5 +103,46 @@ export const SAMPLE_ORDERS = [
     orderNumber: "45689",
     dateLabel: "2 de Sep",
     dateTime: "2026-09-02T14:05:00-04:00",
+  },
+];
+
+// T-22b: popovers de la top bar.
+export const SAMPLE_CART_LINES: OrCartPopoverLine[] = [
+  { id: "l1", name: "Morning Bite", imageSrc: "/images/products/morning-bite.webp", detail: "2 unidades · 8 personas" },
+  {
+    id: "l2",
+    name: "Coffee Break Ejecutivo",
+    imageSrc: "/images/products/coffee-break-box.webp",
+    detail: "1 unidad · 12 personas",
+  },
+  { id: "l3", name: "Caja bowl saludable", imageSrc: "/images/products/caja-bowl.png", detail: "3 unidades" },
+];
+
+const hace = (minutos: number) => new Date(Date.now() - minutos * 60_000).toISOString();
+
+export const SAMPLE_NOTIFICATIONS: OrNotificationsPopoverItem[] = [
+  {
+    id: "n1",
+    message: "Tu pedido #7728950E va en camino. Llega a las 10:30 am.",
+    isUnread: true,
+    orderStatus: "IN_TRANSIT",
+    createdAt: hace(12),
+    href: "/dev/ui#popovers",
+  },
+  {
+    id: "n2",
+    message: "Tu pedido #A1C3E2F4 fue confirmado para el 4 de sep a las 10:30 am.",
+    isUnread: true,
+    orderStatus: "CONFIRMED",
+    createdAt: hace(120),
+    href: null,
+  },
+  {
+    id: "n3",
+    message: "Tu pedido #C4B3A2F1 fue entregado.",
+    isUnread: false,
+    orderStatus: "DELIVERED",
+    createdAt: hace(4 * 24 * 60),
+    href: null,
   },
 ];

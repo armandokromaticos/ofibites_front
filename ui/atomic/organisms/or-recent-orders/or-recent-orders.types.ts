@@ -17,6 +17,8 @@ export interface OrRecentOrdersProps {
   onRepeat?: (orderId: string) => void;
   /** id del pedido que se está repitiendo (spinner en su botón). */
   repeatingOrderId?: string;
+  /** Error al repetir un pedido, en español: se pinta bajo su fila (`role="alert"`) y recibe el foco. */
+  repeatError?: { orderId: string; message: string } | null;
   /** Filas del esqueleto de carga. Por defecto 3. */
   skeletonRows?: number;
   /** Estado vacío: copy y CTA. */

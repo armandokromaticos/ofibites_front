@@ -7,6 +7,7 @@ export * from "./at-icon-button";
 export * from "./at-input";
 export * from "./at-modal";
 export * from "./at-password-toggle";
+export * from "./at-popover";
 export * from "./at-progress";
 export * from "./at-select";
 export * from "./at-skeleton";
