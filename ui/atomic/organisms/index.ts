@@ -1,3 +1,4 @@
+export * from "./or-account-menu";
 export * from "./or-admin-sidebar";
 export * from "./or-app-sidebar";
 export * from "./or-box-details-modal";

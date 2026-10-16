@@ -1,7 +1,14 @@
 // Datos de ejemplo para el catálogo (T-02)
 import { BookOpen, FileText, LayoutGrid, Truck, Utensils } from "lucide-react";
 
-import { OrAppSidebarItem, OrAppSidebarUser, OrCartPopoverLine, OrNotificationsPopoverItem } from "@/ui/atomic";
+import {
+  OrAccountMenuItem,
+  OrAccountMenuUser,
+  OrAppSidebarItem,
+  OrAppSidebarUser,
+  OrCartPopoverLine,
+  OrNotificationsPopoverItem,
+} from "@/ui/atomic";
 
 export const SAMPLE_NAV_ITEMS: OrAppSidebarItem[] = [
   {
@@ -145,4 +152,19 @@ export const SAMPLE_NOTIFICATIONS: OrNotificationsPopoverItem[] = [
     createdAt: hace(4 * 24 * 60),
     href: null,
   },
+];
+
+// T-25: menú de cuenta del avatar.
+export const SAMPLE_ACCOUNT_USER: OrAccountMenuUser = {
+  name: "María Gabriela Rodríguez",
+  email: "maria.rodriguez@inversiones-delta.com.ve",
+  avatarSrc: "/images/sample/avatar.webp",
+  companyName: "Inversiones Delta C.A.",
+  role: "Comprador",
+};
+
+export const SAMPLE_ACCOUNT_ITEMS: OrAccountMenuItem[] = [
+  { key: "perfil", label: "Mi perfil" },
+  { key: "empresa", label: "Datos de la empresa" },
+  { key: "pagos", label: "Métodos de pago" },
 ];

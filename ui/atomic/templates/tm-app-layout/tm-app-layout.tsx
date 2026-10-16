@@ -9,6 +9,7 @@ import { Menu } from "lucide-react";
 import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
 import { AtAvatar, AtButton } from "@/ui/atomic/atoms";
 import {
+  OrAccountMenu,
   OrAppSidebar,
   OrAppSidebarDrawerCloseReason,
   OrCartPopover,
@@ -31,6 +32,7 @@ export function TmAppLayout({
   titleIcon,
   cart,
   notifications,
+  account,
   children,
   mainClassName,
   className,
@@ -130,7 +132,11 @@ export function TmAppLayout({
               {/* Popovers: el panel va en un portal (fuera del `inert` del drawer) y solo hay uno abierto. */}
               {cart && <OrCartPopover {...cart} />}
               {notifications && <OrNotificationsPopover {...notifications} />}
-              {user && <AtAvatar src={user.avatarSrc} name={user.name} />}
+              {account ? (
+                <OrAccountMenu {...account} />
+              ) : (
+                user && <AtAvatar src={user.avatarSrc} name={user.name} />
+              )}
             </div>
           </header>
         </ViewTransition>

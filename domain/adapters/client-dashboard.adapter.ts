@@ -42,9 +42,9 @@ const COMPANY_ROLE_LABELS: Record<CompanyRole, string> = {
 // ---------------------------------------------------------------------------------------------------------------
 // Usuario (de la sesión)
 
-/** Saludo, nombre corto del sidebar y rol en la empresa activa. Sin avatar: el back no lo tiene. */
+/** Saludo, nombre corto del sidebar, datos del menú de cuenta y rol en la empresa activa. Sin avatar: el back no lo tiene. */
 export function toClientDashboardUser(
-  user: Pick<User, "name"> | null,
+  user: Pick<User, "name" | "email"> | null,
   memberships: Membership[],
   activeCompanyId: string | null,
 ): ClientDashboardUser {
@@ -56,6 +56,9 @@ export function toClientDashboardUser(
     // "María G.": primer nombre e inicial de la siguiente palabra.
     shortName: palabras.length > 1 ? `${palabras[0]} ${palabras[1].charAt(0).toUpperCase()}.` : (palabras[0] ?? ""),
     role: membership ? COMPANY_ROLE_LABELS[membership.role] : "Cliente",
+    fullName: (user?.name ?? "").trim(),
+    email: user?.email ?? "",
+    companyName: membership?.companyName,
   };
 }
 
