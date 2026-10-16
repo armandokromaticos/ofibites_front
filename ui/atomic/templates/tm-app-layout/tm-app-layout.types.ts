@@ -1,6 +1,11 @@
 import { ReactNode } from "react";
 
-import { OrAppSidebarProps, OrCartPopoverProps, OrNotificationsPopoverProps } from "@/ui/atomic/organisms";
+import {
+  OrAccountMenuProps,
+  OrAppSidebarProps,
+  OrCartPopoverProps,
+  OrNotificationsPopoverProps,
+} from "@/ui/atomic/organisms";
 
 export interface TmAppLayoutProps {
   /** Props del sidebar (ítems, ítem activo, abierto/cerrado, usuario). */
@@ -13,6 +18,11 @@ export interface TmAppLayoutProps {
   cart?: OrCartPopoverProps;
   /** Notificaciones de la top bar (campana con punto + popover). Sin valor no se pinta. */
   notifications?: OrNotificationsPopoverProps;
+  /**
+   * Menú de cuenta del avatar (cabecera con usuario y empresa, opciones y "Cerrar sesión"). Sin valor, la top bar
+   * pinta el avatar de `sidebar.user` sin menú.
+   */
+  account?: OrAccountMenuProps;
   children: ReactNode;
   /** Clases del `<main>` (padding, fondo). */
   mainClassName?: string;

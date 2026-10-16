@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 
 import { BookOpen, ClipboardList, FileText, LayoutGrid, Package, ShoppingCart, Utensils } from "lucide-react";
 
-import { OrAppSidebarItem } from "@/ui/atomic";
+import { OrAccountMenuItem, OrAppSidebarItem } from "@/ui/atomic";
 
 // Navegación del cliente, compartida por /dashboard, /ordenar y su layout (`(cliente)/layout.tsx`).
 export const RUTA_DASHBOARD = "/dashboard";
@@ -36,6 +36,15 @@ export const RUTA_CHECKOUT_REVISION = "/checkout/revision";
 export function rutaPedidoConfirmado(orderId: string): string {
   return `${RUTA_CHECKOUT}/confirmado/${encodeURIComponent(orderId)}`;
 }
+/**
+ * Menú de cuenta del avatar de la top bar (T-25). Sin `href`, la opción sale deshabilitada con "Pronto": al crear
+ * su pantalla, basta con añadir el `href` (y la ruta a `RUTAS_CON_PAGINA` y `PAGINAS_CLIENTE`).
+ */
+export const MENU_CUENTA_CLIENTE: OrAccountMenuItem[] = [
+  { key: "perfil", label: "Mi perfil" },
+  { key: "empresa", label: "Datos de la empresa" },
+  { key: "pagos", label: "Métodos de pago" },
+];
 
 /** Ficha de un producto del catálogo (el "+" de Ordenar). Provisional hasta su tarea. */
 export const RUTA_PRODUCTO = "/producto";

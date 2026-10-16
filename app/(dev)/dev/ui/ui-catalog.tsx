@@ -22,6 +22,7 @@ import {
   MlPasswordStrengthMeter,
   MlPromoBanner,
   MlQuantityStepper,
+  OrAccountMenu,
   OrAppSidebar,
   OrCartPopover,
   OrCartPopoverLine,
@@ -35,6 +36,8 @@ import {
 } from "@/ui/atomic";
 
 import {
+  SAMPLE_ACCOUNT_ITEMS,
+  SAMPLE_ACCOUNT_USER,
   SAMPLE_ACTIVE_ORDER,
   SAMPLE_CART_LINES,
   SAMPLE_MAIN_BANNER,
@@ -156,6 +159,28 @@ function NotificationsPopoverDemo() {
   );
 }
 
+/** Menú de cuenta: "Cerrar sesión" simula la latencia del `POST /auth/logout` y vuelve a su estado. */
+function AccountMenuDemo({ id, withLink = false }: { id: string; withLink?: boolean }) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  return (
+    <OrAccountMenu
+      id={id}
+      user={SAMPLE_ACCOUNT_USER}
+      items={
+        withLink
+          ? SAMPLE_ACCOUNT_ITEMS.map((item, index) => (index === 0 ? { ...item, href: "/dev/ui#account-menu" } : item))
+          : SAMPLE_ACCOUNT_ITEMS
+      }
+      isLoggingOut={isLoggingOut}
+      onLogout={() => {
+        setIsLoggingOut(true);
+        setTimeout(() => setIsLoggingOut(false), 2500);
+      }}
+    />
+  );
+}
+
 export function UiCatalog() {
   const [isLayoutSidebarOpen, setLayoutSidebarOpen] = useState(false);
   const [isOpenDemoOpen, setOpenDemoOpen] = useState(true);
@@ -248,6 +273,24 @@ export function UiCatalog() {
         </div>
       </Section>
 
+      <Section id="account-menu" title="OrAccountMenu">
+        <div className="flex flex-wrap gap-8 rounded-card bg-content1 p-6">
+          <Specimen label="Opciones con «Pronto» y cerrar sesión (2,5 s)">
+            <AccountMenuDemo id="account-demo" />
+          </Specimen>
+          <Specimen label="«Mi perfil» con href">
+            <AccountMenuDemo id="account-demo-link" withLink />
+          </Specimen>
+          <Specimen label="Sin foto ni empresa">
+            <OrAccountMenu
+              id="account-demo-min"
+              user={{ name: "Luis Pérez", email: "luis@example.com" }}
+              items={SAMPLE_ACCOUNT_ITEMS}
+            />
+          </Specimen>
+        </div>
+      </Section>
+
       <Section id="avatar" title="AtAvatar">
         <div className="flex flex-wrap gap-8 rounded-card bg-content1 p-6">
           <Specimen label="Con foto (40 px)">
@@ -255,6 +298,11 @@ export function UiCatalog() {
           </Specimen>
           <Specimen label="Sin foto: iniciales">
             <AtAvatar name="María Gabriela" />
+          </Specimen>
+          <Specimen label="Con paréntesis, guion y sin letras">
+            <AtAvatar name="Ana Demo (admin)" />
+            <AtAvatar name="José-Luis" />
+            <AtAvatar name="123" />
           </Specimen>
           <Specimen label="Foto que no carga">
             <AtAvatar name="Luis Pérez" src="/images/sample/no-existe.webp" />
@@ -549,6 +597,12 @@ export function UiCatalog() {
               items: SAMPLE_NOTIFICATIONS,
               unreadCount: 2,
               status: "ready",
+            }}
+            account={{
+              id: "account-layout",
+              user: SAMPLE_ACCOUNT_USER,
+              items: SAMPLE_ACCOUNT_ITEMS,
+              onLogout: () => undefined,
             }}
           >
             <div className="flex flex-col gap-[27px]">

@@ -21,6 +21,11 @@ export interface ClientDashboardUser {
   /** Nombre corto del sidebar ("Ma. Gabriela"). */
   shortName: string;
   role: string;
+  /** Nombre completo (cabecera del menú de cuenta). */
+  fullName: string;
+  email: string;
+  /** Empresa activa; sin valor si la sesión no tiene membresía en ella. */
+  companyName?: string;
   avatarSrc?: string;
 }
 

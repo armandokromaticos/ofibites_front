@@ -7,7 +7,7 @@ import { useLogout } from "@/domain/hooks/auth";
 import { useClientUser } from "@/domain/hooks/dashboard";
 import { TmAppLayout } from "@/ui/atomic";
 
-import { NAV_ITEMS_CLIENTE, paginaClienteActual, RUTA_DASHBOARD } from "../_navegacion";
+import { MENU_CUENTA_CLIENTE, NAV_ITEMS_CLIENTE, paginaClienteActual, RUTA_DASHBOARD } from "../_navegacion";
 
 import {
   marcarVueltaCliente,
@@ -26,7 +26,7 @@ export function AppCliente({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const pagina = paginaClienteActual(pathname);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  // Usuario del sidebar: de la sesión (nombre y rol en la empresa activa), sin pedir el Dashboard en cada página.
+  // Usuario del sidebar y del menú de cuenta: de la sesión (nombre, correo, empresa y rol activos), sin peticiones.
   const user = useClientUser();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   // Carrito y notificaciones de la top bar (`GET /cart`, `GET /notifications`); "Añadir al carrito" actualiza
@@ -70,6 +70,23 @@ export function AppCliente({ children }: { children: ReactNode }) {
       }}
       cart={topBar.cart}
       notifications={topBar.notifications}
+      account={
+        user
+          ? {
+              user: {
+                name: user.fullName,
+                email: user.email,
+                avatarSrc: user.avatarSrc,
+                companyName: user.companyName,
+                role: user.companyName ? user.role : undefined,
+              },
+              items: MENU_CUENTA_CLIENTE,
+              // El mismo cierre que el sidebar: los dos muestran "Cerrando sesión…" a la vez.
+              onLogout: () => logout(),
+              isLoggingOut,
+            }
+          : undefined
+      }
       mainClassName="px-4 pb-10 pt-6 sm:px-8 xl:pt-[42px]"
     >
       {children}
