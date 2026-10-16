@@ -13,6 +13,7 @@ import {
 import { Package,Pencil, Trash2 } from "lucide-react";
 
 import { Product } from "@/domain/types";
+import { formatPrice } from "@/shared/utils";
 import { AtButton, AtChip } from "@/ui/atomic/atoms";
 
 import { OrProductTableProps } from "./or-product-table.types";
@@ -85,7 +86,7 @@ export function OrProductTable({
                 <span className="font-medium">{product.name}</span>
               </div>
             </TableCell>
-            <TableCell>${product.basePrice.toFixed(2)}</TableCell>
+            <TableCell>{formatPrice(product.basePrice)}</TableCell>
             <TableCell>
               <StockCell stock={product.stock} />
             </TableCell>

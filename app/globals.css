@@ -34,6 +34,8 @@
      barras (2,8:1 sobre crema); el texto "Media" va en el tono oscuro, que llega a AA (~5,4:1). */
   --color-strength-medium: #9c8e37;
   --color-strength-medium-foreground: #6b6125;
+  /* T-19: fondo del badge "POPULAR" de las cards del catálogo (Figma 3067:17606), con texto negro (~17:1). */
+  --color-highlight: #e2fb57;
 
   /* T-02: sombra de las imágenes de producto (las cards no llevan sombra). */
   --drop-shadow-product: 0 9px 9px rgb(0 0 0 / 0.25);

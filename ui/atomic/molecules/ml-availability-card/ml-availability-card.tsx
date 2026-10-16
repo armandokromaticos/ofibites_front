@@ -6,9 +6,35 @@ import { AtSwitch } from "@/ui/atomic/atoms";
 
 import { MlAvailabilityCardProps } from "./ml-availability-card.types";
 
+function SwitchRow({
+  label,
+  description,
+  isSelected,
+  onValueChange,
+}: {
+  label: string;
+  description: string;
+  isSelected: boolean;
+  onValueChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col">
+        <span className="text-sm font-medium">{label}</span>
+        <span className="text-xs text-gray-500">{description}</span>
+      </div>
+      <AtSwitch isSelected={isSelected} onValueChange={onValueChange} aria-label={label} />
+    </div>
+  );
+}
+
 export function MlAvailabilityCard({
   isActive,
   onActiveChange,
+  isFeatured = false,
+  onFeaturedChange,
+  isOnSale = false,
+  onOnSaleChange,
 }: MlAvailabilityCardProps) {
   return (
     <Card shadow="sm">
@@ -17,18 +43,29 @@ export function MlAvailabilityCard({
           Disponibilidad
         </h2>
 
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">Visible en catálogo</span>
-            <span className="text-xs text-gray-500">
-              Los clientes pueden ver este producto
-            </span>
-          </div>
-          <AtSwitch
+        <div className="flex flex-col gap-5">
+          <SwitchRow
+            label="Visible en catálogo"
+            description="Los clientes pueden ver este producto"
             isSelected={isActive}
             onValueChange={onActiveChange}
-            aria-label="Visible en catálogo"
           />
+          {onFeaturedChange && (
+            <SwitchRow
+              label="Destacado (POPULAR)"
+              description="Sale primero en el catálogo, con el badge POPULAR"
+              isSelected={isFeatured}
+              onValueChange={onFeaturedChange}
+            />
+          )}
+          {onOnSaleChange && (
+            <SwitchRow
+              label="En oferta"
+              description="Muestra el badge y entra en el filtro En oferta; el precio no cambia"
+              isSelected={isOnSale}
+              onValueChange={onOnSaleChange}
+            />
+          )}
         </div>
       </CardBody>
     </Card>

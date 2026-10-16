@@ -129,6 +129,116 @@ export function MlPromoBanner({
   linkLabel,
   className,
 }: MlPromoBannerProps) {
+  if (variant === "hero") {
+    return (
+      <HeroBanner
+        title={title}
+        subtitle={subtitle}
+        imageSrc={imageSrc}
+        imageAlt={imageAlt}
+        headingLevel={headingLevel}
+        className={className}
+      />
+    );
+  }
+  return (
+    <PromoBanner
+      variant={variant}
+      title={title}
+      subtitle={subtitle}
+      imageSrc={imageSrc}
+      imageAlt={imageAlt}
+      imagePosition={imagePosition}
+      headingLevel={headingLevel}
+      ctaLabel={ctaLabel}
+      onCtaPress={onCtaPress}
+      ctaHref={ctaHref}
+      animateEntrance={animateEntrance}
+      imageHover={imageHover}
+      imageFit={imageFit}
+      href={href}
+      linkLabel={linkLabel}
+      className={className}
+    />
+  );
+}
+
+/**
+ * Cabecera de sección (Ordenar, Figma 3067:17606): el fondo es la composición del Figma (decoración a la
+ * izquierda, croissant y hojas a la derecha) anclada a la derecha; el texto ocupa la parte lisa. Por debajo de
+ * `lg` la foto taparía el texto: solo queda el fondo `surface-sand`. Sin CTA: es la portada del catálogo.
+ */
+function HeroBanner({
+  title,
+  subtitle,
+  imageSrc,
+  imageAlt,
+  headingLevel = 2,
+  className,
+}: Pick<MlPromoBannerProps, "title" | "subtitle" | "imageSrc" | "imageAlt" | "headingLevel" | "className">) {
+  const Heading = `h${headingLevel}` as const;
+
+  return (
+    <section
+      className={cn(
+        "group/banner relative isolate flex w-full items-center overflow-hidden rounded-card bg-surface-sand",
+        "lg:min-h-[266px]",
+        className,
+      )}
+    >
+      <div className="absolute inset-0 -z-10 hidden lg:block">
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill
+          preload
+          sizes="(min-width: 1024px) 1300px, 1px"
+          className={cn(
+            "object-cover object-right",
+            // La foto crece un poco al pasar (700 ms), como la del banner del dashboard.
+            "origin-right motion-safe:transition-[scale] motion-safe:duration-(--duration-focal) motion-safe:ease-out",
+            "motion-safe:group-hover/banner:scale-[1.02]",
+          )}
+        />
+      </div>
+      {/* En el Figma (1295 px de banner) el texto empieza a 178 px: 13,75 % del ancho, para que escale. */}
+      <div className="flex max-w-[560px] flex-col gap-4 px-6 py-8 sm:px-10 lg:max-w-[52%] lg:px-[57px] lg:py-10 xl:max-w-[700px] xl:gap-[18px] xl:pl-[13.75%] xl:pr-6">
+        <Heading
+          className={cn(
+            "text-balance font-display font-black text-brand tracking-[-0.04em]",
+            "text-[41px] leading-[42px] md:text-[53px] md:leading-[52px] xl:text-[73px] xl:leading-[62px]",
+          )}
+        >
+          {title}
+        </Heading>
+        {subtitle && (
+          <p className="max-w-[430px] text-pretty text-sm font-semibold leading-[21px] text-foreground md:text-base">
+            {subtitle}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function PromoBanner({
+  variant = "main",
+  title,
+  subtitle,
+  imageSrc,
+  imageAlt,
+  imagePosition,
+  headingLevel = 2,
+  ctaLabel,
+  onCtaPress,
+  ctaHref,
+  animateEntrance = false,
+  imageHover,
+  imageFit = "contain",
+  href,
+  linkLabel,
+  className,
+}: MlPromoBannerProps) {
   const isMain = variant === "main";
   const imageAtStart = (imagePosition ?? (isMain ? "end" : "start")) === "start";
   const isBleed = !isMain && imageFit === "bleed";

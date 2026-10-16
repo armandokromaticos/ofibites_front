@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-import { parseEstadoQa } from "@/domain/hooks/dashboard/datos-ejemplo";
+// Directo del archivo: el índice arrastra el store de sesión (cliente) a este Server Component.
+import { parseEstadoQa } from "@/domain/hooks/dashboard/estado-qa";
 
 import { DashboardCliente } from "./_components/dashboard-cliente";
 

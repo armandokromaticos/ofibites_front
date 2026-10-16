@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { BookOpen, ClipboardList, FileText, LayoutGrid, ShoppingCart, Utensils } from "lucide-react";
+import { BookOpen, ClipboardList, FileText, LayoutGrid, Package, ShoppingCart, Utensils } from "lucide-react";
 
 import { OrAppSidebarItem } from "@/ui/atomic";
 
@@ -28,6 +28,23 @@ export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
 // Rutas que la app ya enlaza fuera del menú (top bar). Aún no existen.
 export const RUTA_CARRITO = "/carrito";
 
+/** Ficha de un producto del catálogo (el "+" de Ordenar). Provisional hasta su tarea. */
+export const RUTA_PRODUCTO = "/producto";
+
+/** Tipo de ítem del catálogo que abre la ficha: el id de un combo no es un id de producto. */
+export type TipoFicha = "product" | "combo";
+
+/** Ficha de un ítem del catálogo: `/producto/<id>` o, si es un combo, `/producto/<id>?tipo=combo`. */
+export function rutaProducto(id: string, tipo: TipoFicha = "product"): string {
+  const ruta = `${RUTA_PRODUCTO}/${encodeURIComponent(id)}`;
+  return tipo === "combo" ? `${ruta}?tipo=combo` : ruta;
+}
+
+/** `?tipo=` de la ficha: `combo` o, por defecto, producto. */
+export function parseTipoFicha(value: unknown): TipoFicha {
+  return value === "combo" ? "combo" : "product";
+}
+
 /** Página del grupo `(cliente)`: título (e icono) de la top bar y, si está en el menú, su ítem activo. */
 export interface PaginaCliente {
   href: string;
@@ -47,6 +64,8 @@ export const PAGINAS_CLIENTE: PaginaCliente[] = [
   // Provisional: título de la sección "Pedidos realizados" del Figma, hasta que exista la pantalla.
   { href: RUTA_PEDIDOS, label: "Pedidos realizados", icon: <ClipboardList /> },
   { href: RUTA_CARRITO, label: "Carrito", icon: <ShoppingCart /> },
+  // Se llega desde Ordenar: su ítem sigue activo.
+  { href: RUTA_PRODUCTO, label: "Detalle del producto", icon: <Package />, navKey: "ordenar" },
 ];
 
 const TITULO_POR_DEFECTO = "Ofibites";
@@ -59,7 +78,12 @@ export function paginaClienteActual(pathname: string): PaginaCliente {
   return pagina ?? { href: pathname, label: TITULO_POR_DEFECTO };
 }
 
-/** Categorías con las que el dashboard enlaza a Ordenar (`?categoria=<slug>`), con su nombre en una frase. */
+/**
+ * Mapeo de las categorías del dashboard (id de la card "Explorar") al slug de la `Section` del catálogo
+ * (`GET /catalog`, T-19), que es lo que Ordenar lee en `?categoria=<slug>`. Hoy coinciden; si el back usa
+ * otros slugs (p. ej. `desayuno`), solo se cambia el valor aquí. Un slug que el catálogo no tenga (404) hace
+ * que Ordenar muestre "Todos" con un aviso.
+ */
 export const CATEGORIAS_ORDENAR = {
   bebidas: "bebidas",
   desayunos: "desayunos",
@@ -67,13 +91,14 @@ export const CATEGORIAS_ORDENAR = {
 
 export type CategoriaOrdenar = keyof typeof CATEGORIAS_ORDENAR;
 
-/** Un valor desconocido de `?categoria=` se ignora. */
+/** Categoría del dashboard con enlace a Ordenar. Un valor desconocido se ignora. */
 export function parseCategoriaOrdenar(value: unknown): CategoriaOrdenar | undefined {
   return typeof value === "string" && value in CATEGORIAS_ORDENAR ? (value as CategoriaOrdenar) : undefined;
 }
 
+/** Ordenar filtrado por la sección del catálogo que corresponde a una categoría del dashboard. */
 export function rutaOrdenarCategoria(categoria: CategoriaOrdenar): string {
-  return `${RUTA_ORDENAR}?categoria=${categoria}`;
+  return `${RUTA_ORDENAR}?categoria=${CATEGORIAS_ORDENAR[categoria]}`;
 }
 
 /** "Repetir" de las últimas órdenes: Ordenar con el pedido a repetir (`?repetir=<orderId>`). */

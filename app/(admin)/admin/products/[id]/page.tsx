@@ -33,6 +33,10 @@ export default function EditProductPage({
   // null = user hasn't toggled yet, use product value
   const [isActiveOverride, setIsActiveOverride] = useState<boolean | null>(null);
   const isActive = isActiveOverride ?? product?.isActive ?? true;
+  const [isFeaturedOverride, setIsFeaturedOverride] = useState<boolean | null>(null);
+  const isFeatured = isFeaturedOverride ?? product?.isFeatured ?? false;
+  const [isOnSaleOverride, setIsOnSaleOverride] = useState<boolean | null>(null);
+  const isOnSale = isOnSaleOverride ?? product?.isOnSale ?? false;
 
   const isSaving = updateProduct.isPending || uploadImage.isPending;
 
@@ -54,6 +58,8 @@ export default function EditProductPage({
           basePrice,
           stock,
           isActive,
+          isFeatured,
+          isOnSale,
         },
       },
       {
@@ -156,6 +162,10 @@ export default function EditProductPage({
           <MlAvailabilityCard
             isActive={isActive}
             onActiveChange={setIsActiveOverride}
+            isFeatured={isFeatured}
+            onFeaturedChange={setIsFeaturedOverride}
+            isOnSale={isOnSale}
+            onOnSaleChange={setIsOnSaleOverride}
           />
         </div>
       </div>

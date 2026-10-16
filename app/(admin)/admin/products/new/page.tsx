@@ -21,6 +21,8 @@ export default function NewProductPage() {
   const uploadImage = useUploadProductImage();
 
   const [isActive, setIsActive] = useState(true);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isOnSale, setIsOnSale] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const isLoading = createProduct.isPending || uploadImage.isPending;
@@ -41,6 +43,8 @@ export default function NewProductPage() {
         basePrice,
         stock,
         isActive,
+        isFeatured,
+        isOnSale,
       },
       {
         onSuccess: (product) => {
@@ -105,6 +109,10 @@ export default function NewProductPage() {
           <MlAvailabilityCard
             isActive={isActive}
             onActiveChange={setIsActive}
+            isFeatured={isFeatured}
+            onFeaturedChange={setIsFeatured}
+            isOnSale={isOnSale}
+            onOnSaleChange={setIsOnSale}
           />
         </div>
       </div>

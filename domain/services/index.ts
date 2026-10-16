@@ -1,5 +1,10 @@
 export { authService } from "./auth.service";
+export { bannerService } from "./banner.service";
+export { cartService } from "./cart.service";
+export { catalogService } from "./catalog.service";
+export { companyAddressService } from "./company-address.service";
 export { companyRequestService } from "./company-request.service";
+export { orderService } from "./order.service";
 export type { OrderQrValidation } from "./order-qr.service";
 export { orderQrService } from "./order-qr.service";
 export { productService } from "./product.service";

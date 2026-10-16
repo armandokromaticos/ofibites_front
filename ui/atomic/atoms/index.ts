@@ -2,6 +2,7 @@ export * from "./at-avatar";
 export * from "./at-button";
 export * from "./at-checkbox";
 export * from "./at-chip";
+export * from "./at-drawer";
 export * from "./at-icon-button";
 export * from "./at-input";
 export * from "./at-modal";
