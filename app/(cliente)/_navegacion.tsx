@@ -1,21 +1,18 @@
 import { ReactNode } from "react";
 
-import { BookOpen, ClipboardList, FileText, LayoutGrid, Package, ShoppingCart, Utensils } from "lucide-react";
+import { BookOpen, ClipboardList, LayoutGrid, Package, ShoppingCart, Utensils } from "lucide-react";
 
 import { OrAccountMenuItem, OrAppSidebarItem } from "@/ui/atomic";
 
 // Navegación del cliente, compartida por /dashboard, /ordenar y su layout (`(cliente)/layout.tsx`).
 export const RUTA_DASHBOARD = "/dashboard";
 export const RUTA_ORDENAR = "/ordenar";
-// Rutas que aún no existen (Pedidos...): los enlaces ya apuntan a su sitio.
 export const RUTA_PEDIDOS = "/pedidos";
-// TODO: conectar API (T-04). El Figma no fija la ruta de "Data y consumo": provisional.
-export const RUTA_CONSUMO = "/consumo";
 
 export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
   { key: "dashboard", label: "Dashboard", description: "Panel de control", href: RUTA_DASHBOARD, icon: <LayoutGrid /> },
   { key: "ordenar", label: "Ordenar", description: "Pide comida a la oficina", href: RUTA_ORDENAR, icon: <Utensils /> },
-  { key: "consumo", label: "Data y consumo", description: "Reportes y consumo", href: RUTA_CONSUMO, icon: <FileText /> },
+  { key: "pedidos", label: "Pedidos", description: "Historial de tus pedidos", href: RUTA_PEDIDOS, icon: <ClipboardList /> },
   {
     key: "administracion",
     label: "Administración",
@@ -49,11 +46,23 @@ export const MENU_CUENTA_CLIENTE: OrAccountMenuItem[] = [
 /** Ficha de un producto del catálogo (el "+" de Ordenar). Provisional hasta su tarea. */
 export const RUTA_PRODUCTO = "/producto";
 
+/** Detalle de un pedido (Figma 3568:1611, T-28b): `/pedidos/<id>`. */
+export function rutaPedido(id: string): string {
+  return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
+}
+
 /**
  * Rutas del grupo que ya tienen página. Un enlace que llega de la API (p. ej. el `link` de una notificación,
  * `/pedidos/<id>`) solo se sigue si cae aquí: al crear una página nueva del grupo, añádela.
  */
-const RUTAS_CON_PAGINA = [RUTA_DASHBOARD, RUTA_ORDENAR, RUTA_PRODUCTO, RUTA_CARRITO, RUTA_CHECKOUT];
+const RUTAS_CON_PAGINA = [
+  RUTA_DASHBOARD,
+  RUTA_ORDENAR,
+  RUTA_PRODUCTO,
+  RUTA_CARRITO,
+  RUTA_CHECKOUT,
+  RUTA_PEDIDOS,
+];
 
 /** `true` si `link` (ruta relativa) lleva a una página del cliente que existe. */
 export function tienePaginaCliente(link: string): boolean {
@@ -90,9 +99,9 @@ export interface PaginaCliente {
  * su `href` salvo que tenga entrada propia (gana la más larga).
  */
 export const PAGINAS_CLIENTE: PaginaCliente[] = [
+  // "Pedidos" ya sale de NAV_ITEMS_CLIENTE (sidebar); el h1 de la página dice "Pedidos realizados" y el
+  // detalle (`/pedidos/<id>`) hereda este título: mismo patrón que `/checkout/confirmado/<id>` con "Checkout".
   ...NAV_ITEMS_CLIENTE.map(({ href, label, icon, key }) => ({ href, label, icon, navKey: key })),
-  // Provisional: título de la sección "Pedidos realizados" del Figma, hasta que exista la pantalla.
-  { href: RUTA_PEDIDOS, label: "Pedidos realizados", icon: <ClipboardList /> },
   { href: RUTA_CARRITO, label: "Carrito", icon: <ShoppingCart /> },
   // Figma 3462:2094: título "Checkout" con el icono de Ordenar, que sigue activo en el sidebar.
   { href: RUTA_CHECKOUT, label: "Checkout", icon: <Utensils />, navKey: "ordenar" },

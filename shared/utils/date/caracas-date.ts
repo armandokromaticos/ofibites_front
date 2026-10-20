@@ -48,6 +48,16 @@ export function formatCaracasRelative(iso: string, now: Date = new Date()): stri
   return formatCaracasShortDate(iso);
 }
 
+/**
+ * Fecha corta con barras en hora de Caracas ("26/09/2026", Figma "Pedidos realizados" T-28). Con una ISO
+ * inválida devuelve "—". Solo para instantes (timestamps), como `formatCaracasShortDate`.
+ */
+export function formatCaracasDateSlash(iso: string): string {
+  if (!isValidIso(iso)) return INVALID_DATE_LABEL;
+  const part = getCaracasParts(iso, { day: "2-digit", month: "2-digit", year: "numeric" });
+  return `${part("day")}/${part("month")}/${part("year")}`;
+}
+
 /** Fecha y hora completas en hora de Caracas ("4 de Sep, 10:30 am"), p. ej. para el `title` de un `<time>`. */
 export function formatCaracasDateTime(iso: string): string {
   if (!isValidIso(iso)) return INVALID_DATE_LABEL;

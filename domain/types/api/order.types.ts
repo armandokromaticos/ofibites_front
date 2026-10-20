@@ -4,6 +4,15 @@
 
 export type OrderPriority = "LOW" | "MEDIUM" | "HIGH";
 
+/**
+ * Grupo de estado para "Pedidos realizados" (T-28), calculado por el back (`getOrderStatusGroup`,
+ * `order-status-groups.ts`) y expuesto como `OrderResponseDto.statusGroup`. Mapeo en
+ * `gestion/DECISIONES.md` (2026-10-20): recibido = CREATED/PENDING_APPROVAL/PENDING_CONFIRMATION/IN_ADJUSTMENT,
+ * programado = CONFIRMED/IN_PREPARATION, en_transito = IN_TRANSIT, entregado = DELIVERED,
+ * cancelado = REJECTED/CANCELLED.
+ */
+export type OrderStatusGroup = "received" | "scheduled" | "in_transit" | "delivered" | "cancelled";
+
 export interface OrderItemModifier {
   id: string;
   modifierId: string;
@@ -39,6 +48,8 @@ export interface Order {
   priority: OrderPriority;
   /** Un `OrderStatus`; el DTO lo tipa como string. */
   status: string;
+  /** Grupo de estado para filtros y badges de "Pedidos realizados" (T-28a, ya real en el back). */
+  statusGroup: OrderStatusGroup;
   subtotal: number | null;
   discount: number | null;
   /** IVA guardado al crear el pedido (T-26a; 0 en los anteriores al checkout). `null` solo para `OPERATOR`. */
