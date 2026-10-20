@@ -1,10 +1,12 @@
 export { authService } from "./auth.service";
 export { bannerService } from "./banner.service";
+export { branchService } from "./branch.service";
 export { cartService } from "./cart.service";
 export { catalogService } from "./catalog.service";
 export { companyService } from "./company.service";
 export { companyAddressService } from "./company-address.service";
 export { companyRequestService } from "./company-request.service";
+export { departmentService } from "./department.service";
 export { notificationService } from "./notification.service";
 export { orderService } from "./order.service";
 export type { OrderQrValidation } from "./order-qr.service";
