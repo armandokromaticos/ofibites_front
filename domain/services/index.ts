@@ -5,6 +5,7 @@ export { cartService } from "./cart.service";
 export { catalogService } from "./catalog.service";
 export { companyService } from "./company.service";
 export { companyAddressService } from "./company-address.service";
+export { companyMemberService } from "./company-member.service";
 export { companyRequestService } from "./company-request.service";
 export { departmentService } from "./department.service";
 export { notificationService } from "./notification.service";
