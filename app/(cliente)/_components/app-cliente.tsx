@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 
 import { useLogout } from "@/domain/hooks/auth";
 import { useClientUser } from "@/domain/hooks/dashboard";
+import { useAuthStore } from "@/domain/stores";
 import { TmAppLayout } from "@/ui/atomic";
 
-import { MENU_CUENTA_CLIENTE, NAV_ITEMS_CLIENTE, paginaClienteActual, RUTA_DASHBOARD } from "../_navegacion";
+import { MENU_CUENTA_CLIENTE, navItemsCliente, paginaClienteActual, RUTA_DASHBOARD } from "../_navegacion";
 
 import {
   marcarVueltaCliente,
@@ -28,6 +29,11 @@ export function AppCliente({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // Usuario del sidebar y del menú de cuenta: de la sesión (nombre, correo, empresa y rol activos), sin peticiones.
   const user = useClientUser();
+  // Oculta "Administración" del sidebar a quien no sea admin de la empresa activa (T-29f); la guarda de la
+  // página sigue siendo la que de verdad protege, esto es solo para no mostrar un ítem que redirige.
+  const isCompanyAdmin = useAuthStore(
+    (state) => state.memberships.find((m) => m.companyId === state.activeCompanyId)?.role === "COMPANY_ADMIN",
+  );
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   // Carrito y notificaciones de la top bar (`GET /cart`, `GET /notifications`); "Añadir al carrito" actualiza
   // el contador con su respuesta.
@@ -58,7 +64,7 @@ export function AppCliente({ children }: { children: ReactNode }) {
       title={pagina.label}
       titleIcon={pagina.icon}
       sidebar={{
-        items: NAV_ITEMS_CLIENTE,
+        items: navItemsCliente(isCompanyAdmin),
         activeKey: pagina.navKey,
         isOpen: isSidebarOpen,
         onToggle: () => setIsSidebarOpen((open) => !open),
