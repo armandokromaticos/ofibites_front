@@ -9,6 +9,8 @@ export const RUTA_DASHBOARD = "/dashboard";
 export const RUTA_ORDENAR = "/ordenar";
 export const RUTA_PEDIDOS = "/pedidos";
 export const RUTA_ADMINISTRACION = "/administracion";
+/** "Mi perfil" (T-30), desde el menú de cuenta del avatar. La sección va en `?seccion=` (ver `rutaPerfil`). */
+export const RUTA_PERFIL = "/perfil";
 
 export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
   { key: "dashboard", label: "Dashboard", description: "Panel de control", href: RUTA_DASHBOARD, icon: <LayoutGrid /> },
@@ -49,7 +51,7 @@ export function rutaPedidoConfirmado(orderId: string): string {
  * su pantalla, basta con añadir el `href` (y la ruta a `RUTAS_CON_PAGINA` y `PAGINAS_CLIENTE`).
  */
 export const MENU_CUENTA_CLIENTE: OrAccountMenuItem[] = [
-  { key: "perfil", label: "Mi perfil" },
+  { key: "perfil", label: "Mi perfil", href: RUTA_PERFIL },
   { key: "empresa", label: "Datos de la empresa" },
   { key: "pagos", label: "Métodos de pago" },
 ];
@@ -60,6 +62,19 @@ export const RUTA_PRODUCTO = "/producto";
 /** Detalle de un pedido (Figma 3568:1611, T-28b): `/pedidos/<id>`. */
 export function rutaPedido(id: string): string {
   return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
+}
+
+/** Secciones de "Mi perfil" con pantalla (fase 1). Las demás se ven deshabilitadas con "Pronto". */
+export type SeccionPerfil = "datos" | "contrasena";
+
+/** `?seccion=` de Mi perfil: `contrasena` o, por defecto, `datos`. */
+export function parseSeccionPerfil(value: unknown): SeccionPerfil {
+  return value === "contrasena" ? "contrasena" : "datos";
+}
+
+/** Enlace a una sección de Mi perfil (`/perfil` para Datos básicos, `/perfil?seccion=contrasena`). */
+export function rutaPerfil(seccion: SeccionPerfil = "datos"): string {
+  return seccion === "datos" ? RUTA_PERFIL : `${RUTA_PERFIL}?seccion=${seccion}`;
 }
 
 /** "Añadir usuario" (Figma `3463:2225`, T-29b): `/administracion/nuevo`. */
@@ -82,6 +97,7 @@ const RUTAS_CON_PAGINA = [
   RUTA_CHECKOUT,
   RUTA_PEDIDOS,
   RUTA_ADMINISTRACION,
+  RUTA_PERFIL,
 ];
 
 /** `true` si `link` (ruta relativa) lleva a una página del cliente que existe. */
@@ -128,6 +144,8 @@ export const PAGINAS_CLIENTE: PaginaCliente[] = [
   { href: RUTA_CHECKOUT, label: "Checkout", icon: <Utensils />, navKey: "ordenar" },
   // Se llega desde Ordenar: su ítem sigue activo.
   { href: RUTA_PRODUCTO, label: "Detalle del producto", icon: <Package />, navKey: "ordenar" },
+  // Figma 3651:1921: título "Mi perfil" con el icono de libro; ningún ítem del sidebar activo.
+  { href: RUTA_PERFIL, label: "Mi perfil", icon: <BookOpen /> },
 ];
 
 const TITULO_POR_DEFECTO = "Ofibites";

@@ -1,7 +1,8 @@
 /**
  * Reglas de contraseña de OfiBites (checklist del Figma 3236:12333). Son las mismas que valida el
- * back en `ResetPasswordDto` (`ofibites/src/core/application/dto/auth/reset-password.dto.ts`):
- * si cambian allí, cambian aquí. Se reutilizan en el cambio de contraseña del primer login.
+ * back con `@IsPasswordPolicy()` (`ofibites/src/core/application/dto/auth/password-policy.decorator.ts`), que
+ * comparten `reset-password` y `change-password`: si cambian allí, cambian aquí. Se reutilizan en el cambio de
+ * contraseña del primer login y en Mi perfil.
  */
 
 export type PasswordRuleId = "minLength" | "uppercase" | "lowercase" | "number" | "symbol" | "noSpaces";

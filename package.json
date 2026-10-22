@@ -20,6 +20,7 @@
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-easy-crop": "6.2.4",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

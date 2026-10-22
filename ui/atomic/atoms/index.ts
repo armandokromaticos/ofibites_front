@@ -11,6 +11,7 @@ export * from "./at-popover";
 export * from "./at-progress";
 export * from "./at-select";
 export * from "./at-skeleton";
+export * from "./at-slider";
 export * from "./at-switch";
 export * from "./at-text-link";
 export * from "./at-textarea";

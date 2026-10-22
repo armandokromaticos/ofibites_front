@@ -42,9 +42,9 @@ const COMPANY_ROLE_LABELS: Record<CompanyRole, string> = {
 // ---------------------------------------------------------------------------------------------------------------
 // Usuario (de la sesión)
 
-/** Saludo, nombre corto del sidebar, datos del menú de cuenta y rol en la empresa activa. Sin avatar: el back no lo tiene. */
+/** Saludo, nombre corto del sidebar, datos del menú de cuenta, rol en la empresa activa y foto (T-30d). */
 export function toClientDashboardUser(
-  user: Pick<User, "name" | "email"> | null,
+  user: (Pick<User, "name" | "email"> & Partial<Pick<User, "avatarUrl">>) | null,
   memberships: Membership[],
   activeCompanyId: string | null,
 ): ClientDashboardUser {
@@ -59,6 +59,8 @@ export function toClientDashboardUser(
     fullName: (user?.name ?? "").trim(),
     email: user?.email ?? "",
     companyName: membership?.companyName,
+    // Sin foto (o una sesión guardada antes de T-30c, sin el campo), las iniciales.
+    avatarSrc: user?.avatarUrl ?? undefined,
   };
 }
 

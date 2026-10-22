@@ -18,6 +18,8 @@ import {
   MEMBER_STATUS_COLORS,
   MEMBER_STATUS_LABELS,
   memberStatus,
+  separarNombreApellido,
+  unirNombreApellido,
 } from "@/domain/models";
 import { CompanyMember } from "@/domain/types";
 import { formatCaracasDateSlash } from "@/shared/utils";
@@ -32,13 +34,6 @@ const ROLE_GUIDE_ITEMS = COMPANY_ROLE_OPTIONS.map((role) => ({
   label: COMPANY_ROLE_LABELS[role],
   description: COMPANY_ROLE_DESCRIPTIONS[role],
 }));
-
-/** Separa `User.name` por el **primer espacio** (heurística): el resto, aunque tenga más espacios, es "apellido". */
-function separarNombreApellido(name: string): { firstName: string; lastName: string } {
-  const indice = name.indexOf(" ");
-  if (indice === -1) return { firstName: name, lastName: "" };
-  return { firstName: name.slice(0, indice), lastName: name.slice(indice + 1) };
-}
 
 function valoresDesde(
   member: Pick<CompanyMember, "name" | "email" | "phone" | "position" | "departmentId" | "branchId" | "role">,
@@ -150,7 +145,7 @@ function FormularioEdicion({ member }: FormularioEdicionProps) {
       {
         id: member.id,
         body: {
-          name: `${valores.firstName.trim()} ${valores.lastName.trim()}`.trim(),
+          name: unirNombreApellido(valores.firstName, valores.lastName),
           phone: valores.phone.trim() || null,
           role: valores.role,
           position: valores.position.trim() || null,

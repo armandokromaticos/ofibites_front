@@ -24,7 +24,11 @@ export type CompanyRole =
   | "COMPANY_FINANCE"
   | "COMPANY_APPROVER";
 
-/** `UserResponseDto`. Las fechas llegan como string ISO; `birthDate` es fecha pura (`AAAA-MM-DD`). */
+/**
+ * `UserResponseDto`. Las fechas llegan como string ISO; `birthDate` es fecha pura (`AAAA-MM-DD`).
+ * `passwordChangedAt` (T-30a): último cambio de contraseña (cambio desde el perfil o restablecimiento); `null` si
+ * nunca la cambió desde que existe la columna. Viene en todo `UserResponseDto` (login, `/auth/me`, `/users`).
+ */
 export interface User {
   id: string;
   authId: string | null;
@@ -36,6 +40,12 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  passwordChangedAt: string | null;
+  /**
+   * T-30c: URL pública de la foto de perfil (bucket `avatars`); `null` sin foto. Una sesión guardada antes de T-30c
+   * no lo trae hasta el siguiente `/auth/me`: léelo con `?? null`.
+   */
+  avatarUrl: string | null;
 }
 
 /** `AuthResponseDto`: respuesta de `POST /auth/login` y `POST /auth/refresh`. */
@@ -85,4 +95,25 @@ export interface ForgotPasswordRequest {
 export interface ResetPasswordRequest {
   accessToken: string;
   password: string;
+}
+
+/**
+ * `PATCH /auth/me` (T-30a): el usuario edita sus propios datos. Todos opcionales, al menos uno. `name` es el
+ * nombre completo (Nombre + Apellido unidos con un espacio). `phone`/`position` con `null` se borran.
+ * `position` vive en la membresía de la empresa activa: exige `X-Company-Id` (lo pone `authFetcher`).
+ * Responde un `MeResponse` ya actualizado.
+ */
+export interface UpdateMeRequest {
+  name?: string;
+  phone?: string | null;
+  position?: string | null;
+}
+
+/**
+ * `POST /auth/change-password` (T-30a). Responde 204. Contraseña actual incorrecta → 400 (no 401) con
+ * "La contraseña actual no es correcta". Cierra las demás sesiones; la actual sigue válida.
+ */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }

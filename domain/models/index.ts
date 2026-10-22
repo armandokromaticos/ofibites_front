@@ -5,3 +5,4 @@ export * from "./company-member.model";
 export * from "./order-status.model";
 export * from "./order-status-group.model";
 export * from "./password-recovery.model";
+export * from "./user-name.model";
