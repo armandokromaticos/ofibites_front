@@ -27,6 +27,29 @@ export function mensajeErrorQuitarAvatar(error: unknown): string {
   return getApiErrorMessage(error, QUITAR_FOTO_FALLBACK);
 }
 
+const GUARDAR_DIRECCION_FALLBACK = "No pudimos guardar la sede. Inténtalo de nuevo.";
+const ELIMINAR_DIRECCION_FALLBACK = "No pudimos eliminar la sede. Inténtalo de nuevo.";
+
+/** Error de crear/editar una sede (`POST`/`PATCH .../addresses`). Solo COMPANY_ADMIN puede, de ahí el 403. */
+export function mensajeErrorDireccion(error: unknown): string {
+  if (isApiError(error) && error.statusCode === 403) {
+    return "Solo el administrador de tu empresa puede crear o editar sedes.";
+  }
+  return getApiErrorMessage(error, GUARDAR_DIRECCION_FALLBACK);
+}
+
+/**
+ * Error de `DELETE .../addresses/:id`. El 409 es el gate real del back cuando la sede tiene pedidos en curso
+ * asociados (T-31a, back PENDIENTE al escribir esto): se muestra tal cual, aunque el chequeo previo del front
+ * (si lo hay) no haya avisado nada (pudo cambiar entre que se abrió el modal y se confirmó).
+ */
+export function mensajeErrorEliminarDireccion(error: unknown): string {
+  if (isApiError(error) && error.statusCode === 403) {
+    return "Solo el administrador de tu empresa puede eliminar sedes.";
+  }
+  return getApiErrorMessage(error, ELIMINAR_DIRECCION_FALLBACK);
+}
+
 /** Error de `POST /auth/change-password`, clasificado por dónde se muestra. */
 export type ErrorCambioContrasena =
   | { tipo: "actual-incorrecta"; mensaje: string }

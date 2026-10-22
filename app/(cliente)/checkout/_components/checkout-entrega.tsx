@@ -364,6 +364,8 @@ function PasoEntrega() {
               )}
               {agregando && (
                 <NuevaDireccion
+                  defaultContactName={draft.receiverName}
+                  defaultContactPhone={draft.receiverPhone}
                   onCancel={() => {
                     setAgregando(false);
                     // El botón vuelve a montarse en el mismo render: se enfoca en el siguiente.
