@@ -24,6 +24,7 @@ export * from "./ml-product-mini-card";
 export * from "./ml-promo-banner";
 export * from "./ml-quantity-stepper";
 export * from "./ml-radio-card-group";
+export * from "./ml-role-guide";
 export * from "./ml-search-bar";
 export * from "./ml-segmented-control";
 export * from "./ml-sidebar-item";

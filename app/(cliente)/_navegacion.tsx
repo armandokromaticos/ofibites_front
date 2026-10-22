@@ -8,6 +8,7 @@ import { OrAccountMenuItem, OrAppSidebarItem } from "@/ui/atomic";
 export const RUTA_DASHBOARD = "/dashboard";
 export const RUTA_ORDENAR = "/ordenar";
 export const RUTA_PEDIDOS = "/pedidos";
+export const RUTA_ADMINISTRACION = "/administracion";
 
 export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
   { key: "dashboard", label: "Dashboard", description: "Panel de control", href: RUTA_DASHBOARD, icon: <LayoutGrid /> },
@@ -17,10 +18,20 @@ export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
     key: "administracion",
     label: "Administración",
     description: "Control de usuarios",
-    href: "/administracion",
+    href: RUTA_ADMINISTRACION,
     icon: <BookOpen />,
   },
 ];
+
+/**
+ * Ítems del sidebar para la membresía activa: oculta "Administración" a quien no sea `COMPANY_ADMIN` (T-29f).
+ * `/administracion` ya se protege con su propia guarda; esto solo evita mostrar el ítem a quien no la puede usar.
+ */
+export function navItemsCliente(isCompanyAdmin: boolean): OrAppSidebarItem[] {
+  return isCompanyAdmin
+    ? NAV_ITEMS_CLIENTE
+    : NAV_ITEMS_CLIENTE.filter((item) => item.key !== "administracion");
+}
 
 // Rutas que la app enlaza fuera del menú (top bar).
 export const RUTA_CARRITO = "/carrito";
@@ -51,6 +62,14 @@ export function rutaPedido(id: string): string {
   return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
 }
 
+/** "Añadir usuario" (Figma `3463:2225`, T-29b): `/administracion/nuevo`. */
+export const RUTA_ADMINISTRACION_NUEVO = `${RUTA_ADMINISTRACION}/nuevo`;
+
+/** "Editar usuario" de un miembro de la empresa (Figma `3511:9089`, T-29b): `/administracion/<id>`. */
+export function rutaMiembro(id: string): string {
+  return `${RUTA_ADMINISTRACION}/${encodeURIComponent(id)}`;
+}
+
 /**
  * Rutas del grupo que ya tienen página. Un enlace que llega de la API (p. ej. el `link` de una notificación,
  * `/pedidos/<id>`) solo se sigue si cae aquí: al crear una página nueva del grupo, añádela.
@@ -62,6 +81,7 @@ const RUTAS_CON_PAGINA = [
   RUTA_CARRITO,
   RUTA_CHECKOUT,
   RUTA_PEDIDOS,
+  RUTA_ADMINISTRACION,
 ];
 
 /** `true` si `link` (ruta relativa) lleva a una página del cliente que existe. */
@@ -99,8 +119,9 @@ export interface PaginaCliente {
  * su `href` salvo que tenga entrada propia (gana la más larga).
  */
 export const PAGINAS_CLIENTE: PaginaCliente[] = [
-  // "Pedidos" ya sale de NAV_ITEMS_CLIENTE (sidebar); el h1 de la página dice "Pedidos realizados" y el
-  // detalle (`/pedidos/<id>`) hereda este título: mismo patrón que `/checkout/confirmado/<id>` con "Checkout".
+  // "Pedidos" y "Administración" ya salen de NAV_ITEMS_CLIENTE (sidebar); sus h1 propios ("Pedidos
+  // realizados", "Añadir usuario"...) y las rutas hijas (`/pedidos/<id>`, `/administracion/<id>`) heredan
+  // este título: mismo patrón que `/checkout/confirmado/<id>` con "Checkout".
   ...NAV_ITEMS_CLIENTE.map(({ href, label, icon, key }) => ({ href, label, icon, navKey: key })),
   { href: RUTA_CARRITO, label: "Carrito", icon: <ShoppingCart /> },
   // Figma 3462:2094: título "Checkout" con el icono de Ordenar, que sigue activo en el sidebar.
