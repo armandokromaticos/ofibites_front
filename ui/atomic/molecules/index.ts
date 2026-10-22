@@ -26,6 +26,7 @@ export * from "./ml-quantity-stepper";
 export * from "./ml-radio-card-group";
 export * from "./ml-role-guide";
 export * from "./ml-search-bar";
+export * from "./ml-section-nav";
 export * from "./ml-segmented-control";
 export * from "./ml-sidebar-item";
 export * from "./ml-size-row";
