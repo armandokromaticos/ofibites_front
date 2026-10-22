@@ -1,4 +1,6 @@
 export * from "./or-account-menu";
+export * from "./or-address-card";
+export * from "./or-address-form-modal";
 export * from "./or-admin-sidebar";
 export * from "./or-app-sidebar";
 export * from "./or-avatar-upload-modal";
@@ -10,6 +12,7 @@ export * from "./or-catalog-filters";
 export * from "./or-change-password-form";
 export * from "./or-company-request-wizard";
 export * from "./or-confirm-modal";
+export * from "./or-delete-address-modal";
 export * from "./or-member-filters-bar";
 export * from "./or-member-form";
 export * from "./or-member-table";

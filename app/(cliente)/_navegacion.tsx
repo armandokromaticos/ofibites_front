@@ -64,12 +64,13 @@ export function rutaPedido(id: string): string {
   return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
 }
 
-/** Secciones de "Mi perfil" con pantalla (fase 1). Las demás se ven deshabilitadas con "Pronto". */
-export type SeccionPerfil = "datos" | "contrasena";
+/** Secciones de "Mi perfil" con pantalla. Las demás se ven deshabilitadas con "Pronto". */
+export type SeccionPerfil = "datos" | "contrasena" | "sedes";
 
-/** `?seccion=` de Mi perfil: `contrasena` o, por defecto, `datos`. */
+/** `?seccion=` de Mi perfil: `contrasena`/`sedes` o, por defecto, `datos`. */
 export function parseSeccionPerfil(value: unknown): SeccionPerfil {
-  return value === "contrasena" ? "contrasena" : "datos";
+  if (value === "contrasena" || value === "sedes") return value;
+  return "datos";
 }
 
 /** Enlace a una sección de Mi perfil (`/perfil` para Datos básicos, `/perfil?seccion=contrasena`). */

@@ -34,6 +34,8 @@ import {
   mensajeErrorQuitarAvatar,
 } from "../_data/errores-perfil";
 
+import { DireccionesSedes } from "./direcciones-sedes";
+
 const RUTA_OLVIDE_CONTRASENA = "/forgot-password";
 
 /** Secciones del Figma (`3651:1920`). Sin `href`: fases siguientes, deshabilitadas con "Pronto". */
@@ -41,7 +43,7 @@ const SECCIONES: MlSectionNavItem[] = [
   { key: "datos", label: "Datos básicos", href: rutaPerfil("datos") },
   { key: "contrasena", label: "Contraseña", href: rutaPerfil("contrasena") },
   { key: "notificaciones", label: "Notificaciones" },
-  { key: "sedes", label: "Direcciones y sedes" },
+  { key: "sedes", label: "Direcciones y sedes", href: rutaPerfil("sedes") },
   { key: "indicadores", label: "Indicadores" },
 ];
 
@@ -249,6 +251,9 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
     ? [COMPANY_ROLE_LABELS[membership.role], membership.branchName].filter(Boolean).join(" · ")
     : undefined;
   const passwordChangedAt = me.user.passwordChangedAt;
+  // Mismo cálculo que `app-cliente.tsx` (sidebar, T-29f): solo quien administra la empresa activa gestiona
+  // sedes (añadir/editar/eliminar/marcar principal). El resto ve "Direcciones y sedes" de solo lectura.
+  const isCompanyAdmin = membership?.role === "COMPANY_ADMIN";
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[260px_1fr] xl:gap-8">
@@ -306,6 +311,9 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
               passwordChangedAt ? `Última vez que la cambiaste: ${formatCaracasDateSlash(passwordChangedAt)}` : undefined
             }
           />
+        </div>
+        <div hidden={seccion !== "sedes"}>
+          <DireccionesSedes isCompanyAdmin={isCompanyAdmin} />
         </div>
       </div>
 
