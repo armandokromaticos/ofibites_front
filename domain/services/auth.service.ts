@@ -4,8 +4,10 @@ import {
   ForgotPasswordRequest,
   LoginRequest,
   MeResponse,
+  NotificationPreferencesResponse,
   ResetPasswordRequest,
   UpdateMeRequest,
+  UpdateNotificationPreferencesRequest,
 } from "@/domain/types";
 import { authFetcher, fetcher } from "@/shared/utils/fetch";
 
@@ -48,6 +50,22 @@ export const authService = {
   changePassword: (data: ChangePasswordRequest): Promise<void> =>
     authFetcher<void>("/auth/change-password", {
       method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  /** `GET /auth/me/notification-preferences` (T-30e/f). Siempre los 9 tipos del catálogo, con defaults. */
+  getNotificationPreferences: (): Promise<NotificationPreferencesResponse> =>
+    authFetcher<NotificationPreferencesResponse>("/auth/me/notification-preferences"),
+
+  /**
+   * `PATCH /auth/me/notification-preferences` (T-30e/f): solo lo que cambió. Devuelve el catálogo completo
+   * ya actualizado, igual que el GET.
+   */
+  updateNotificationPreferences: (
+    data: UpdateNotificationPreferencesRequest,
+  ): Promise<NotificationPreferencesResponse> =>
+    authFetcher<NotificationPreferencesResponse>("/auth/me/notification-preferences", {
+      method: "PATCH",
       body: JSON.stringify(data),
     }),
 

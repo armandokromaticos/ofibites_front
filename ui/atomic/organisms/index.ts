@@ -15,6 +15,7 @@ export * from "./or-member-form";
 export * from "./or-member-table";
 export * from "./or-modifier-groups-section";
 export * from "./or-new-password-form";
+export * from "./or-notification-preferences-form";
 export * from "./or-notifications-popover";
 export * from "./or-order-filters-bar";
 export * from "./or-order-qr-code";
