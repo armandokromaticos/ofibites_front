@@ -29,8 +29,11 @@ export function OrProfileCard({
         </div>
         {roleLabel && (
           <AtChip
-            startContent={<span aria-hidden="true" className="ml-1 size-1.5 rounded-full bg-primary" />}
-            classNames={{ base: "h-6 max-w-full", content: "truncate text-[11px] font-semibold" }}
+            startContent={<span aria-hidden="true" className="ml-1 size-1.5 shrink-0 rounded-full bg-primary" />}
+            classNames={{
+              base: "h-auto min-h-6 max-w-full py-1",
+              content: "min-w-0 whitespace-normal break-words text-[11px] font-semibold leading-4",
+            }}
           >
             {roleLabel}
           </AtChip>
