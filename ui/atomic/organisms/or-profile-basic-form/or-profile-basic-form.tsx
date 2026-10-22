@@ -4,7 +4,7 @@ import { FormEvent, useRef, useState } from "react";
 
 import { cn } from "@heroui/react";
 
-import { AtAvatar, AtButton, AtChip, AtInput } from "@/ui/atomic/atoms";
+import { AtAvatar, AtButton, AtInput } from "@/ui/atomic/atoms";
 import { MlForm, MlFormAlert } from "@/ui/atomic/molecules";
 
 import {
@@ -53,7 +53,8 @@ function NoEditable() {
 }
 
 /**
- * "Datos básicos" de Mi perfil (Figma `3651:1921`): foto (iniciales; subir foto llega en otra fase), Nombre,
+ * "Datos básicos" de Mi perfil (Figma `3651:1921`, con foto `3702:17145`): foto (iniciales si no hay, "Subir
+ * foto"/"Cambiar foto" + "Quitar foto" por props, el modal de recorte lo abre quien usa este formulario), Nombre,
  * Apellido, Teléfono y Cargo editables; Correo, Departamento y Sede de solo lectura (los define la empresa).
  * "Guardar cambios" solo responde con cambios (`aria-disabled`, para que el foco no caiga a `<body>` cuando se
  * inhabilita tras guardar). Al enviar con errores, el foco va al primer campo inválido.
@@ -63,6 +64,10 @@ export function OrProfileBasicForm({
   onChange,
   name,
   avatarSrc,
+  onUploadPhoto,
+  onRemovePhoto,
+  isRemovingPhoto = false,
+  removePhotoError,
   email,
   departmentName,
   branchName,
@@ -129,22 +134,53 @@ export function OrProfileBasicForm({
 
       <div ref={contenedorRef}>
         <MlForm validationBehavior="aria" className="flex flex-col gap-5 pt-5" onSubmit={handleSubmit}>
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <AtAvatar name={name} src={avatarSrc} isDecorative className="size-16 text-xl" />
-              <div className="flex flex-col gap-0.5">
-                <p className="text-[13px] font-semibold leading-5 text-foreground">Foto de perfil</p>
-                <p className="text-xs leading-4 text-muted">
-                  Si no cargas una, se muestran tus iniciales. JPG o PNG, máximo 2 MB.
-                </p>
+          <div className="flex w-full flex-col gap-3">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <AtAvatar name={name} src={avatarSrc} isDecorative className="size-16 text-xl" />
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-[13px] font-semibold leading-5 text-foreground">
+                    {avatarSrc ? "Tu foto" : "Foto de perfil"}
+                  </p>
+                  <p className="text-xs leading-4 text-muted">
+                    {avatarSrc
+                      ? "Se muestra en tu perfil y junto a los pedidos que hagas."
+                      : "Si no cargas una, se muestran tus iniciales. JPG o PNG, máximo 2 MB."}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <AtButton
+                  size="md"
+                  variant="bordered"
+                  className="h-10 border-primary text-sm text-primary aria-disabled:opacity-50"
+                  aria-disabled={isRemovingPhoto || undefined}
+                  onPress={() => {
+                    if (!isRemovingPhoto) onUploadPhoto?.();
+                  }}
+                >
+                  {avatarSrc ? "Cambiar foto" : "Subir foto"}
+                </AtButton>
+                {avatarSrc && (
+                  <AtButton
+                    size="md"
+                    variant="light"
+                    color="default"
+                    className="h-10 text-[13px] text-muted"
+                    isLoading={isRemovingPhoto}
+                    aria-disabled={isRemovingPhoto || undefined}
+                    onPress={() => {
+                      if (!isRemovingPhoto) onRemovePhoto?.();
+                    }}
+                  >
+                    Quitar foto
+                  </AtButton>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <AtButton size="md" variant="bordered" className="h-10 border-primary text-sm text-primary" isDisabled>
-                Subir foto
-              </AtButton>
-              <AtChip>Pronto</AtChip>
-            </div>
+            {removePhotoError && (
+              <MlFormAlert title="No pudimos quitar tu foto.">{removePhotoError}</MlFormAlert>
+            )}
           </div>
 
           {formError && <MlFormAlert title="No pudimos guardar tus datos.">{formError}</MlFormAlert>}

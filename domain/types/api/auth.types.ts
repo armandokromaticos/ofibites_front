@@ -41,6 +41,11 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   passwordChangedAt: string | null;
+  /**
+   * T-30c: URL pública de la foto de perfil (bucket `avatars`); `null` sin foto. Una sesión guardada antes de T-30c
+   * no lo trae hasta el siguiente `/auth/me`: léelo con `?? null`.
+   */
+  avatarUrl: string | null;
 }
 
 /** `AuthResponseDto`: respuesta de `POST /auth/login` y `POST /auth/refresh`. */

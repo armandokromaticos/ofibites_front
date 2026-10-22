@@ -31,6 +31,19 @@ export const authService = {
       body: JSON.stringify(data),
     }),
 
+  /**
+   * Sube la foto de perfil (T-30c): multipart con el campo `file` (JPG/PNG, máx. 2 MB; el front ya manda el recorte
+   * de 512×512). Sin `Content-Type` propio: con `FormData`, `authFetcher` deja que el navegador ponga el `boundary`.
+   */
+  uploadAvatar: (file: File): Promise<MeResponse> => {
+    const body = new FormData();
+    body.append("file", file);
+    return authFetcher<MeResponse>("/auth/me/avatar", { method: "POST", body });
+  },
+
+  /** Quita la foto de perfil (T-30c). Idempotente: devuelve el `MeResponse` con `avatarUrl: null`. */
+  removeAvatar: (): Promise<MeResponse> => authFetcher<MeResponse>("/auth/me/avatar", { method: "DELETE" }),
+
   /** Cambia la contraseña con la sesión iniciada (T-30a). 204; la actual incorrecta es un 400 (no cierra la sesión). */
   changePassword: (data: ChangePasswordRequest): Promise<void> =>
     authFetcher<void>("/auth/change-password", {

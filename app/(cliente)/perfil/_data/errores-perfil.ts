@@ -3,6 +3,8 @@ import { getApiErrorMessage, getApiErrorMessages, isApiError } from "@/shared/ut
 const GUARDAR_FALLBACK = "No pudimos guardar tus datos. Inténtalo de nuevo.";
 const CONTRASENA_FALLBACK = "No pudimos actualizar la contraseña. Inténtalo de nuevo.";
 const DEMASIADOS_INTENTOS = "Hiciste demasiados intentos seguidos. Espera unos minutos y vuelve a intentar.";
+const SUBIR_FOTO_FALLBACK = "No pudimos guardar tu foto. Inténtalo de nuevo.";
+const QUITAR_FOTO_FALLBACK = "No pudimos quitar tu foto. Inténtalo de nuevo.";
 
 /**
  * Mensaje de un error de `PATCH /auth/me`. Los 400 de validación llegan como array de mensajes por campo
@@ -10,6 +12,19 @@ const DEMASIADOS_INTENTOS = "Hiciste demasiados intentos seguidos. Espera unos m
  */
 export function mensajeErrorPerfil(error: unknown): string {
   return getApiErrorMessage(error, GUARDAR_FALLBACK);
+}
+
+/**
+ * Error de `POST /auth/me/avatar` (T-30c/T-30d). Los 400 de formato/tamaño y el 503 de Storage ya llegan en
+ * español desde el back (contrato); no hace falta clasificar por campo, solo mostrarlos.
+ */
+export function mensajeErrorAvatar(error: unknown): string {
+  return getApiErrorMessage(error, SUBIR_FOTO_FALLBACK);
+}
+
+/** Error de `DELETE /auth/me/avatar` (T-30c/T-30d). */
+export function mensajeErrorQuitarAvatar(error: unknown): string {
+  return getApiErrorMessage(error, QUITAR_FOTO_FALLBACK);
 }
 
 /** Error de `POST /auth/change-password`, clasificado por dónde se muestra. */

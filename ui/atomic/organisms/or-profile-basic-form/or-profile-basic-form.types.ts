@@ -14,6 +14,13 @@ export interface OrProfileBasicFormProps {
   /** Nombre completo guardado: iniciales de la foto de perfil. */
   name: string;
   avatarSrc?: string;
+  /** Abre el modal de subir/recortar foto (T-30d). Sin foto: "Subir foto"; con foto: "Cambiar foto". */
+  onUploadPhoto?: () => void;
+  /** Quita la foto actual (`DELETE /auth/me/avatar`). Solo se muestra el botón si hay `avatarSrc`. */
+  onRemovePhoto?: () => void;
+  isRemovingPhoto?: boolean;
+  /** Error al quitar la foto, en una alerta propia bajo el bloque de foto. */
+  removePhotoError?: string | null;
   /** Datos que define la empresa (solo lectura). */
   email: string;
   departmentName: string | null;

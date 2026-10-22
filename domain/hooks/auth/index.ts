@@ -1,3 +1,4 @@
+export { useRemoveAvatar, useUploadAvatar } from "./useAvatar";
 export { useChangePassword } from "./useChangePassword";
 export { useForgotPassword } from "./useForgotPassword";
 export { useLogin } from "./useLogin";

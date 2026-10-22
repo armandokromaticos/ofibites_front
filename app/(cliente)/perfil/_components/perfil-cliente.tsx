@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { CloudOff } from "lucide-react";
 
-import { useChangePassword, useMe, useUpdateMe } from "@/domain/hooks/auth";
+import { useChangePassword, useMe, useRemoveAvatar, useUpdateMe, useUploadAvatar } from "@/domain/hooks/auth";
 import { COMPANY_ROLE_LABELS, separarNombreApellido, unirNombreApellido } from "@/domain/models";
 import { useAuthStore } from "@/domain/stores";
 import { Membership, MeResponse, UpdateMeRequest } from "@/domain/types";
@@ -14,6 +14,7 @@ import { formatCaracasDateSlash } from "@/shared/utils";
 import { AtSkeleton } from "@/ui/atomic/atoms";
 import { MlEmptyState, MlSectionNavItem } from "@/ui/atomic/molecules";
 import {
+  OrAvatarUploadModal,
   OrChangePasswordFocusRequest,
   OrChangePasswordForm,
   OrChangePasswordFormValues,
@@ -26,7 +27,12 @@ import {
 } from "@/ui/atomic/organisms";
 
 import { parseSeccionPerfil, RUTA_DASHBOARD, rutaPerfil } from "../../_navegacion";
-import { clasificarErrorContrasena, mensajeErrorPerfil } from "../_data/errores-perfil";
+import {
+  clasificarErrorContrasena,
+  mensajeErrorAvatar,
+  mensajeErrorPerfil,
+  mensajeErrorQuitarAvatar,
+} from "../_data/errores-perfil";
 
 const RUTA_OLVIDE_CONTRASENA = "/forgot-password";
 
@@ -122,6 +128,8 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
 
   const updateMe = useUpdateMe();
   const changePassword = useChangePassword();
+  const uploadAvatar = useUploadAvatar();
+  const removeAvatar = useRemoveAvatar();
 
   // Datos básicos: `base` sale siempre del último `/auth/me`; `borrador` solo existe mientras se edita.
   const base = useMemo(() => valoresDesde(me, membership), [me, membership]);
@@ -133,6 +141,12 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
   const isDirty = borrador !== null && Object.keys(cuerpoCambios(base, borrador, conCargo)).length > 0;
   const [errorPerfil, setErrorPerfil] = useState<string | null>(null);
   const [perfilGuardado, setPerfilGuardado] = useState(false);
+
+  // Foto de perfil (T-30d): `avatarModalKey` cambia solo al abrir, para montar el modal siempre desde cero.
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [avatarModalKey, setAvatarModalKey] = useState(0);
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
+  const [avatarRemoveError, setAvatarRemoveError] = useState<string | null>(null);
 
   // Contraseña: `formKey` vuelve a montar el formulario (vacío) tras un cambio correcto.
   const [formKey, setFormKey] = useState(0);
@@ -172,6 +186,30 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
         setPerfilGuardado(true);
       },
       onError: (error) => setErrorPerfil(mensajeErrorPerfil(error)),
+    });
+  };
+
+  const abrirModalAvatar = () => {
+    if (uploadAvatar.isPending) return;
+    setAvatarUploadError(null);
+    setAvatarModalKey((key) => key + 1);
+    setAvatarModalOpen(true);
+  };
+
+  const guardarAvatar = (file: File) => {
+    if (uploadAvatar.isPending) return;
+    setAvatarUploadError(null);
+    uploadAvatar.mutate(file, {
+      onSuccess: () => setAvatarModalOpen(false),
+      onError: (error) => setAvatarUploadError(mensajeErrorAvatar(error)),
+    });
+  };
+
+  const quitarAvatar = () => {
+    if (removeAvatar.isPending) return;
+    setAvatarRemoveError(null);
+    removeAvatar.mutate(undefined, {
+      onError: (error) => setAvatarRemoveError(mensajeErrorQuitarAvatar(error)),
     });
   };
 
@@ -232,6 +270,11 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
             values={valores}
             onChange={cambiarCampo}
             name={me.user.name}
+            avatarSrc={me.user.avatarUrl ?? undefined}
+            onUploadPhoto={abrirModalAvatar}
+            onRemovePhoto={quitarAvatar}
+            isRemovingPhoto={removeAvatar.isPending}
+            removePhotoError={avatarRemoveError}
             email={me.user.email}
             departmentName={membership?.departmentName ?? null}
             branchName={membership?.branchName ?? null}
@@ -266,6 +309,15 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
         </div>
       </div>
 
+      <OrAvatarUploadModal
+        key={avatarModalKey}
+        isOpen={avatarModalOpen}
+        onClose={() => setAvatarModalOpen(false)}
+        onSave={guardarAvatar}
+        isSaving={uploadAvatar.isPending}
+        saveError={avatarUploadError}
+        onEdit={() => setAvatarUploadError(null)}
+      />
       <OrStatusModal
         isOpen={perfilGuardado}
         onClose={() => setPerfilGuardado(false)}
