@@ -54,6 +54,7 @@ import {
 } from "../_data/errores-perfil";
 
 import { DireccionesSedes } from "./direcciones-sedes";
+import { Indicadores } from "./indicadores";
 
 const RUTA_OLVIDE_CONTRASENA = "/forgot-password";
 
@@ -63,7 +64,7 @@ const SECCIONES: MlSectionNavItem[] = [
   { key: "contrasena", label: "Contraseña", href: rutaPerfil("contrasena") },
   { key: "notificaciones", label: "Notificaciones", href: rutaPerfil("notificaciones") },
   { key: "sedes", label: "Direcciones y sedes", href: rutaPerfil("sedes") },
-  { key: "indicadores", label: "Indicadores" },
+  { key: "indicadores", label: "Indicadores", href: rutaPerfil("indicadores") },
 ];
 
 function valoresDesde(me: MeResponse, membership: Membership | undefined): OrProfileBasicFormValues {
@@ -371,6 +372,9 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
   // Mismo cálculo que `app-cliente.tsx` (sidebar, T-29f): solo quien administra la empresa activa gestiona
   // sedes (añadir/editar/eliminar/marcar principal). El resto ve "Direcciones y sedes" de solo lectura.
   const isCompanyAdmin = membership?.role === "COMPANY_ADMIN";
+  // T-32b: solo quien administra o lleva las finanzas de la empresa ve el desglose "por usuario" de
+  // Indicadores (UX; el back es el gate real si alguien fuerza la llamada).
+  const canViewUserBreakdown = membership?.role === "COMPANY_ADMIN" || membership?.role === "COMPANY_FINANCE";
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[260px_1fr] xl:gap-8">
@@ -465,6 +469,9 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
         </div>
         <div hidden={seccion !== "sedes"}>
           <DireccionesSedes isCompanyAdmin={isCompanyAdmin} />
+        </div>
+        <div hidden={seccion !== "indicadores"}>
+          <Indicadores canViewUserBreakdown={canViewUserBreakdown} />
         </div>
       </div>
 

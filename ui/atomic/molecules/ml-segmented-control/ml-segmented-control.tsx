@@ -61,7 +61,9 @@ export function MlSegmentedControl({
                   aria-label={option.ariaLabel}
                   className="sr-only"
                 />
-                {option.label}
+                {/* `truncate` evita que una etiqueta larga (p. ej. "Departamento") envuelva a una segunda
+                    línea y la corte el `overflow-hidden`/alto fijo del contenedor. */}
+                <span className="truncate">{option.label}</span>
               </label>
             );
           })}

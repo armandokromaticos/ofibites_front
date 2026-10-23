@@ -64,12 +64,14 @@ export function rutaPedido(id: string): string {
   return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
 }
 
-/** Secciones de "Mi perfil" con pantalla (fase 1 + T-30f + T-31b). Las demás se ven deshabilitadas con "Pronto". */
-export type SeccionPerfil = "datos" | "contrasena" | "notificaciones" | "sedes";
+/** Secciones de "Mi perfil" con pantalla (fase 1 + T-30f + T-31b + T-32b). Última pestaña del Figma. */
+export type SeccionPerfil = "datos" | "contrasena" | "notificaciones" | "sedes" | "indicadores";
 
-/** `?seccion=` de Mi perfil: `contrasena`, `notificaciones`, `sedes` o, por defecto, `datos`. */
+/** `?seccion=` de Mi perfil: `contrasena`, `notificaciones`, `sedes`, `indicadores` o, por defecto, `datos`. */
 export function parseSeccionPerfil(value: unknown): SeccionPerfil {
-  if (value === "contrasena" || value === "notificaciones" || value === "sedes") return value;
+  if (value === "contrasena" || value === "notificaciones" || value === "sedes" || value === "indicadores") {
+    return value;
+  }
   return "datos";
 }
 

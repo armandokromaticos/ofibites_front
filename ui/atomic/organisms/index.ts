@@ -12,6 +12,7 @@ export * from "./or-catalog-filters";
 export * from "./or-change-password-form";
 export * from "./or-company-request-wizard";
 export * from "./or-confirm-modal";
+export * from "./or-consumption-breakdown-table";
 export * from "./or-delete-address-modal";
 export * from "./or-member-filters-bar";
 export * from "./or-member-form";

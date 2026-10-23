@@ -19,3 +19,11 @@ export function formatPriceRange(from: string, to: string): string {
   if (!hasta || Number(from) === Number(to)) return desde;
   return `${desde} – ${hasta}`;
 }
+
+/** "+18%" o "−6%" (signo menos tipográfico del Figma, no el guion ASCII). `null`/no finito → "—". */
+export function formatSignedPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  const rounded = Math.round(value);
+  if (rounded === 0) return "0%";
+  return rounded > 0 ? `+${rounded}%` : `−${Math.abs(rounded)}%`;
+}
