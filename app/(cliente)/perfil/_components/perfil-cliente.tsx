@@ -6,19 +6,37 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { CloudOff } from "lucide-react";
 
-import { useChangePassword, useMe, useRemoveAvatar, useUpdateMe, useUploadAvatar } from "@/domain/hooks/auth";
-import { COMPANY_ROLE_LABELS, separarNombreApellido, unirNombreApellido } from "@/domain/models";
+import {
+  useChangePassword,
+  useMe,
+  useNotificationPreferences,
+  useRemoveAvatar,
+  useUpdateMe,
+  useUpdateNotificationPreferences,
+  useUploadAvatar,
+} from "@/domain/hooks/auth";
+import { COMPANY_ROLE_LABELS, NOTIFICATION_PREFERENCE_CATALOG, separarNombreApellido, unirNombreApellido } from "@/domain/models";
 import { useAuthStore } from "@/domain/stores";
-import { Membership, MeResponse, UpdateMeRequest } from "@/domain/types";
+import {
+  Membership,
+  MeResponse,
+  NotificationPreference,
+  NotificationPreferenceType,
+  UpdateMeRequest,
+  UpdateNotificationPreferencesRequest,
+} from "@/domain/types";
 import { formatCaracasDateSlash } from "@/shared/utils";
 import { AtSkeleton } from "@/ui/atomic/atoms";
 import { MlEmptyState, MlSectionNavItem } from "@/ui/atomic/molecules";
 import {
+  NotificationPreferenceChannel,
   OrAvatarUploadModal,
   OrChangePasswordFocusRequest,
   OrChangePasswordForm,
   OrChangePasswordFormValues,
   OrChangePasswordServerErrors,
+  OrNotificationPreferencesForm,
+  OrNotificationPreferencesFormValues,
   OrProfileBasicForm,
   OrProfileBasicFormField,
   OrProfileBasicFormValues,
@@ -30,6 +48,7 @@ import { parseSeccionPerfil, RUTA_DASHBOARD, rutaPerfil } from "../../_navegacio
 import {
   clasificarErrorContrasena,
   mensajeErrorAvatar,
+  mensajeErrorNotificaciones,
   mensajeErrorPerfil,
   mensajeErrorQuitarAvatar,
 } from "../_data/errores-perfil";
@@ -42,7 +61,7 @@ const RUTA_OLVIDE_CONTRASENA = "/forgot-password";
 const SECCIONES: MlSectionNavItem[] = [
   { key: "datos", label: "Datos básicos", href: rutaPerfil("datos") },
   { key: "contrasena", label: "Contraseña", href: rutaPerfil("contrasena") },
-  { key: "notificaciones", label: "Notificaciones" },
+  { key: "notificaciones", label: "Notificaciones", href: rutaPerfil("notificaciones") },
   { key: "sedes", label: "Direcciones y sedes", href: rutaPerfil("sedes") },
   { key: "indicadores", label: "Indicadores" },
 ];
@@ -69,10 +88,59 @@ function cuerpoCambios(
 }
 
 /**
- * "Mi perfil" del cliente (T-30, fase 1): tarjeta lateral con la navegación y las secciones Datos básicos y
- * Contraseña. La sección activa va en `?seccion=` (enlazable); cambiarla no navega (`history.replaceState`) y
- * los dos formularios siguen montados, así que un cambio sin guardar no se pierde al ir y volver.
- * Estados: cargando (esqueleto), error con reintentar y con datos (`GET /auth/me`, la misma caché de la guarda).
+ * Preferencias de notificaciones (T-30f): el back siempre manda los 9 tipos del catálogo (contrato T-30e),
+ * pero se completa con `true` por si falta alguno (defensivo, no se espera en la práctica).
+ */
+function valoresNotificacionesDesde(
+  preferences: NotificationPreference[],
+): OrNotificationPreferencesFormValues {
+  const porTipo = new Map(preferences.map((p) => [p.type, p]));
+  const valores = {} as OrNotificationPreferencesFormValues;
+  for (const item of NOTIFICATION_PREFERENCE_CATALOG) {
+    const fila = porTipo.get(item.type);
+    valores[item.type] = {
+      emailEnabled: fila?.emailEnabled ?? true,
+      platformEnabled: fila?.platformEnabled ?? true,
+    };
+  }
+  return valores;
+}
+
+/** Solo los tipos y canales que cambiaron (contrato T-30e: `PATCH` con lista parcial). */
+function cuerpoCambiosNotificaciones(
+  base: OrNotificationPreferencesFormValues,
+  valores: OrNotificationPreferencesFormValues,
+): UpdateNotificationPreferencesRequest["preferences"] {
+  const cambios: UpdateNotificationPreferencesRequest["preferences"] = [];
+  for (const item of NOTIFICATION_PREFERENCE_CATALOG) {
+    const anterior = base[item.type];
+    const actual = valores[item.type];
+    const cambio: {
+      type: NotificationPreferenceType;
+      emailEnabled?: boolean;
+      platformEnabled?: boolean;
+    } = { type: item.type };
+    let tieneCambio = false;
+    if (actual.emailEnabled !== anterior.emailEnabled) {
+      cambio.emailEnabled = actual.emailEnabled;
+      tieneCambio = true;
+    }
+    if (actual.platformEnabled !== anterior.platformEnabled) {
+      cambio.platformEnabled = actual.platformEnabled;
+      tieneCambio = true;
+    }
+    if (tieneCambio) cambios.push(cambio);
+  }
+  return cambios;
+}
+
+/**
+ * "Mi perfil" del cliente (T-30 fase 1 + T-30f + T-31b): tarjeta lateral con la navegación y las secciones
+ * Datos básicos, Contraseña, Notificaciones y Direcciones y sedes. La sección activa va en `?seccion=`
+ * (enlazable); cambiarla no navega (`history.replaceState`) y los formularios siguen montados, así que un
+ * cambio sin guardar no se pierde al ir y volver. Estados: cargando (esqueleto), error con reintentar y con
+ * datos (`GET /auth/me`, la misma caché de la guarda; Notificaciones y Direcciones y sedes tienen su propia
+ * carga/error, con `GET /auth/me/notification-preferences` y `GET .../companies/:id/addresses`).
  */
 export function PerfilCliente() {
   const meQuery = useMe();
@@ -163,6 +231,22 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
   const enfocarCampo = (field: OrChangePasswordFocusRequest["field"], select = false) =>
     setFocoContrasena((actual) => ({ id: (actual?.id ?? 0) + 1, field, select }));
 
+  // Notificaciones (T-30f): query propia, no forma parte de `GET /auth/me`.
+  const notifPrefsQuery = useNotificationPreferences();
+  const updateNotifPrefs = useUpdateNotificationPreferences();
+  const baseNotif = useMemo(
+    () => (notifPrefsQuery.data ? valoresNotificacionesDesde(notifPrefsQuery.data.preferences) : null),
+    [notifPrefsQuery.data],
+  );
+  const [borradorNotif, setBorradorNotif] = useState<OrNotificationPreferencesFormValues | null>(null);
+  const valoresNotif = borradorNotif ?? baseNotif;
+  const isDirtyNotif =
+    borradorNotif !== null &&
+    baseNotif !== null &&
+    cuerpoCambiosNotificaciones(baseNotif, borradorNotif).length > 0;
+  const [errorNotif, setErrorNotif] = useState<string | null>(null);
+  const [notifGuardado, setNotifGuardado] = useState(false);
+
   const irASeccion = useCallback((key: string) => {
     // `null` y no `history.state`: con el estado interno de Next, `useSearchParams` no se entera (T-19).
     window.history.replaceState(null, "", rutaPerfil(parseSeccionPerfil(key)));
@@ -247,6 +331,39 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
     );
   };
 
+  const cambiarCampoNotif = (
+    type: NotificationPreferenceType,
+    channel: NotificationPreferenceChannel,
+    value: boolean,
+  ) => {
+    if (!baseNotif) return;
+    setBorradorNotif((actual) => {
+      const partida = actual ?? baseNotif;
+      return { ...partida, [type]: { ...partida[type], [channel]: value } };
+    });
+    setErrorNotif(null);
+  };
+
+  const guardarNotif = () => {
+    if (updateNotifPrefs.isPending || !baseNotif || !valoresNotif) return;
+    const cambios = cuerpoCambiosNotificaciones(baseNotif, valoresNotif);
+    if (cambios.length === 0) {
+      setBorradorNotif(null);
+      return;
+    }
+    setErrorNotif(null);
+    updateNotifPrefs.mutate(
+      { preferences: cambios },
+      {
+        onSuccess: () => {
+          setBorradorNotif(null);
+          setNotifGuardado(true);
+        },
+        onError: (error) => setErrorNotif(mensajeErrorNotificaciones(error)),
+      },
+    );
+  };
+
   const roleLabel = membership
     ? [COMPANY_ROLE_LABELS[membership.role], membership.branchName].filter(Boolean).join(" · ")
     : undefined;
@@ -312,6 +429,40 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
             }
           />
         </div>
+        <div hidden={seccion !== "notificaciones"}>
+          {notifPrefsQuery.isPending ? (
+            <div aria-busy="true" className="flex flex-col gap-1">
+              <span className="sr-only">Cargando tus preferencias de notificaciones…</span>
+              <AtSkeleton className="h-[640px] rounded-card" />
+            </div>
+          ) : notifPrefsQuery.isError ? (
+            <div className="rounded-card bg-content1">
+              <MlEmptyState
+                tone="error"
+                headingLevel={2}
+                icon={<CloudOff />}
+                title="No pudimos cargar tus preferencias"
+                description="Puede ser un problema de conexión. Vuelve a intentarlo en unos segundos."
+                actionLabel="Reintentar"
+                onAction={() => notifPrefsQuery.refetch()}
+                isActionLoading={notifPrefsQuery.isFetching}
+              />
+            </div>
+          ) : valoresNotif ? (
+            <OrNotificationPreferencesForm
+              values={valoresNotif}
+              onChange={cambiarCampoNotif}
+              isDirty={isDirtyNotif}
+              isSubmitting={updateNotifPrefs.isPending}
+              formError={errorNotif}
+              onSubmit={guardarNotif}
+              onDiscard={() => {
+                setBorradorNotif(null);
+                setErrorNotif(null);
+              }}
+            />
+          ) : null}
+        </div>
         <div hidden={seccion !== "sedes"}>
           <DireccionesSedes isCompanyAdmin={isCompanyAdmin} />
         </div>
@@ -333,6 +484,14 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
         title="Perfil actualizado"
         description="Tus datos quedaron guardados y ya se ven así para el resto de tu empresa."
         note="Tu departamento y tu sede los define tu empresa y no cambiaron."
+      />
+      <OrStatusModal
+        isOpen={notifGuardado}
+        onClose={() => setNotifGuardado(false)}
+        tone="success"
+        title="Preferencias guardadas"
+        description="Tus preferencias de notificaciones quedaron actualizadas."
+        note="Los cambios aplican solo a tu usuario."
       />
       <OrStatusModal
         isOpen={contrasenaCambiada}

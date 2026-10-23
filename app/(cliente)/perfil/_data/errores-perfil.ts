@@ -5,6 +5,7 @@ const CONTRASENA_FALLBACK = "No pudimos actualizar la contraseña. Inténtalo de
 const DEMASIADOS_INTENTOS = "Hiciste demasiados intentos seguidos. Espera unos minutos y vuelve a intentar.";
 const SUBIR_FOTO_FALLBACK = "No pudimos guardar tu foto. Inténtalo de nuevo.";
 const QUITAR_FOTO_FALLBACK = "No pudimos quitar tu foto. Inténtalo de nuevo.";
+const NOTIFICACIONES_FALLBACK = "No pudimos guardar tus preferencias. Inténtalo de nuevo.";
 
 /**
  * Mensaje de un error de `PATCH /auth/me`. Los 400 de validación llegan como array de mensajes por campo
@@ -25,6 +26,11 @@ export function mensajeErrorAvatar(error: unknown): string {
 /** Error de `DELETE /auth/me/avatar` (T-30c/T-30d). */
 export function mensajeErrorQuitarAvatar(error: unknown): string {
   return getApiErrorMessage(error, QUITAR_FOTO_FALLBACK);
+}
+
+/** Error de `PATCH /auth/me/notification-preferences` (T-30f). Sin clasificación por campo: una sola alerta. */
+export function mensajeErrorNotificaciones(error: unknown): string {
+  return getApiErrorMessage(error, NOTIFICACIONES_FALLBACK);
 }
 
 const GUARDAR_DIRECCION_FALLBACK = "No pudimos guardar la sede. Inténtalo de nuevo.";

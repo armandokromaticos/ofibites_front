@@ -9,6 +9,7 @@ export * from "./company-member.types";
 export * from "./company-request.types";
 export * from "./department.types";
 export * from "./notification.types";
+export * from "./notification-preference.types";
 export * from "./order.types";
 export * from "./product.types";
 export * from "./user.types";
