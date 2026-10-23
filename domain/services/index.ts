@@ -7,6 +7,7 @@ export { companyService } from "./company.service";
 export { companyAddressService } from "./company-address.service";
 export { companyMemberService } from "./company-member.service";
 export { companyRequestService } from "./company-request.service";
+export { dashboardService } from "./dashboard.service";
 export { departmentService } from "./department.service";
 export { notificationService } from "./notification.service";
 export { orderService } from "./order.service";
