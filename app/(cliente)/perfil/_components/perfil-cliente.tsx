@@ -53,6 +53,8 @@ import {
   mensajeErrorQuitarAvatar,
 } from "../_data/errores-perfil";
 
+import { DireccionesSedes } from "./direcciones-sedes";
+
 const RUTA_OLVIDE_CONTRASENA = "/forgot-password";
 
 /** Secciones del Figma (`3651:1920`). Sin `href`: fases siguientes, deshabilitadas con "Pronto". */
@@ -60,7 +62,7 @@ const SECCIONES: MlSectionNavItem[] = [
   { key: "datos", label: "Datos básicos", href: rutaPerfil("datos") },
   { key: "contrasena", label: "Contraseña", href: rutaPerfil("contrasena") },
   { key: "notificaciones", label: "Notificaciones", href: rutaPerfil("notificaciones") },
-  { key: "sedes", label: "Direcciones y sedes" },
+  { key: "sedes", label: "Direcciones y sedes", href: rutaPerfil("sedes") },
   { key: "indicadores", label: "Indicadores" },
 ];
 
@@ -133,11 +135,12 @@ function cuerpoCambiosNotificaciones(
 }
 
 /**
- * "Mi perfil" del cliente (T-30 fase 1 + T-30f): tarjeta lateral con la navegación y las secciones Datos
- * básicos, Contraseña y Notificaciones. La sección activa va en `?seccion=` (enlazable); cambiarla no navega
- * (`history.replaceState`) y los formularios siguen montados, así que un cambio sin guardar no se pierde al
- * ir y volver. Estados: cargando (esqueleto), error con reintentar y con datos (`GET /auth/me`, la misma
- * caché de la guarda; Notificaciones tiene su propia carga/error, con `GET /auth/me/notification-preferences`).
+ * "Mi perfil" del cliente (T-30 fase 1 + T-30f + T-31b): tarjeta lateral con la navegación y las secciones
+ * Datos básicos, Contraseña, Notificaciones y Direcciones y sedes. La sección activa va en `?seccion=`
+ * (enlazable); cambiarla no navega (`history.replaceState`) y los formularios siguen montados, así que un
+ * cambio sin guardar no se pierde al ir y volver. Estados: cargando (esqueleto), error con reintentar y con
+ * datos (`GET /auth/me`, la misma caché de la guarda; Notificaciones y Direcciones y sedes tienen su propia
+ * carga/error, con `GET /auth/me/notification-preferences` y `GET .../companies/:id/addresses`).
  */
 export function PerfilCliente() {
   const meQuery = useMe();
@@ -365,6 +368,9 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
     ? [COMPANY_ROLE_LABELS[membership.role], membership.branchName].filter(Boolean).join(" · ")
     : undefined;
   const passwordChangedAt = me.user.passwordChangedAt;
+  // Mismo cálculo que `app-cliente.tsx` (sidebar, T-29f): solo quien administra la empresa activa gestiona
+  // sedes (añadir/editar/eliminar/marcar principal). El resto ve "Direcciones y sedes" de solo lectura.
+  const isCompanyAdmin = membership?.role === "COMPANY_ADMIN";
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[260px_1fr] xl:gap-8">
@@ -456,6 +462,9 @@ function PerfilConDatos({ me }: { me: MeResponse }) {
               }}
             />
           ) : null}
+        </div>
+        <div hidden={seccion !== "sedes"}>
+          <DireccionesSedes isCompanyAdmin={isCompanyAdmin} />
         </div>
       </div>
 
