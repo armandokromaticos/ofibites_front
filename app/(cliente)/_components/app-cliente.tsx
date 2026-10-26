@@ -8,6 +8,7 @@ import { useClientUser } from "@/domain/hooks/dashboard";
 import { useAuthStore } from "@/domain/stores";
 import { TmAppLayout } from "@/ui/atomic";
 
+import { OBJETIVOS_TOUR } from "../_data/tour-bienvenida";
 import { MENU_CUENTA_CLIENTE, navItemsCliente, paginaClienteActual, RUTA_DASHBOARD } from "../_navegacion";
 
 import {
@@ -93,6 +94,8 @@ export function AppCliente({ children }: { children: ReactNode }) {
             }
           : undefined
       }
+      // Objetivos del paso 1 del tour de bienvenida (sidebar en escritorio, hamburguesa en móvil).
+      tourTargets={{ navigation: OBJETIVOS_TOUR.menuLateral, menuButton: OBJETIVOS_TOUR.menuMovil }}
       mainClassName="px-4 pb-10 pt-6 sm:px-8 xl:pt-[42px]"
     >
       {children}

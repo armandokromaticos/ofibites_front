@@ -414,6 +414,7 @@ export function OrAppSidebar({
   navId = "app-sidebar-nav",
   logoTransitionName = VIEW_TRANSITION_NAME.logo,
   drawer,
+  tourId,
   className,
 }: OrAppSidebarProps) {
   const panelRef = useRef<HTMLElement>(null);
@@ -466,7 +467,7 @@ export function OrAppSidebar({
   return (
     // Desde tablet, riel en el flujo de 80 px y panel de 236 px encima del contenido. En móvil no hay
     // riel (ancho 0): el mismo panel sale como drawer desde la top bar (`drawer`).
-    <div className={cn("relative z-30 h-full shrink-0 md:w-20", className)}>
+    <div data-tour={tourId} className={cn("relative z-30 h-full shrink-0 md:w-20", className)}>
       {/* Borde del riel cerrado; abierto, el borde es el del panel (a 236 px). */}
       <span
         aria-hidden="true"
