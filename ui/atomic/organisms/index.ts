@@ -14,6 +14,7 @@ export * from "./or-company-request-wizard";
 export * from "./or-confirm-modal";
 export * from "./or-consumption-breakdown-table";
 export * from "./or-delete-address-modal";
+export * from "./or-guided-tour";
 export * from "./or-member-filters-bar";
 export * from "./or-member-form";
 export * from "./or-member-table";
