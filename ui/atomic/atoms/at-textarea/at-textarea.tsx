@@ -12,7 +12,7 @@ const BASE_SLOTS: TextareaSlots = {
     "bg-background border-small border-border-input",
     "data-[hover=true]:border-border-input",
     "group-data-[focus=true]:border-primary",
-    "group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-focus",
+    "group-data-[focus=true]:ring-1 group-data-[focus=true]:ring-focus",
     // Error igual que AtInput: borde accent de 2 px (1 px + sombra interior) y texto AA en secondary-600.
     "group-data-[invalid=true]:!border-accent group-data-[invalid=true]:shadow-[inset_0_0_0_1px_var(--color-accent)]",
   ].join(" "),
