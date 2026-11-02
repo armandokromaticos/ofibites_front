@@ -22,6 +22,8 @@ import { AtAvatar, AtChip } from "@/ui/atomic/atoms";
 
 import { OrMemberTableProps, OrMemberTableRow } from "./or-member-table.types";
 
+const NO_PUEDES_DESACTIVARTE = "No puedes desactivar tu propia cuenta.";
+
 function RowMenu({
   row,
   isBusy,
@@ -35,6 +37,9 @@ function RowMenu({
   onResetPassword: (row: OrMemberTableRow) => void;
   onToggleActive: (row: OrMemberTableRow) => void;
 }) {
+  // Uno mismo no puede desactivarse: la opción sigue visible pero deshabilitada, con el motivo debajo.
+  const noPuedeDesactivarse = Boolean(row.isSelf) && row.isActive;
+
   return (
     <Dropdown placement="bottom-end">
       <DropdownTrigger>
@@ -54,7 +59,7 @@ function RowMenu({
       </DropdownTrigger>
       <DropdownMenu
         aria-label={`Acciones para ${row.name}`}
-        disabledKeys={isBusy ? ["editar", "reenviar", "restablecer", "estado"] : []}
+        disabledKeys={isBusy ? ["editar", "reenviar", "restablecer", "estado"] : noPuedeDesactivarse ? ["estado"] : []}
         onAction={(key) => {
           if (key === "reenviar") onResendInvite(row);
           else if (key === "restablecer") onResetPassword(row);
@@ -77,8 +82,9 @@ function RowMenu({
         <DropdownItem
           key="estado"
           textValue={row.isActive ? "Desactivar usuario" : "Reactivar usuario"}
-          className={row.isActive ? "text-danger" : undefined}
-          color={row.isActive ? "danger" : "default"}
+          className={row.isActive && !noPuedeDesactivarse ? "text-danger" : undefined}
+          color={row.isActive && !noPuedeDesactivarse ? "danger" : "default"}
+          description={noPuedeDesactivarse ? NO_PUEDES_DESACTIVARTE : undefined}
         >
           {row.isActive ? "Desactivar usuario" : "Reactivar usuario"}
         </DropdownItem>
@@ -117,7 +123,10 @@ export function OrMemberTable({
             <TableCell>
               <div className="flex items-center gap-2.5">
                 <AtAvatar name={row.name} size="md" className="size-8 text-xs" />
-                <span className="font-semibold text-foreground">{row.name}</span>
+                <span className="font-semibold text-foreground">
+                  {row.name}
+                  {row.isSelf ? <span className="ml-1 font-normal text-muted">(tú)</span> : null}
+                </span>
               </div>
             </TableCell>
             <TableCell className="text-muted">{row.email ?? "—"}</TableCell>
