@@ -33,7 +33,16 @@ export function TmAuthShowcaseLayout({ children, showcase, className }: TmAuthSh
 
   return (
     <ViewTransition default={VIEW_TRANSITION_CLASS.page}>
-      <div className={cn("flex min-h-dvh flex-col bg-background lg:flex-row", className)}>
+      <div className={cn("relative isolate flex min-h-dvh flex-col bg-background lg:flex-row", className)}>
+        {/* Mismo fondo con ilustraciones que el login v1. */}
+        <Image
+          src="/images/auth/iniciar-sesion-bg.png"
+          alt=""
+          fill
+          sizes="100vw"
+          preload
+          className="pointer-events-none -z-10 select-none object-cover"
+        />
         <div className="order-first pt-6 lg:sticky lg:top-0 lg:order-last lg:h-dvh lg:w-[55%] lg:shrink-0 lg:pt-0 lg:pr-6">
           {showcase({ paused: isFieldFocused })}
         </div>
@@ -55,7 +64,7 @@ export function TmAuthShowcaseLayout({ children, showcase, className }: TmAuthSh
                   alt="Ofibites"
                   width={162}
                   height={48}
-                  className="h-12 w-[162px]"
+                  className="mx-auto h-12 w-[162px]"
                 />
               </ViewTransition>
               {children}

@@ -160,22 +160,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <TmAuthLayout variant="centered" showLogo={!data}>
+    <TmAuthLayout variant="centered" backgroundSrc="/images/auth/solicitud-ingreso-bg.png" showLogo={!data}>
       {data ? (
         <RequestSent request={data} />
       ) : (
-        <OrCompanyRequestWizard
-          onSubmit={handleSubmit}
-          isSubmitting={isPending}
-          footer={
-            <p className="text-center text-[13px] font-semibold text-placeholder">
-              ¿Tu empresa ya tiene cuenta?{" "}
-              <Link href="/login" className={LINK_CLASSES}>
-                Inicia sesión
-              </Link>
-            </p>
-          }
-        />
+        <OrCompanyRequestWizard onSubmit={handleSubmit} isSubmitting={isPending} />
       )}
     </TmAuthLayout>
   );

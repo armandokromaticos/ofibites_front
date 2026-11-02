@@ -15,7 +15,7 @@ export function LoginScreen({ variant }: { variant: LoginVariant }) {
           <OrProductMarquee items={LOGIN_SURTIDOS} paused={paused} className="h-full" />
         )}
       >
-        <LoginForm align="start" />
+        <LoginForm variant="v2" />
       </TmAuthShowcaseLayout>
     );
   }
