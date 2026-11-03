@@ -4,6 +4,9 @@
 // IMPLEMENTADO en `CONTRATOS-API.md` el 2026-10-22; requiere aplicar a mano en Supabase la migración
 // `prisma/migrations/20261022_direcciones_contacto/migration.sql` (ver BITACORA) antes de probar contra el back real.
 
+/** T-34a: tipo de sede ("¿Qué tipo de sede es?" del onboarding). */
+export type CompanyAddressType = "OFFICE" | "WAREHOUSE" | "OTHER";
+
 export interface CompanyAddress {
   id: string;
   companyId: string;
@@ -24,6 +27,8 @@ export interface CompanyAddress {
   contactPhone: string | null;
   /** T-31a: "Marcar como sede principal" (una sola por empresa; el back mantiene el invariante al guardar). */
   isPrimary: boolean;
+  /** T-34a: tipo de sede; `null` si no se indicó (las anteriores a T-34). */
+  type: CompanyAddressType | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,6 +60,8 @@ export interface CreateCompanyAddressRequest {
   contactPhone: string;
   /** T-31a: opcional, default `false`. */
   isPrimary?: boolean;
+  /** T-34a: opcional. */
+  type?: CompanyAddressType | null;
 }
 
 /**
@@ -79,6 +86,8 @@ export interface UpdateCompanyAddressRequest {
   contactPhone?: string;
   /** T-31a. */
   isPrimary?: boolean;
+  /** T-34a: `null` lo borra. */
+  type?: CompanyAddressType | null;
 }
 
 /**

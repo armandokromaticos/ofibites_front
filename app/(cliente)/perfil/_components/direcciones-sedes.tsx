@@ -11,10 +11,17 @@ import {
   useDeleteCompanyAddress,
   useUpdateCompanyAddress,
 } from "@/domain/hooks/company-addresses";
+import { COMPANY_ADDRESS_TYPE_LABELS } from "@/domain/models";
 import { CompanyAddress, CreateCompanyAddressRequest, UpdateCompanyAddressRequest } from "@/domain/types";
 import { AtButton, AtSkeleton } from "@/ui/atomic/atoms";
 import { MlEmptyState } from "@/ui/atomic/molecules";
-import { OrAddressCard, OrAddressFormModal, OrAddressFormModalValues, OrDeleteAddressModal } from "@/ui/atomic/organisms";
+import {
+  OrAddressCard,
+  OrAddressFormModal,
+  OrAddressFormModalTextField,
+  OrAddressFormModalValues,
+  OrDeleteAddressModal,
+} from "@/ui/atomic/organisms";
 
 import { direccionCompleta, lineaReferenciaContacto } from "../../_data/direcciones";
 import { ordenarSedes, sedesActivasLabel } from "../_data/direcciones-sedes";
@@ -32,9 +39,10 @@ const VALORES_VACIOS: OrAddressFormModalValues = {
   contactName: "",
   contactPhone: "",
   isPrimary: false,
+  type: null,
 };
 
-type CampoTexto = Exclude<keyof OrAddressFormModalValues, "isPrimary">;
+type CampoTexto = OrAddressFormModalTextField;
 type Errores = Partial<Record<CampoTexto, string>>;
 
 function valoresDesdeDireccion(address: CompanyAddress): OrAddressFormModalValues {
@@ -47,6 +55,8 @@ function valoresDesdeDireccion(address: CompanyAddress): OrAddressFormModalValue
     contactName: address.contactName ?? "",
     contactPhone: address.contactPhone ?? "",
     isPrimary: address.isPrimary ?? false,
+    // T-34a: `undefined` mientras el back no lo devuelva.
+    type: address.type ?? null,
   };
 }
 
@@ -123,7 +133,7 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
     value: OrAddressFormModalValues[F],
   ) => {
     setValores((actual) => ({ ...actual, [field]: value }));
-    if (field !== "isPrimary") {
+    if (field !== "isPrimary" && field !== "type") {
       const campo = field as CampoTexto;
       if (errores[campo]) setErrores((actual) => ({ ...actual, [campo]: undefined }));
     }
@@ -152,6 +162,7 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
     if (modal.mode === "create") {
       const body: CreateCompanyAddressRequest = {
         ...comunes,
+        ...(valores.type && { type: valores.type }),
         ...(state && { state }),
         ...(reference && { reference }),
       };
@@ -165,6 +176,7 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
         ...comunes,
         state: state || null,
         reference: reference || null,
+        type: valores.type,
       };
       update.mutate(
         { id: modal.id, body },
@@ -257,6 +269,7 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
               key={address.id}
               label={address.label}
               isPrimary={address.isPrimary ?? false}
+              typeLabel={address.type ? COMPANY_ADDRESS_TYPE_LABELS[address.type] : null}
               addressLine={direccionCompleta(address)}
               referenceContactLine={lineaReferenciaContacto(address)}
               canManage={isCompanyAdmin}

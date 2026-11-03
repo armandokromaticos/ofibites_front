@@ -82,14 +82,27 @@ export function TmAuthLayout({
   variant = "split",
   showLogo = true,
   imageSrc = "/images/auth/login-photo.webp",
+  backgroundSrc,
+  contentClassName,
   className,
 }: TmAuthLayoutProps) {
   if (variant === "centered") {
     return (
       <ViewTransition default={VIEW_TRANSITION_CLASS.page}>
         <div className={cn("relative isolate min-h-dvh overflow-hidden bg-background", className)}>
-          <AuthDecoration />
-          <div className="mx-auto flex min-h-dvh w-full max-w-[705px] flex-col justify-center px-4 py-10 sm:px-6 lg:py-14">
+          {backgroundSrc ? (
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 select-none">
+              <Image src={backgroundSrc} alt="" fill sizes="100vw" preload className="object-cover" />
+            </div>
+          ) : (
+            <AuthDecoration />
+          )}
+          <div
+            className={cn(
+              "mx-auto flex min-h-dvh w-full max-w-[705px] flex-col justify-center px-4 py-10 sm:px-6 lg:py-14",
+              contentClassName,
+            )}
+          >
             <AuthPanel className="flex w-full flex-col gap-12">
               {showLogo && <AuthLogo />}
               {children}

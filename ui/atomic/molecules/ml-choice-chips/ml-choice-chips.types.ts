@@ -16,6 +16,11 @@ interface MlChoiceChipsBaseProps {
   isInvalid?: boolean;
   errorMessage?: string;
   isDisabled?: boolean;
+  /**
+   * `md` (por defecto): rejilla de chips de 57 px (solicitud de ingreso). `sm`: chips compactos de 32 px en línea,
+   * con la pregunta en 14 px (tipo de sede del onboarding, `3392:2924`); `columns` no aplica.
+   */
+  size?: "md" | "sm";
   className?: string;
 }
 

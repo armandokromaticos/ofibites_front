@@ -68,6 +68,11 @@ export interface Membership {
   departmentName: string | null;
   canPayInvoices: boolean;
   isActive: boolean;
+  /**
+   * T-34a: cuándo la empresa completó el onboarding; `null` si aún no (su `COMPANY_ADMIN` va a `/onboarding`).
+   * Una sesión guardada antes de T-34 no lo trae hasta el siguiente `/auth/me` (`undefined`): no cuenta como pendiente.
+   */
+  onboardingCompletedAt: string | null;
 }
 
 /** `MeResponseDto`: respuesta de `GET /auth/me`. */

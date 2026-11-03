@@ -1,6 +1,7 @@
 export * from "./cart-line.model";
 export * from "./checkout.model";
 export * from "./client-dashboard.model";
+export * from "./company-address.model";
 export * from "./company-member.model";
 export * from "./notification-preference.model";
 export * from "./order-status.model";

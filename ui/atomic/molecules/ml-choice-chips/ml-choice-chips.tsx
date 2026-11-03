@@ -33,8 +33,10 @@ export function MlChoiceChips(props: MlChoiceChipsProps) {
     isInvalid,
     errorMessage,
     isDisabled,
+    size = "md",
     className,
   } = props;
+  const isSmall = size === "sm";
   const id = useId();
   const labelId = `${id}-label`;
   const descriptionId = `${id}-description`;
@@ -67,10 +69,16 @@ export function MlChoiceChips(props: MlChoiceChipsProps) {
       // ARIA no admite aria-invalid en role="group" (sí en radiogroup); además va en cada input.
       aria-invalid={(!isMultiple && isInvalid) || undefined}
       aria-describedby={describedBy}
-      className={cn("flex flex-col gap-[15px]", className)}
+      className={cn("flex flex-col", isSmall ? "gap-2" : "gap-[15px]", className)}
     >
       <div className="flex flex-col gap-1">
-        <p id={labelId} className="text-[17px] font-semibold leading-[21px] text-primary">
+        <p
+          id={labelId}
+          className={cn(
+            "font-semibold text-primary",
+            isSmall ? "text-sm leading-5" : "text-[17px] leading-[21px]",
+          )}
+        >
           {label}
         </p>
         {description && (
@@ -79,15 +87,18 @@ export function MlChoiceChips(props: MlChoiceChipsProps) {
           </p>
         )}
       </div>
-      <div className={cn("grid grid-cols-2 gap-2.5", COLUMN_CLASSES[columns])}>
+      <div className={isSmall ? "flex flex-wrap gap-2" : cn("grid grid-cols-2 gap-2.5", COLUMN_CLASSES[columns])}>
         {options.map((option) => {
           const selected = isSelected(option.value);
           return (
             <label
               key={option.value}
               className={cn(
-                "relative flex min-h-[57px] cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 py-1.5",
-                "text-center text-sm font-semibold leading-[18px] transition-colors",
+                "relative flex cursor-pointer items-center justify-center gap-1.5 rounded-full border",
+                "text-center font-semibold transition-colors",
+                isSmall
+                  ? "min-h-8 px-4 py-1 text-[13px] leading-4"
+                  : "min-h-[57px] px-3 py-1.5 text-sm leading-[18px]",
                 "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus has-[:focus-visible]:ring-offset-2",
                 selected
                   ? "border-primary bg-primary text-primary-foreground"
