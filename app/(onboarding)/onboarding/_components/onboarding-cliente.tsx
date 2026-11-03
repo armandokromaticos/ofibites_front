@@ -8,7 +8,7 @@ import { CloudOff } from "lucide-react";
 import { useActiveCompany } from "@/domain/hooks/companies";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useAuthStore } from "@/domain/stores";
-import { AtSkeleton, MlAuthHeader, MlEmptyState, MlStepIndicator } from "@/ui/atomic";
+import { AtSkeleton, MlAuthHeader, MlEmptyState, MlFormAlert, MlStepIndicator } from "@/ui/atomic";
 
 import { COPY_PASO, Paso, PASO_LISTO, pasoInicial, PASOS } from "../_data/onboarding";
 
@@ -33,11 +33,16 @@ export function OnboardingCliente() {
   const addressesQuery = useCompanyAddresses();
 
   const [pasoElegido, setPasoElegido] = useState<Paso | null>(null);
+  // «Finalizar y comenzar» en curso: la sesión pasa a completada (onSuccess de la mutación) antes de que se fije
+  // «Listo»; sin esto, ese render intermedio redirigiría a /dashboard.
+  const [finalizando, setFinalizando] = useState(false);
+  // Mensaje del 400 de complete al volver a un paso incompleto.
+  const [avisoPaso, setAvisoPaso] = useState<string | null>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   const pendiente = membership?.role === "COMPANY_ADMIN" && membership.onboardingCompletedAt === null;
   const finalizado = pasoElegido === PASO_LISTO;
-  const debeSalir = !pendiente && !finalizado;
+  const debeSalir = !pendiente && !finalizado && !finalizando;
 
   useEffect(() => {
     if (debeSalir) router.replace("/dashboard");
@@ -58,6 +63,21 @@ export function OnboardingCliente() {
     if (pasoAnterior.current !== null && pasoAnterior.current !== paso) titleRef.current?.focus();
     pasoAnterior.current = paso;
   }, [paso]);
+
+  const irA = (destino: Paso) => {
+    setAvisoPaso(null);
+    setPasoElegido(destino);
+  };
+
+  const volverAPasoPendiente = async (mensaje: string): Promise<boolean> => {
+    const [empresa, sedes] = await Promise.all([companyQuery.refetch(), addressesQuery.refetch()]);
+    if (!empresa.data || !sedes.data) return false;
+    const destino = pasoInicial(empresa.data, sedes.data);
+    if (destino === 2) return false;
+    setAvisoPaso(mensaje);
+    setPasoElegido(destino);
+    return true;
+  };
 
   if (debeSalir) {
     return (
@@ -107,15 +127,16 @@ export function OnboardingCliente() {
       <div className="flex flex-col gap-[25px]">
         <MlAuthHeader title={copy.title} subtitle={copy.subtitle} titleRef={titleRef} className="[&>p]:text-balance" />
 
-        <div className="mx-auto w-full max-w-[578px]">
+        <div className="mx-auto flex w-full max-w-[578px] flex-col gap-[25px]">
+          {avisoPaso && <MlFormAlert title="Antes de terminar, completa este paso.">{avisoPaso}</MlFormAlert>}
           {paso === 0 && (
-            <PasoEmpresa company={companyQuery.data} onContinue={() => setPasoElegido(1)} />
+            <PasoEmpresa company={companyQuery.data} onContinue={() => irA(1)} />
           )}
           {paso === 1 && (
             <PasoSedes
               addresses={addressesQuery.data ?? []}
               isRefreshing={addressesQuery.isFetching}
-              onContinue={() => setPasoElegido(2)}
+              onContinue={() => irA(2)}
             />
           )}
           {paso === 2 && user && membership && (
@@ -123,7 +144,10 @@ export function OnboardingCliente() {
               currentUserId={user.id}
               currentUserName={user.name}
               currentUserPosition={membership.position}
-              onFinished={() => setPasoElegido(PASO_LISTO)}
+              onFinishStart={() => setFinalizando(true)}
+              onFinished={() => irA(PASO_LISTO)}
+              onFinishFailed={() => setFinalizando(false)}
+              onIncomplete={volverAPasoPendiente}
             />
           )}
           {paso === PASO_LISTO && <PasoListo />}

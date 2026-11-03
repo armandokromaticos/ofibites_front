@@ -10,9 +10,14 @@ import {
   useDeleteCompanyAddress,
   useUpdateCompanyAddress,
 } from "@/domain/hooks/company-addresses";
-import { COMPANY_ADDRESS_TYPE_LABELS } from "@/domain/models";
+import {
+  COMPANY_ADDRESS_TYPE_CHOICES,
+  COMPANY_ADDRESS_TYPE_LABELS,
+  direccionCompleta,
+  lineaReferenciaContacto,
+} from "@/domain/models";
 import { CompanyAddress, CreateCompanyAddressRequest, UpdateCompanyAddressRequest } from "@/domain/types";
-import { direccionCompleta, lineaReferenciaContacto } from "@/app/(cliente)/_data/direcciones";
+import { enfocarPrimerCampoInvalido } from "@/shared/utils";
 import {
   AtButton,
   MlEmptyState,
@@ -138,7 +143,10 @@ export function PasoSedes({ addresses, isRefreshing, onContinue }: PasoSedesProp
     if (!modal || isSubmitting) return;
     const nuevosErrores = validar(valores);
     setErrores(nuevosErrores);
-    if (Object.keys(nuevosErrores).length > 0) return;
+    if (Object.keys(nuevosErrores).length > 0) {
+      enfocarPrimerCampoInvalido();
+      return;
+    }
 
     setFormError(null);
     const comunes = {
@@ -288,6 +296,7 @@ export function PasoSedes({ addresses, isRefreshing, onContinue }: PasoSedesProp
         values={valores}
         errors={errores}
         onChange={cambiarCampo}
+        typeOptions={COMPANY_ADDRESS_TYPE_CHOICES}
         formError={formError}
         isSubmitting={isSubmitting}
         onSubmit={guardar}

@@ -11,6 +11,7 @@ import { useInviteCompanyMember } from "@/domain/hooks/company-members";
 import { useDepartments } from "@/domain/hooks/departments";
 import { COMPANY_ROLE_DESCRIPTIONS, COMPANY_ROLE_LABELS, COMPANY_ROLE_OPTIONS } from "@/domain/models";
 import { CompanyRole } from "@/domain/types";
+import { enfocarPrimerCampoInvalido } from "@/shared/utils";
 import { AtButton } from "@/ui/atomic/atoms";
 import { MlRoleGuide } from "@/ui/atomic/molecules";
 import { OrMemberForm, OrMemberFormErrors, OrMemberFormField, OrMemberFormValues } from "@/ui/atomic/organisms";
@@ -92,7 +93,10 @@ export function NuevoUsuario() {
     if (invite.isPending) return;
     const nuevosErrores = validar(valores);
     setErrores(nuevosErrores);
-    if (Object.keys(nuevosErrores).length > 0) return;
+    if (Object.keys(nuevosErrores).length > 0) {
+      enfocarPrimerCampoInvalido("#app-main");
+      return;
+    }
 
     setFormError(null);
     const name = `${valores.firstName.trim()} ${valores.lastName.trim()}`.trim();

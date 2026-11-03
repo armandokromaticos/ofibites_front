@@ -2,17 +2,11 @@
 
 import { ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 
-import { COMPANY_ADDRESS_TYPE_LABELS, COMPANY_ADDRESS_TYPE_OPTIONS } from "@/domain/models";
 import { CompanyAddressType } from "@/domain/types";
 import { AtButton, AtInput, AtModal, AtSwitch } from "@/ui/atomic/atoms";
 import { MlChoiceChips, MlFormAlert } from "@/ui/atomic/molecules";
 
 import { OrAddressFormModalProps, OrAddressFormModalTextField, OrAddressFormModalValues } from "./or-address-form-modal.types";
-
-const OPCIONES_TIPO = COMPANY_ADDRESS_TYPE_OPTIONS.map((value) => ({
-  value,
-  label: COMPANY_ADDRESS_TYPE_LABELS[value],
-}));
 
 const CLASES_CAMPO = {
   label: "pb-1.5 text-xs font-semibold text-foreground",
@@ -45,6 +39,7 @@ export function OrAddressFormModal({
   values,
   errors = {},
   onChange,
+  typeOptions,
   title,
   description,
   createSubmitLabel = "Guardar dirección",
@@ -139,15 +134,17 @@ export function OrAddressFormModal({
             />
           </div>
 
-          <MlChoiceChips
-            name="type"
-            label="¿Qué tipo de sede es?"
-            size="sm"
-            options={OPCIONES_TIPO}
-            value={values.type}
-            onChange={(value) => onChange("type", value as CompanyAddressType)}
-            isDisabled={isSubmitting}
-          />
+          {typeOptions && typeOptions.length > 0 && (
+            <MlChoiceChips
+              name="type"
+              label="¿Qué tipo de sede es?"
+              size="sm"
+              options={typeOptions}
+              value={values.type}
+              onChange={(value) => onChange("type", value as CompanyAddressType)}
+              isDisabled={isSubmitting}
+            />
+          )}
 
           <AtSwitch
             isSelected={values.isPrimary}

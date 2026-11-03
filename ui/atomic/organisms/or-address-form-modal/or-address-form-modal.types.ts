@@ -27,6 +27,11 @@ export interface OrAddressFormModalProps {
   values: OrAddressFormModalValues;
   errors?: OrAddressFormModalErrors;
   onChange: <F extends OrAddressFormModalField>(field: F, value: OrAddressFormModalValues[F]) => void;
+  /**
+   * Chips «¿Qué tipo de sede es?» (T-34), ya traducidos; sin opciones no se pinta el campo. La página pasa
+   * `COMPANY_ADDRESS_TYPE_CHOICES` de `domain/models`.
+   */
+  typeOptions?: { value: CompanyAddressType; label: string }[];
   /** Título del modal. Por defecto "Añadir sede" / "Editar sede" (Mi perfil); el onboarding usa "Agregar sede". */
   title?: string;
   /** Botón de guardar en `create`. Por defecto "Guardar dirección"; el onboarding usa "Guardar sede". */

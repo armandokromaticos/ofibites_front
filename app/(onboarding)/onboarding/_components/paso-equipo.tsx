@@ -9,6 +9,7 @@ import { useCompleteOnboarding } from "@/domain/hooks/companies";
 import { useCompanyMembers, useInviteCompanyMember } from "@/domain/hooks/company-members";
 import { COMPANY_ROLE_LABELS, COMPANY_ROLE_OPTIONS } from "@/domain/models";
 import { CompanyMember, CompanyRole } from "@/domain/types";
+import { enfocarPrimerCampoInvalido, isApiError } from "@/shared/utils";
 import {
   AtAvatar,
   AtButton,
@@ -69,7 +70,16 @@ interface PasoEquipoProps {
   currentUserId: string;
   currentUserName: string;
   currentUserPosition: string | null;
+  /** Se llama antes de `onboarding/complete`: el padre no debe redirigir mientras la sesión pasa a completada. */
+  onFinishStart: () => void;
   onFinished: () => void;
+  /** `onboarding/complete` falló (después de `onIncomplete` si era un 400). */
+  onFinishFailed: () => void;
+  /**
+   * 400 de `onboarding/complete` (falta dirección fiscal o sede): el padre refresca los datos y, si algún paso
+   * anterior quedó incompleto, lleva a él con el mensaje. Devuelve `true` si cambió de paso.
+   */
+  onIncomplete: (mensaje: string) => Promise<boolean>;
 }
 
 /**
@@ -82,7 +92,10 @@ export function PasoEquipo({
   currentUserId,
   currentUserName,
   currentUserPosition,
+  onFinishStart,
   onFinished,
+  onFinishFailed,
+  onIncomplete,
 }: PasoEquipoProps) {
   const id = useId();
   const membersQuery = useCompanyMembers();
@@ -140,7 +153,10 @@ export function PasoEquipo({
     if (invite.isPending) return;
     const nuevosErrores = validar(valores);
     setErrores(nuevosErrores);
-    if (Object.keys(nuevosErrores).length > 0) return;
+    if (Object.keys(nuevosErrores).length > 0) {
+      enfocarPrimerCampoInvalido();
+      return;
+    }
 
     setFormError(null);
     const name = `${valores.firstName.trim()} ${valores.lastName.trim()}`.trim();
@@ -163,10 +179,17 @@ export function PasoEquipo({
   const finalizar = () => {
     if (complete.isPending || esDobleClic()) return;
     setErrorFinalizar(null);
+    onFinishStart();
     complete
       .mutateAsync()
       .then(onFinished)
-      .catch((error: unknown) => setErrorFinalizar(mensajeErrorFinalizar(error)));
+      .catch(async (error: unknown) => {
+        const mensaje = mensajeErrorFinalizar(error);
+        const es400 = isApiError(error) && error.statusCode === 400;
+        const cambioDePaso = es400 && (await onIncomplete(mensaje));
+        if (!cambioDePaso) setErrorFinalizar(mensaje);
+        onFinishFailed();
+      });
   };
 
   const tituloId = `${id}-titulo`;

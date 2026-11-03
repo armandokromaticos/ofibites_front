@@ -11,8 +11,14 @@ import {
   useDeleteCompanyAddress,
   useUpdateCompanyAddress,
 } from "@/domain/hooks/company-addresses";
-import { COMPANY_ADDRESS_TYPE_LABELS } from "@/domain/models";
+import {
+  COMPANY_ADDRESS_TYPE_CHOICES,
+  COMPANY_ADDRESS_TYPE_LABELS,
+  direccionCompleta,
+  lineaReferenciaContacto,
+} from "@/domain/models";
 import { CompanyAddress, CreateCompanyAddressRequest, UpdateCompanyAddressRequest } from "@/domain/types";
+import { enfocarPrimerCampoInvalido } from "@/shared/utils";
 import { AtButton, AtSkeleton } from "@/ui/atomic/atoms";
 import { MlEmptyState } from "@/ui/atomic/molecules";
 import {
@@ -23,7 +29,6 @@ import {
   OrDeleteAddressModal,
 } from "@/ui/atomic/organisms";
 
-import { direccionCompleta, lineaReferenciaContacto } from "../../_data/direcciones";
 import { ordenarSedes, sedesActivasLabel } from "../_data/direcciones-sedes";
 import { mensajeErrorDireccion, mensajeErrorEliminarDireccion } from "../_data/errores-perfil";
 
@@ -143,7 +148,10 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
     if (!modal || isSubmitting) return;
     const nuevosErrores = validar(valores);
     setErrores(nuevosErrores);
-    if (Object.keys(nuevosErrores).length > 0) return;
+    if (Object.keys(nuevosErrores).length > 0) {
+      enfocarPrimerCampoInvalido();
+      return;
+    }
 
     setFormError(null);
     const comunes = {
@@ -292,6 +300,7 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
         values={valores}
         errors={errores}
         onChange={cambiarCampo}
+        typeOptions={COMPANY_ADDRESS_TYPE_CHOICES}
         formError={formError}
         isSubmitting={isSubmitting}
         onSubmit={guardar}

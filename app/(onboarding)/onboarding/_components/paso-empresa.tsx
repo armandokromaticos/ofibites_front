@@ -63,7 +63,7 @@ export function PasoEmpresa({ company, onContinue }: PasoEmpresaProps) {
             name="fiscalName"
             label="Razón Social"
             labelPlacement="inside"
-            value={company.fiscalName ?? company.legalName}
+            value={company.legalName}
             isReadOnly
             classNames={CLASES_LABEL}
           />
