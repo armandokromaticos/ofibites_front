@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import { useCreateCompanyRequest } from "@/domain/hooks/company-requests";
 import { CompanyRequestResponse, CreateCompanyRequest } from "@/domain/types";
@@ -80,7 +79,6 @@ function RequestSent({ request }: { request: CompanyRequestResponse }) {
     titleRef.current?.focus();
   }, []);
 
-  // Decisión del usuario (T-03): sin número de solicitud ("SOL-2026-0412"): el back no tiene folio legible.
   const nextSteps = [
     "Validaremos el RIF y los datos de tu empresa. Toma menos de 24 horas hábiles.",
     `Te escribiremos a ${request.contactEmail} con tus credenciales de acceso.`,
@@ -108,6 +106,10 @@ function RequestSent({ request }: { request: CompanyRequestResponse }) {
             Recibimos los datos de <span className="text-secondary-600">{request.legalName}</span>
             {/* Sin doble punto cuando el nombre ya termina en "." (p. ej. "C.A."). */}
             {request.legalName.trim().endsWith(".") ? "" : "."}
+            {/* Segunda línea, como en el Figma (3245:12579). */}
+            <span className="block">
+              Tu número de solicitud es <span className="font-bold tabular-nums">{request.folio}</span>.
+            </span>
           </>
         }
       />
@@ -138,11 +140,6 @@ function RequestSent({ request }: { request: CompanyRequestResponse }) {
         <a href="mailto:hola@ofibites.com" className={LINK_CLASSES}>
           hola@ofibites.com
         </a>
-      </p>
-      <p className="mt-3 text-center text-[13px] font-semibold text-placeholder">
-        <Link href="/login" className={LINK_CLASSES}>
-          Volver a iniciar sesión
-        </Link>
       </p>
     </div>
   );

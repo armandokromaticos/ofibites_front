@@ -85,6 +85,8 @@ export type CompanyRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface CompanyRequestResponse {
   id: string;
+  /** Número de solicitud legible: `SOL-<año>-<número de 4 dígitos como mínimo>` (p. ej. "SOL-2026-0412"). */
+  folio: string;
   legalName: string;
   taxId: string;
   contactName: string;
