@@ -99,6 +99,7 @@ export function TmAuthLayout({
   variant = "split",
   showLogo = true,
   backgroundSrc,
+  contentClassName,
   className,
 }: TmAuthLayoutProps) {
   if (variant === "centered") {
@@ -122,7 +123,12 @@ export function TmAuthLayout({
           ) : (
             <AuthDecoration />
           )}
-          <div className="flex flex-col justify-center mx-auto px-4 sm:px-6 py-10 lg:py-14 w-full max-w-[705px] min-h-dvh">
+          <div
+            className={cn(
+              "flex flex-col justify-center mx-auto px-4 sm:px-6 py-10 lg:py-14 w-full max-w-[705px] min-h-dvh",
+              contentClassName,
+            )}
+          >
             <AuthPanel className="flex flex-col gap-12 w-full">
               {showLogo && <AuthLogo />}
               {children}

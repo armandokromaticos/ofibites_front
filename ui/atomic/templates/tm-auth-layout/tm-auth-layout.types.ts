@@ -13,5 +13,7 @@ export interface TmAuthLayoutProps {
   showLogo?: boolean;
   /** Fondo a pantalla completa con las ilustraciones ya compuestas (solo `centered`). Sustituye a las sueltas. */
   backgroundSrc?: string;
+  /** Clases extra de la columna en `centered` (p. ej. alinear arriba; por defecto 705 px = 673 + gutter). */
+  contentClassName?: string;
   className?: string;
 }

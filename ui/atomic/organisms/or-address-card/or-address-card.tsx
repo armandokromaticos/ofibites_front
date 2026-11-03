@@ -15,6 +15,7 @@ import { OrAddressCardProps } from "./or-address-card.types";
 export function OrAddressCard({
   label,
   isPrimary = false,
+  typeLabel,
   addressLine,
   referenceContactLine,
   canManage,
@@ -28,6 +29,7 @@ export function OrAddressCard({
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-sm font-semibold leading-5 text-foreground">{label}</h3>
           {isPrimary && <AtChip>Sede principal</AtChip>}
+          {typeLabel && <AtChip>{typeLabel}</AtChip>}
         </div>
         {canManage && (
           <div className="flex items-center gap-1">

@@ -3,6 +3,8 @@ export interface OrAddressCardProps {
   label: string;
   /** Badge "Sede principal" (Figma `3657:2154`). `undefined`/`false` mientras T-31a (back) no la implemente. */
   isPrimary?: boolean;
+  /** T-34: tipo de sede ya traducido ("Oficina", "Depósito", "Otro"); sin badge si no hay. */
+  typeLabel?: string | null;
   /** Dirección completa ya formateada ("Av. ..., piso 8. Caracas, Distrito Capital."). */
   addressLine: string;
   /** "Referencia: ... · Recibe: ... · <teléfono>"; `null`/`undefined` si no hay nada que mostrar. */

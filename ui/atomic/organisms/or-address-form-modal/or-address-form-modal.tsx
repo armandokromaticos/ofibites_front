@@ -2,10 +2,11 @@
 
 import { ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 
+import { CompanyAddressType } from "@/domain/types";
 import { AtButton, AtInput, AtModal, AtSwitch } from "@/ui/atomic/atoms";
-import { MlFormAlert } from "@/ui/atomic/molecules";
+import { MlChoiceChips, MlFormAlert } from "@/ui/atomic/molecules";
 
-import { OrAddressFormModalField, OrAddressFormModalProps, OrAddressFormModalValues } from "./or-address-form-modal.types";
+import { OrAddressFormModalProps, OrAddressFormModalTextField, OrAddressFormModalValues } from "./or-address-form-modal.types";
 
 const CLASES_CAMPO = {
   label: "pb-1.5 text-xs font-semibold text-foreground",
@@ -14,7 +15,7 @@ const CLASES_CAMPO = {
 };
 
 /** Límites de `Create`/`UpdateCompanyAddressDto` (T-31a incluido: `contactName` ≤ 150, `contactPhone` ≤ 30). */
-const MAXIMOS: Record<Exclude<OrAddressFormModalField, "isPrimary">, number> = {
+const MAXIMOS: Record<OrAddressFormModalTextField, number> = {
   label: 150,
   line1: 255,
   city: 150,
@@ -26,7 +27,8 @@ const MAXIMOS: Record<Exclude<OrAddressFormModalField, "isPrimary">, number> = {
 
 /**
  * "Añadir sede" (Figma `3658:2193`) / "Editar sede" (`3658:2360`): nombre, dirección, ciudad, estado (opcional),
- * punto de referencia (opcional), quién recibe, teléfono de contacto y el switch "Marcar como sede principal".
+ * punto de referencia (opcional), quién recibe, teléfono de contacto, el tipo de sede (chips Oficina/Depósito/Otro,
+ * T-34, del modal "Agregar sede" del onboarding `3392:2924`) y el switch "Marcar como sede principal".
  * Sin campo de país (el que la usa manda `country: "Venezuela"` fijo) ni de línea 2, ni de facturación/envío:
  * no están en este formulario del Figma. La validación de campos vive en quien usa el modal (mismo patrón que
  * `OrMemberForm`): este componente solo pinta `values`/`errors` y llama a `onSubmit` sin validar de más.
@@ -37,6 +39,10 @@ export function OrAddressFormModal({
   values,
   errors = {},
   onChange,
+  typeOptions,
+  title,
+  description,
+  createSubmitLabel = "Guardar dirección",
   formError,
   isSubmitting = false,
   onSubmit,
@@ -45,7 +51,7 @@ export function OrAddressFormModal({
 }: OrAddressFormModalProps) {
   const isCreate = mode === "create";
 
-  const campo = (field: Exclude<OrAddressFormModalField, "isPrimary">) => ({
+  const campo = (field: OrAddressFormModalTextField) => ({
     name: field,
     value: values[field],
     onValueChange: (value: string) => onChange(field, value as OrAddressFormModalValues[typeof field]),
@@ -76,12 +82,13 @@ export function OrAddressFormModal({
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1 px-5 pb-0 pt-6 sm:px-7 sm:pt-7">
           <h2 className="font-display text-[22px] font-bold leading-7 text-foreground">
-            {isCreate ? "Añadir sede" : "Editar sede"}
+            {title ?? (isCreate ? "Añadir sede" : "Editar sede")}
           </h2>
           <p className="text-xs font-normal leading-4 text-muted">
-            {isCreate
-              ? "Esta dirección queda disponible para toda la empresa al armar un pedido."
-              : "Los cambios aplican a los pedidos nuevos. Los pedidos ya entregados conservan la dirección con la que salieron."}
+            {description ??
+              (isCreate
+                ? "Esta dirección queda disponible para toda la empresa al armar un pedido."
+                : "Los cambios aplican a los pedidos nuevos. Los pedidos ya entregados conservan la dirección con la que salieron.")}
           </p>
         </ModalHeader>
         <ModalBody className="gap-4 px-5 pb-0 pt-4 sm:px-7">
@@ -127,6 +134,18 @@ export function OrAddressFormModal({
             />
           </div>
 
+          {typeOptions && typeOptions.length > 0 && (
+            <MlChoiceChips
+              name="type"
+              label="¿Qué tipo de sede es?"
+              size="sm"
+              options={typeOptions}
+              value={values.type}
+              onChange={(value) => onChange("type", value as CompanyAddressType)}
+              isDisabled={isSubmitting}
+            />
+          )}
+
           <AtSwitch
             isSelected={values.isPrimary}
             onValueChange={(value) => onChange("isPrimary", value)}
@@ -162,7 +181,7 @@ export function OrAddressFormModal({
               Cancelar
             </AtButton>
             <AtButton size="lg" className="h-12 px-6 text-sm" isLoading={isSubmitting} onPress={onSubmit}>
-              {isCreate ? "Guardar dirección" : "Guardar cambios"}
+              {isCreate ? createSubmitLabel : "Guardar cambios"}
             </AtButton>
           </div>
         </ModalFooter>

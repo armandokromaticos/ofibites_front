@@ -59,6 +59,17 @@ export interface OrMemberFormProps {
   onCancel: () => void;
   isSubmitting?: boolean;
   submitLabel: string;
+  /** Texto del botón secundario. Por defecto "Cancelar" (el onboarding usa "Continuar más tarde"). */
+  cancelLabel?: string;
+  /**
+   * Título de la sección. Por defecto "Datos de la persona". `null` lo quita (el modal de invitar del onboarding
+   * ya lleva su propio título).
+   */
+  title?: string | null;
+  /** Oculta "Departamento" (invitar desde el onboarding, T-34). */
+  hideDepartment?: boolean;
+  /** Oculta "Sede a la que pertenece" (onboarding, T-34: «Sede asignada» se omite, decisión 2026-11-03). */
+  hideBranch?: boolean;
   /** Solo `mode="edit"`: "Desactivar usuario" / "Reactivar usuario" a la izquierda del pie. */
   onDeactivateClick?: () => void;
   deactivateLabel?: string;

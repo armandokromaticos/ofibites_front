@@ -22,9 +22,33 @@ export function isPlatformRole(role: UserRole): boolean {
   return PLATFORM_ROLES.includes(role);
 }
 
+/** Ruta del onboarding de la empresa (T-34). */
+export const RUTA_ONBOARDING = "/onboarding";
+
+/**
+ * T-34: el `COMPANY_ADMIN` de una empresa sin onboarding (`onboardingCompletedAt === null`) debe configurarla
+ * antes de usar la app. `undefined` (sesión guardada antes de T-34, o back sin el campo) no cuenta como pendiente.
+ */
+export function needsOnboarding(memberships: Membership[], activeCompanyId: string | null): boolean {
+  const membership = memberships.find((item) => item.companyId === activeCompanyId);
+  return membership?.role === "COMPANY_ADMIN" && membership.onboardingCompletedAt === null;
+}
+
 /** Dónde aterriza cada rol tras el login. El admin de plataforma aún no tiene inicio propio: "/". */
 export function getHomePath(role: UserRole): string {
   return role === "CLIENT" ? "/dashboard" : "/";
+}
+
+/** Inicio tras el login con la sesión completa: el onboarding pendiente manda sobre el inicio del rol (T-34). */
+export function getPostLoginPath(
+  role: UserRole,
+  memberships: Membership[],
+  activeCompanyId: string | null = null,
+): string {
+  if (role === "CLIENT" && needsOnboarding(memberships, pickActiveCompanyId(memberships, activeCompanyId))) {
+    return RUTA_ONBOARDING;
+  }
+  return getHomePath(role);
 }
 
 /** Una membership sirve para operar si ella y su empresa están activas (mismo criterio que el login del back). */

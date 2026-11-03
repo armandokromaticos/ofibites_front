@@ -47,6 +47,10 @@ export function OrMemberForm({
   onCancel,
   isSubmitting = false,
   submitLabel,
+  cancelLabel = "Cancelar",
+  title = "Datos de la persona",
+  hideDepartment = false,
+  hideBranch = false,
   onDeactivateClick,
   deactivateLabel,
   className,
@@ -82,7 +86,11 @@ export function OrMemberForm({
       {formError && <MlFormAlert>{formError}</MlFormAlert>}
 
       <div className="flex flex-col gap-4">
-        <h2 className="font-display text-xl font-bold leading-7 text-foreground">Datos de la persona</h2>
+        {title !== null && (
+          <h2 className="font-display text-xl font-bold leading-7 text-foreground">
+            {title}
+          </h2>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <AtInput
@@ -162,39 +170,40 @@ export function OrMemberForm({
             errorMessage={errors.position}
             classNames={CLASES_CAMPO}
           />
-          <AtSelect
-            label="Departamento"
-            labelPlacement="outside-top"
-            placeholder="Selecciona un departamento"
-            selectedKeys={values.departmentId ? [values.departmentId] : []}
-            onChange={(event) => onChange("departmentId", event.target.value)}
-            isLoading={isLoadingDepartments}
-            isInvalid={Boolean(errors.departmentId)}
-            errorMessage={errors.departmentId}
-            classNames={CLASES_SELECT}
-          >
-            {departmentOptions.map((option) => (
-              <SelectItem key={option.id}>{option.name}</SelectItem>
-            ))}
-          </AtSelect>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <AtSelect
-            label="Sede a la que pertenece"
-            labelPlacement="outside-top"
-            placeholder="Selecciona una sede"
-            selectedKeys={values.branchId ? [values.branchId] : []}
-            onChange={(event) => onChange("branchId", event.target.value)}
-            isLoading={isLoadingBranches}
-            isInvalid={Boolean(errors.branchId)}
-            errorMessage={errors.branchId}
-            classNames={CLASES_SELECT}
-          >
-            {branchOptions.map((option) => (
-              <SelectItem key={option.id}>{option.name}</SelectItem>
-            ))}
-          </AtSelect>
+          {!hideDepartment && (
+            <AtSelect
+              label="Departamento"
+              labelPlacement="outside-top"
+              placeholder="Selecciona un departamento"
+              selectedKeys={values.departmentId ? [values.departmentId] : []}
+              onChange={(event) => onChange("departmentId", event.target.value)}
+              isLoading={isLoadingDepartments}
+              isInvalid={Boolean(errors.departmentId)}
+              errorMessage={errors.departmentId}
+              classNames={CLASES_SELECT}
+            >
+              {departmentOptions.map((option) => (
+                <SelectItem key={option.id}>{option.name}</SelectItem>
+              ))}
+            </AtSelect>
+          )}
+          {!hideBranch && (
+            <AtSelect
+              label="Sede a la que pertenece"
+              labelPlacement="outside-top"
+              placeholder="Selecciona una sede"
+              selectedKeys={values.branchId ? [values.branchId] : []}
+              onChange={(event) => onChange("branchId", event.target.value)}
+              isLoading={isLoadingBranches}
+              isInvalid={Boolean(errors.branchId)}
+              errorMessage={errors.branchId}
+              classNames={CLASES_SELECT}
+            >
+              {branchOptions.map((option) => (
+                <SelectItem key={option.id}>{option.name}</SelectItem>
+              ))}
+            </AtSelect>
+          )}
           <AtSelect
             label="Rol de usuario"
             labelPlacement="outside-top"
@@ -255,7 +264,7 @@ export function OrMemberForm({
         )}
         <div className="flex flex-wrap justify-end gap-2">
           <AtButton size="md" variant="light" color="default" className="text-ghost-foreground" onPress={onCancel}>
-            Cancelar
+            {cancelLabel}
           </AtButton>
           <AtButton size="md" onPress={onSubmit} isLoading={isSubmitting}>
             {submitLabel}

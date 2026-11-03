@@ -34,6 +34,8 @@ interface AuthActions {
   /** Actualiza perfil y memberships con un `GET /auth/me` posterior, conservando la empresa activa si sigue valiendo. */
   syncMe: (me: MeResponse) => void;
   setActiveCompanyId: (companyId: string) => void;
+  /** T-34: la empresa terminó el onboarding (respuesta de `onboarding/complete`), sin esperar a `/auth/me`. */
+  markOnboardingCompleted: (companyId: string, completedAt: string) => void;
   /** Borra tokens y sesión. `reason` queda para que `/login` muestre el aviso. */
   logout: (reason?: SignOutReason) => void;
   clearSignOutReason: () => void;
@@ -78,6 +80,16 @@ export const useAuthStore = create<AuthStore>()(
 
       setActiveCompanyId: (companyId) => {
         set({ activeCompanyId: companyId });
+      },
+
+      markOnboardingCompleted: (companyId, completedAt) => {
+        set({
+          memberships: get().memberships.map((membership) =>
+            membership.companyId === companyId
+              ? { ...membership, onboardingCompletedAt: completedAt }
+              : membership,
+          ),
+        });
       },
 
       logout: (reason) => {

@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useLogin } from "@/domain/hooks/auth";
-import { getHomePath } from "@/domain/models/auth.model";
+import { getPostLoginPath } from "@/domain/models/auth.model";
 import { useAuthHydrated, useAuthStore } from "@/domain/stores";
 import { getApiErrorMessage, isApiError } from "@/shared/utils";
 import {
@@ -81,13 +81,15 @@ export function LoginForm({ variant = "v1" }: LoginFormProps) {
     (state) => state.isAuthenticated && state.user?.role === "CLIENT",
   );
   const shouldRedirect = hasHydrated && hasClientSession;
+  // T-34: si la empresa activa tiene el onboarding pendiente y la persona es su admin, al onboarding.
+  const redirectPath = useAuthStore((state) => getPostLoginPath("CLIENT", state.memberships, state.activeCompanyId));
   // La guarda cerró la sesión porque el cliente ya no tiene empresa operativa (motivo en memoria, no en la URL).
   const signOutReason = useAuthStore((state) => state.signOutReason);
   const clearSignOutReason = useAuthStore((state) => state.clearSignOutReason);
 
   useEffect(() => {
-    if (shouldRedirect) router.replace("/dashboard");
-  }, [shouldRedirect, router]);
+    if (shouldRedirect) router.replace(redirectPath);
+  }, [shouldRedirect, redirectPath, router]);
 
   // Solo un error de credenciales marca los campos; red, 5xx o "cuenta no activada" van solo en la alerta.
   const credentialsInvalid = isCredentialsError(error);
@@ -118,10 +120,10 @@ export function LoginForm({ variant = "v1" }: LoginFormProps) {
         ?.focus();
       return;
     }
-    // CLIENT → /dashboard; el resto (admin de plataforma, aún sin inicio propio) → /.
+    // CLIENT → /dashboard (o /onboarding si su empresa aún no está configurada, T-34); el resto → /.
     login(
       { email, password },
-      { onSuccess: (me) => router.replace(getHomePath(me.user.role)) },
+      { onSuccess: (me) => router.replace(getPostLoginPath(me.user.role, me.memberships)) },
     );
   };
 
