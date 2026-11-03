@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 import { cn, SelectItem } from "@heroui/react";
 
 import { CompanyRole } from "@/domain/types";
@@ -39,6 +41,7 @@ export function OrMemberForm({
   header,
   isActive,
   onActiveChange,
+  deactivateBlockedReason,
   formError,
   onSubmit,
   onCancel,
@@ -53,6 +56,9 @@ export function OrMemberForm({
   className,
 }: OrMemberFormProps) {
   const isCreate = mode === "create";
+  const motivoBloqueo =
+    !isCreate && isActive && deactivateBlockedReason ? deactivateBlockedReason : null;
+  const motivoBloqueoId = useId();
 
   return (
     <div className={cn("flex flex-col gap-6 rounded-card bg-content1 p-6", className)}>
@@ -216,10 +222,21 @@ export function OrMemberForm({
         </div>
 
         {!isCreate && (
-          <div className="flex items-center gap-3 rounded-control bg-background px-4 py-3 sm:w-fit">
-            <AtSwitch isSelected={isActive} onValueChange={onActiveChange} aria-label="Estado del usuario">
+          <div className="flex flex-col gap-1.5 rounded-control bg-background px-4 py-3 sm:w-fit">
+            <AtSwitch
+              isSelected={isActive}
+              onValueChange={onActiveChange}
+              isDisabled={Boolean(motivoBloqueo)}
+              aria-label="Estado del usuario"
+              aria-describedby={motivoBloqueo ? motivoBloqueoId : undefined}
+            >
               {isActive ? "Activo" : "Inactivo"}
             </AtSwitch>
+            {motivoBloqueo && (
+              <p id={motivoBloqueoId} className="text-xs leading-[18px] text-muted">
+                {motivoBloqueo}
+              </p>
+            )}
           </div>
         )}
 
@@ -232,7 +249,7 @@ export function OrMemberForm({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-        {onDeactivateClick ? (
+        {onDeactivateClick && !motivoBloqueo ? (
           <AtButton
             size="md"
             variant="bordered"

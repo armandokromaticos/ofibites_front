@@ -48,6 +48,12 @@ export interface OrMemberFormProps {
   /** Solo `mode="edit"`: switch "Estado". */
   isActive?: boolean;
   onActiveChange?: (isActive: boolean) => void;
+  /**
+   * Solo `mode="edit"`: motivo por el que no se puede desactivar (p. ej. "No puedes desactivar tu propia
+   * cuenta."). Si viene y el usuario está activo, el switch "Estado" queda deshabilitado con el motivo
+   * visible (y enlazado con `aria-describedby`) y no se pinta el botón "Desactivar usuario".
+   */
+  deactivateBlockedReason?: string | null;
   formError?: string | null;
   onSubmit: () => void;
   onCancel: () => void;

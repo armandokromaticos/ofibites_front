@@ -23,9 +23,14 @@ const SIN_DATO = "—";
 
 /**
  * `CompanyMember` real a fila de tabla. "Departamento"/"Sede" salen de `GET /companies/:id/departments`
- * y `/branches` (T-28b). `name`/`email` reales del `User` (T-29c).
+ * y `/branches` (T-28b). `name`/`email` reales del `User` (T-29c). `currentUserId` (usuario autenticado)
+ * marca la fila propia, que no puede desactivarse.
  */
-export function construirFilaMiembro(member: CompanyMember, departments: Department[]): FilaMiembro {
+export function construirFilaMiembro(
+  member: CompanyMember,
+  departments: Department[],
+  currentUserId?: string | null,
+): FilaMiembro {
   const status = memberStatus(member);
   return {
     id: member.id,
@@ -40,6 +45,7 @@ export function construirFilaMiembro(member: CompanyMember, departments: Departm
     canResendInvite: status === "pending",
     canResetPassword: status !== "pending",
     isActive: member.isActive,
+    isSelf: Boolean(currentUserId) && member.userId === currentUserId,
     status,
     lastSeenAt: member.lastSeenAt,
   };

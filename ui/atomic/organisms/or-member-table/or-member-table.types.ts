@@ -13,6 +13,11 @@ export interface OrMemberTableRow {
   /** No pendiente (tiene cuenta activa). */
   canResetPassword: boolean;
   isActive: boolean;
+  /**
+   * Fila del usuario autenticado: no se ofrece "Desactivar usuario" (el back responde 403 "No puedes
+   * desactivar tu propia cuenta."). La opción queda deshabilitada con el motivo y el nombre lleva "(tú)".
+   */
+  isSelf?: boolean;
 }
 
 export interface OrMemberTableProps {

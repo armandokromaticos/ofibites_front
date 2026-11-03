@@ -13,6 +13,7 @@ import {
 } from "@/domain/hooks/company-members";
 import { useDepartments } from "@/domain/hooks/departments";
 import { MEMBER_STATUS_FILTERS, MEMBER_STATUS_LABELS } from "@/domain/models";
+import { useAuthStore } from "@/domain/stores";
 import {
   AtButton,
   AtSkeleton,
@@ -85,6 +86,7 @@ export function AdministracionCliente() {
   const updateMember = useUpdateCompanyMember();
   const resendInvite = useResendMemberInvite();
   const resetPassword = useResetMemberPassword();
+  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [aviso, setAviso] = useState<Aviso | null>(null);
@@ -94,8 +96,8 @@ export function AdministracionCliente() {
   const departments = useMemo(() => departmentsQuery.data ?? [], [departmentsQuery.data]);
 
   const filas = useMemo(
-    () => members.map((member) => construirFilaMiembro(member, departments)),
-    [members, departments],
+    () => members.map((member) => construirFilaMiembro(member, departments, currentUserId)),
+    [members, departments, currentUserId],
   );
   const filasOrdenadas = useMemo(() => ordenarMiembros(filas, filtros.orden), [filas, filtros.orden]);
   const filasFiltradas = useMemo(
@@ -139,6 +141,8 @@ export function AdministracionCliente() {
   };
 
   const handleToggleActive = (row: OrMemberTableRow) => {
+    // Defensa extra: la tabla ya deshabilita la opción en la fila propia (el back responde 403).
+    if (row.isActive && row.isSelf) return;
     if (row.isActive) {
       setMemberToDeactivate(filasFiltradas.find((fila) => fila.id === row.id) ?? null);
       return;
@@ -166,7 +170,11 @@ export function AdministracionCliente() {
           setAviso({ tone: "success", message: `${name} fue desactivado.` });
           setMemberToDeactivate(null);
         },
-        onError: (error) => setAviso({ tone: "error", message: mensajeErrorMiembro(error, "No pudimos desactivar al usuario.") }),
+        // Se cierra el modal para que el aviso (p. ej. el 403 del back) quede a la vista.
+        onError: (error) => {
+          setAviso({ tone: "error", message: mensajeErrorMiembro(error, "No pudimos desactivar al usuario.") });
+          setMemberToDeactivate(null);
+        },
         onSettled: () => setBusyId(null),
       },
     );
