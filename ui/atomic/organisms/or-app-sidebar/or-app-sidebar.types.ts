@@ -51,6 +51,8 @@ export interface OrAppSidebarProps {
    * hamburguesa de la top bar de `TmAppLayout`). Sin valor, en móvil no hay navegación lateral.
    */
   drawer?: OrAppSidebarDrawer;
+  /** Valor de `data-tour` del riel de 80 px (objetivo de un recorrido guiado). En móvil el riel mide 0 y no cuenta. */
+  tourId?: string;
   className?: string;
 }
 

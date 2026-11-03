@@ -13,10 +13,13 @@ interface DashboardPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-/** `?estado=cargando|vacio|error` fuerza un estado para QA, solo en desarrollo. */
+/**
+ * `?estado=cargando|vacio|error` fuerza un estado para QA, solo en desarrollo.
+ * `?tour=1` abre el tour de bienvenida (en todos los entornos; el parámetro se quita al abrirlo).
+ */
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const { estado } = await searchParams;
+  const { estado, tour } = await searchParams;
   const estadoQa = process.env.NODE_ENV === "production" ? undefined : parseEstadoQa(estado);
 
-  return <DashboardCliente estadoQa={estadoQa} />;
+  return <DashboardCliente estadoQa={estadoQa} abrirTour={tour === "1"} />;
 }

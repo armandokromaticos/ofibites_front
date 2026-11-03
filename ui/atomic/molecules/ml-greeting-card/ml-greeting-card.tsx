@@ -19,6 +19,7 @@ export function MlGreetingCard({
   ctaLabel = "Realizar pedido",
   ctaHref,
   onCtaPress,
+  ctaTourId,
   isLoading = false,
   headingLevel = 2,
   className,
@@ -46,11 +47,11 @@ export function MlGreetingCard({
       </div>
 
       {ctaHref ? (
-        <AtButton as={Link} href={ctaHref} size="sm" fullWidth>
+        <AtButton as={Link} href={ctaHref} size="sm" fullWidth data-tour={ctaTourId}>
           {ctaLabel}
         </AtButton>
       ) : (
-        <AtButton size="sm" fullWidth onPress={onCtaPress}>
+        <AtButton size="sm" fullWidth onPress={onCtaPress} data-tour={ctaTourId}>
           {ctaLabel}
         </AtButton>
       )}
