@@ -35,6 +35,7 @@ export function TmAppLayout({
   account,
   children,
   mainClassName,
+  tourTargets,
   className,
 }: TmAppLayoutProps) {
   const pathname = usePathname();
@@ -95,6 +96,7 @@ export function TmAppLayout({
       >
         <OrAppSidebar
           {...sidebar}
+          tourId={tourTargets?.navigation ?? sidebar.tourId}
           drawer={{ isOpen: isDrawerOpen, onClose: closeDrawer, id: DRAWER_ID }}
         />
       </ViewTransition>
@@ -105,6 +107,7 @@ export function TmAppLayout({
             <div className="flex min-w-0 items-center gap-2.5 text-foreground-strong">
               <AtButton
                 ref={menuButtonRef}
+                data-tour={tourTargets?.menuButton}
                 isIconOnly
                 variant="light"
                 color="default"

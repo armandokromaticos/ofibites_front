@@ -26,6 +26,11 @@ export interface TmAppLayoutProps {
   children: ReactNode;
   /** Clases del `<main>` (padding, fondo). */
   mainClassName?: string;
+  /**
+   * Valores de `data-tour` para un recorrido guiado: `navigation` en el riel del sidebar (≥ 768 px) y
+   * `menuButton` en la hamburguesa de la top bar (< 768 px).
+   */
+  tourTargets?: { navigation?: string; menuButton?: string };
   /** Clases del contenedor raíz (p. ej. alto fijo en el catálogo). Por defecto ocupa el viewport. */
   className?: string;
 }

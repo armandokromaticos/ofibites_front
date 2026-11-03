@@ -10,6 +10,8 @@ export interface MlGreetingCardProps {
   /** Si se pasa, el CTA es un enlace. */
   ctaHref?: string;
   onCtaPress?: () => void;
+  /** Valor de `data-tour` del CTA (objetivo de un recorrido guiado). */
+  ctaTourId?: string;
   /** Esqueleto mientras carga el nombre. */
   isLoading?: boolean;
   /** Nivel del título (saludo + nombre). Por defecto 2. */

@@ -38,6 +38,7 @@ import {
 
 import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
 import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pedido";
+import { OBJETIVOS_TOUR } from "../../_data/tour-bienvenida";
 import {
   parseCategoriaOrdenar,
   RUTA_CARRITO,
@@ -47,6 +48,8 @@ import {
   rutaProducto,
 } from "../../_navegacion";
 import { CATEGORIAS_DASHBOARD } from "../_data/categorias";
+
+import { TourBienvenida } from "./tour-bienvenida";
 
 // Reacción de la imagen de cada categoría al pasar (entrega de diseño): botellas que se inclinan, cajas que crecen.
 // Si las categorías llegan a venir del back, esto pasa a ser un dato de la categoría.
@@ -153,9 +156,11 @@ function RecommendationsSkeleton() {
 
 interface DashboardClienteProps {
   estadoQa?: EstadoQaDashboard;
+  /** `?tour=1`: abre el tour de bienvenida (pruebas; ver `TourBienvenida`). */
+  abrirTour?: boolean;
 }
 
-export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
+export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClienteProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const router = useRouter();
   const repeat = useRepeatOrder();
@@ -292,7 +297,12 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
             aria-label="Tu actividad"
             className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:col-start-2 xl:row-start-1 xl:flex xl:gap-[14px]"
           >
-            <MlGreetingCard name={user?.displayName ?? ""} isLoading={isPending} ctaHref={RUTA_ORDENAR} />
+            <MlGreetingCard
+              name={user?.displayName ?? ""}
+              isLoading={isPending}
+              ctaHref={RUTA_ORDENAR}
+              ctaTourId={OBJETIVOS_TOUR.realizarPedido}
+            />
             {/* Al llegar los datos (tras el esqueleto), la card entra con fadeRise. */}
             <motion.div
               key={isPending ? "cargando" : "lista"}
@@ -313,6 +323,7 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
           {(isPending || data.recommendations.length > 0) && (
             <div
               aria-busy={isPending || undefined}
+              data-tour={OBJETIVOS_TOUR.recomendados}
               // En xl la separación entre filas es la de la columna derecha (14 px): 13 más hasta los 27.
               className="min-w-0 xl:col-start-1 xl:row-start-3 xl:mt-[13px]"
             >
@@ -407,5 +418,14 @@ export function DashboardCliente({ estadoQa }: DashboardClienteProps) {
     );
   }
 
-  return content;
+  return (
+    <>
+      {content}
+      <TourBienvenida
+        abrirDesdeUrl={abrirTour}
+        puedeIniciar={!(isError && !data)}
+        sinRecomendaciones={!!data && data.recommendations.length === 0}
+      />
+    </>
+  );
 }

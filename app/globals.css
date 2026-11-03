@@ -53,6 +53,20 @@
 }
 
 /*
+ * T-33: tour guiado (OrGuidedTour, Figma Tour 3503:4852). `static` porque el velo y el halo del foco se pintan
+ * con un box-shadow en línea que lee las variables (ninguna utilidad las usaría).
+ * - scrim-tour: velo oscuro del Figma (#0F0D08 al 74 %).
+ * - surface-cream: fondo de la tarjeta del paso (#FCFAF4).
+ * - shadow-tour-card: sombra de la tarjeta; shadow-tour-spotlight: halo `accent` alrededor del destacado.
+ */
+@theme static {
+  --color-scrim-tour: rgb(15 13 8 / 0.74);
+  --color-surface-cream: #fcfaf4;
+  --shadow-tour-card: 0 12px 32px rgb(0 0 0 / 0.35);
+  --shadow-tour-spotlight: 0 0 28px 2px rgb(230 68 0 / 0.35);
+}
+
+/*
  * T-17: tokens de motion (espejo TS en shared/motion). `static` para que las variables existan aunque
  * ninguna utilidad las use (las leen keyframes y ::view-transition-*). Sobrescribe los ease-* de Tailwind.
  * Regla: la salida dura menos que la entrada y acelera; la entrada decelera.
