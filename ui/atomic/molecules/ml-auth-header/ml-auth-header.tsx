@@ -8,26 +8,17 @@ export function MlAuthHeader({
   subtitle,
   icon,
   titleRef,
-  align = "center",
   animateTitle = false,
   className,
 }: MlAuthHeaderProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-5",
-        align === "center" ? "items-center text-center" : "items-start text-left",
-        className,
-      )}
-    >
+    <div className={cn("flex flex-col items-center gap-5 text-center", className)}>
       {icon}
       <h1
         ref={titleRef}
         tabIndex={titleRef ? -1 : undefined}
         className={cn(
           "font-display text-[34px] font-black leading-[1.15] tracking-[-0.04em] text-brand outline-none sm:text-[41px] sm:leading-[46px]",
-          // Login v2: título de display desde lg (el de v1 y el resto de pantallas no cambia).
-          align === "start" && "text-balance lg:text-[60px] lg:leading-[1.02] lg:tracking-[-0.035em]",
           animateTitle && "ofi-title-weight",
         )}
       >

@@ -21,6 +21,7 @@ import {
   separarNombreApellido,
   unirNombreApellido,
 } from "@/domain/models";
+import { useAuthStore } from "@/domain/stores";
 import { CompanyMember } from "@/domain/types";
 import { formatCaracasDateSlash } from "@/shared/utils";
 import { AtButton, AtModal, AtSkeleton } from "@/ui/atomic/atoms";
@@ -104,6 +105,9 @@ function FormularioEdicion({ member }: FormularioEdicionProps) {
   const departmentsQuery = useDepartments();
   const branchesQuery = useBranches();
   const updateMember = useUpdateCompanyMember();
+  // Uno mismo no puede desactivarse (el back responde 403): se bloquea el switch y el botón.
+  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+  const esUnoMismo = Boolean(currentUserId) && member.userId === currentUserId;
 
   const [valores, setValores] = useState<OrMemberFormValues>(() => valoresDesde(member));
   const [isActive, setIsActive] = useState(member.isActive);
@@ -182,7 +186,11 @@ function FormularioEdicion({ member }: FormularioEdicionProps) {
           setIsActive(false);
           setShowDeactivate(false);
         },
-        onError: (error) => setFormError(mensajeErrorMiembro(error, "No pudimos desactivar al usuario.")),
+        // Se cierra el modal para que el error (p. ej. el 403 del back) quede a la vista en el formulario.
+        onError: (error) => {
+          setFormError(mensajeErrorMiembro(error, "No pudimos desactivar al usuario."));
+          setShowDeactivate(false);
+        },
         onSettled: () => setIsTogglingActive(false),
       },
     );
@@ -228,6 +236,7 @@ function FormularioEdicion({ member }: FormularioEdicionProps) {
           }}
           isActive={isActive}
           onActiveChange={(nuevoEstado) => (nuevoEstado ? reactivar() : setShowDeactivate(true))}
+          deactivateBlockedReason={esUnoMismo ? "No puedes desactivar tu propia cuenta." : null}
           formError={formError}
           onSubmit={guardar}
           onCancel={() => router.push(RUTA_ADMINISTRACION)}

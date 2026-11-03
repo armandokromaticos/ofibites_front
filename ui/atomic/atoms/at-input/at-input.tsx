@@ -14,7 +14,8 @@ const BASE_SLOTS: InputSlots = {
     "bg-background border-small border-border-input",
     "data-[hover=true]:border-border-input",
     "group-data-[focus=true]:border-primary",
-    "group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-focus",
+    // Foco: borde de 1 px + anillo de 1 px (con ring-2 el trazo activo quedaba demasiado grueso).
+    "group-data-[focus=true]:ring-1 group-data-[focus=true]:ring-focus",
     // 2 px sin cambiar el ancho del borde (no salta 1 px): borde de 1 px + 1 px de sombra interior.
     "group-data-[invalid=true]:!border-accent group-data-[invalid=true]:shadow-[inset_0_0_0_1px_var(--color-accent)]",
   ].join(" "),

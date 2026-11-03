@@ -232,7 +232,7 @@ export default function ForgotPasswordPage() {
   const startCooldown = () => setCooldownUntil(Date.now() + RESEND_COOLDOWN_SECONDS * 1000);
 
   return (
-    <TmAuthLayout variant="centered">
+    <TmAuthLayout variant="centered" backgroundSrc="/images/auth/recuperar-contrasena-bg.png">
       <div className="mx-auto w-full max-w-[502px]">
         {sentTo ? (
           <CheckInbox email={sentTo} cooldownUntil={cooldownUntil} onResent={startCooldown} />
