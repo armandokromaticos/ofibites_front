@@ -36,6 +36,17 @@
   --color-strength-medium-foreground: #6b6125;
   /* T-19: fondo del badge "POPULAR" de las cards del catálogo (Figma 3067:17606), con texto negro (~17:1). */
   --color-highlight: #e2fb57;
+  /* T-06d: fondo de la vista ampliada de comprobantes y facturas (Figma 3639:2063, casi negro verdoso). */
+  --color-viewer: #14140e;
+  /* Chips de pago y estado de "Pedidos realizados" (Figma 3562:1180): fondo de Completado/Entregado (texto `brand`,
+     ~6,3:1) y par azul de Recibido (#c9d4e6 / #33455f, ~6,5:1). */
+  --color-brand-tint: #eef0dc;
+  --color-info-soft: #c9d4e6;
+  --color-info-foreground: #33455f;
+  /* Chip "Inactivo" de Administración de usuarios (Figma 3463:2171): fondo #980000 al 55 % con texto #631500
+     (~3,7:1, por debajo de AA en 11 px: color del Figma pedido explícitamente). */
+  --color-inactive: #980000;
+  --color-inactive-foreground: #631500;
 
   /* T-02: sombra de las imágenes de producto (las cards no llevan sombra). */
   --drop-shadow-product: 0 9px 9px rgb(0 0 0 / 0.25);

@@ -13,7 +13,7 @@ const DIMENSION_LABELS: Record<ConsumptionBreakdownDimension, string> = {
   user: "Usuario",
 };
 
-const TOTAL_ROW_CLASSES = "border-t-2 border-divider font-semibold text-foreground";
+const TOTAL_ROW_CLASSES = "border-t-2 border-border-subtle font-semibold text-foreground";
 
 /**
  * "Desglose del consumo" de Indicadores (Figma overview `3706:2856`, departamento `3707:3278`, usuario

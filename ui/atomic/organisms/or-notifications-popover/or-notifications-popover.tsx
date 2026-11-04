@@ -11,7 +11,9 @@ import {
   CookingPot,
   FilePen,
   FileText,
+  ReceiptText,
   Truck,
+  Wallet,
 } from "lucide-react";
 
 import type { OrderStatus } from "@/domain/models";
@@ -19,7 +21,7 @@ import { formatCaracasDateTime, formatCaracasRelative } from "@/shared/utils";
 import { AtIconButton, AtPopover, AtSkeleton } from "@/ui/atomic/atoms";
 import { MlEmptyState, MlNotificationItem, MlPopoverHeader } from "@/ui/atomic/molecules";
 
-import { OrNotificationsPopoverProps } from "./or-notifications-popover.types";
+import { OrNotificationsPopoverItem, OrNotificationsPopoverProps } from "./or-notifications-popover.types";
 
 const STATUS_ICONS: Record<OrderStatus, ReactNode> = {
   CREATED: <FileText />,
@@ -33,6 +35,13 @@ const STATUS_ICONS: Record<OrderStatus, ReactNode> = {
   REJECTED: <CircleX />,
   CANCELLED: <CircleX />,
 };
+
+/** Icono del aviso: el del tipo (factura, pago) o el del estado del pedido; sin ninguno, la campana. */
+function iconoDe(item: OrNotificationsPopoverItem): ReactNode {
+  if (item.kind === "invoice") return <ReceiptText />;
+  if (item.kind === "payment") return <Wallet />;
+  return item.orderStatus ? STATUS_ICONS[item.orderStatus] : <Bell />;
+}
 
 /**
  * Notificaciones de la top bar: campana con punto (hay avisos sin leer) que "suena" al abrir, y popover con los
@@ -168,7 +177,7 @@ export function OrNotificationsPopover({
               <li key={item.id}>
                 <MlNotificationItem
                   message={item.message}
-                  icon={item.orderStatus ? STATUS_ICONS[item.orderStatus] : <Bell />}
+                  icon={iconoDe(item)}
                   isUnread={item.isUnread}
                   dateLabel={formatCaracasRelative(item.createdAt, now)}
                   dateTime={item.createdAt}

@@ -9,11 +9,14 @@ export const ORDER_STATUS_GROUP_LABELS: Record<OrderStatusGroup, string> = {
   cancelled: "Cancelado",
 };
 
-/** Color de `AtChip` (HeroUI) para el badge de estado de la tabla y el detalle. */
-export const ORDER_STATUS_GROUP_COLORS: Record<OrderStatusGroup, "default" | "primary" | "warning" | "success" | "danger"> = {
-  received: "default",
-  scheduled: "warning",
-  in_transit: "primary",
+/** Tono visual del grupo de estado (lo traduce a colores `AtStatusChip`). */
+export type OrderStatusGroupTone = "info" | "sand" | "olive" | "success" | "danger";
+
+/** Tono del chip de estado de la tabla y el detalle (Figma "Pedidos realizados" 3562:1180). */
+export const ORDER_STATUS_GROUP_TONES: Record<OrderStatusGroup, OrderStatusGroupTone> = {
+  received: "info",
+  scheduled: "sand",
+  in_transit: "olive",
   delivered: "success",
   cancelled: "danger",
 };

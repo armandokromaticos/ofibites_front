@@ -9,6 +9,8 @@ export { companyMemberService } from "./company-member.service";
 export { companyRequestService } from "./company-request.service";
 export { dashboardService } from "./dashboard.service";
 export { departmentService } from "./department.service";
+export type { InvoiceFileDisposition } from "./invoice.service";
+export { invoiceService } from "./invoice.service";
 export { notificationService } from "./notification.service";
 export { orderService } from "./order.service";
 export type { OrderQrValidation } from "./order-qr.service";

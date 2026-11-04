@@ -5,7 +5,7 @@ import { useId } from "react";
 import { cn, SelectItem } from "@heroui/react";
 
 import { CompanyRole } from "@/domain/types";
-import { AtAvatar, AtButton, AtChip, AtInput, AtSelect, AtSwitch } from "@/ui/atomic/atoms";
+import { AtAvatar, AtButton, AtInput, AtSelect, AtStatusChip, AtSwitch } from "@/ui/atomic/atoms";
 import { MlFormAlert } from "@/ui/atomic/molecules";
 
 import { OrMemberFormProps } from "./or-member-form.types";
@@ -63,15 +63,13 @@ export function OrMemberForm({
   return (
     <div className={cn("flex flex-col gap-6 rounded-card bg-content1 p-6", className)}>
       {header && (
-        <div className="flex flex-col gap-4 border-b border-divider pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-border-subtle pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <AtAvatar name={header.name} size="md" className="size-12 text-base" />
             <div className="flex flex-col gap-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[17px] font-semibold leading-6 text-foreground">{header.name}</p>
-                <AtChip size="sm" variant="flat" color={header.statusColor}>
-                  {header.statusLabel}
-                </AtChip>
+                <AtStatusChip tone={header.statusTone}>{header.statusLabel}</AtStatusChip>
               </div>
               {header.email && <p className="text-xs leading-4 text-subtle">{header.email}</p>}
               <p className="text-xs font-medium leading-4 text-subtle">

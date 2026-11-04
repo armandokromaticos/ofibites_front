@@ -64,6 +64,16 @@ export function rutaPedido(id: string): string {
   return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
 }
 
+/**
+ * Detalle del pedido con "Registrar el pago" abierto (T-06d): `?pagar=1`. `volver` (solo rutas propias, p. ej.
+ * `/carrito` desde el aviso de factura vencida) añade "Volver al carrito" tras enviar el comprobante.
+ */
+export function rutaPagarFactura(orderId: string, volver?: string): string {
+  const query = new URLSearchParams({ pagar: "1" });
+  if (volver) query.set("volver", volver);
+  return `${rutaPedido(orderId)}?${query.toString()}`;
+}
+
 /** Secciones de "Mi perfil" con pantalla (fase 1 + T-30f + T-31b + T-32b). Última pestaña del Figma. */
 export type SeccionPerfil = "datos" | "contrasena" | "notificaciones" | "sedes" | "indicadores";
 

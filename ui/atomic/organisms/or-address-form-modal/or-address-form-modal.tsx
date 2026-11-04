@@ -92,7 +92,7 @@ export function OrAddressFormModal({
           </p>
         </ModalHeader>
         <ModalBody className="gap-4 px-5 pb-0 pt-4 sm:px-7">
-          <div className="border-t border-divider" />
+          <div className="border-t border-border-subtle" />
           {formError && <MlFormAlert title="No pudimos guardar la sede.">{formError}</MlFormAlert>}
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -155,7 +155,7 @@ export function OrAddressFormModal({
             Marcar como sede principal
           </AtSwitch>
         </ModalBody>
-        <ModalFooter className="mt-4 flex-wrap items-center gap-3 border-t border-divider px-5 pb-6 pt-4 sm:mx-7 sm:px-0 sm:pb-7">
+        <ModalFooter className="mt-4 flex-wrap items-center gap-3 border-t border-border-subtle px-5 pb-6 pt-4 sm:mx-7 sm:px-0 sm:pb-7">
           {!isCreate && onDeleteClick ? (
             <AtButton
               size="lg"

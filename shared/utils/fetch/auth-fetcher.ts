@@ -153,9 +153,47 @@ async function refreshAccessToken(failedToken: string | null): Promise<RefreshRe
   return pendingRefresh;
 }
 
-export async function authFetcher<T>(
+/** JSON de una respuesta correcta (`undefined` con 204). */
+async function readJson<T>(response: Response): Promise<T> {
+  if (response.status === 204) {
+    return undefined as T;
+  }
+  return (await response.json()) as T;
+}
+
+export function authFetcher<T>(
   endpoint: string,
   options: FetchOptions = {}
+): Promise<T> {
+  return authRequest(endpoint, options, readJson<T>);
+}
+
+/** Archivo privado descargado con sesión (`authBlobFetcher`). */
+export interface AuthBlobResponse {
+  blob: Blob;
+  /** Cabeceras de la respuesta (en origen cruzado, solo las que el back expone por CORS). */
+  headers: Headers;
+}
+
+/**
+ * Como `authFetcher`, pero devuelve el cuerpo como `Blob` (PDF de una factura, comprobante de pago): mismos
+ * `Authorization` y `X-Company-Id`, mismo reintento tras refrescar el token y mismos errores `ApiError` (el cuerpo de
+ * un error se sigue leyendo como JSON). Un `<a href>` no manda el token: el caller crea un object URL.
+ */
+export function authBlobFetcher(
+  endpoint: string,
+  options: FetchOptions = {}
+): Promise<AuthBlobResponse> {
+  return authRequest(endpoint, options, async (response) => ({
+    blob: await response.blob(),
+    headers: response.headers,
+  }));
+}
+
+async function authRequest<T>(
+  endpoint: string,
+  options: FetchOptions,
+  read: (response: Response) => Promise<T>
 ): Promise<T> {
   const { timeout = TIMEOUT_MS, ...fetchOptions } = options;
 
@@ -235,11 +273,7 @@ export async function authFetcher<T>(
       throw await parseErrorResponse(response);
     }
 
-    if (response.status === 204) {
-      return undefined as T;
-    }
-
-    return (await response.json()) as T;
+    return await read(response);
   } catch (error: unknown) {
     if (
       error instanceof DOMException &&

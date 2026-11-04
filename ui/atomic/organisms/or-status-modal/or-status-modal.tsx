@@ -78,7 +78,7 @@ export function OrStatusModal({
         <ModalFooter
           className={cn(
             "flex flex-col-reverse gap-3 px-8 pb-8 pt-5 sm:flex-row",
-            secondaryAction && "mx-8 mt-3 border-t border-divider px-0",
+            secondaryAction && "mx-8 mt-3 border-t border-border-subtle px-0",
           )}
         >
           {secondaryAction && (

@@ -1,6 +1,8 @@
 // Carrito de la empresa: `/api/cart` (requiere `X-Company-Id`). Alineado con `CartResponseDto` y
 // `AddCartItemDto` del back (`src/core/application/dto/cart/`).
 
+import type { CartCreditLine, CartInvoiceAlert } from "./invoice.types";
+
 export interface CartItemModifierInput {
   modifierId: string;
 }
@@ -95,6 +97,10 @@ export interface CartResponse {
   summary: CartSummary;
   /** Cupón aplicado, o `null`. */
   coupon: CartCoupon | null;
+  /** T-06: factura vencida (bloquea el checkout) o por vencer en 0–3 días; `null` si no hay. Opcional en respuestas antiguas. */
+  invoiceAlert?: CartInvoiceAlert | null;
+  /** T-06: línea de crédito con `exceedsAvailable`; `null` si la empresa es de contado. */
+  creditLine?: CartCreditLine | null;
   createdAt: string;
   updatedAt: string;
 }

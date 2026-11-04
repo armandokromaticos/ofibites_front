@@ -1,5 +1,6 @@
 export * from "./api-error";
 export * from "./date";
+export * from "./download";
 export * from "./es-imagen-recorte";
 export * from "./fetch";
 export * from "./focus";

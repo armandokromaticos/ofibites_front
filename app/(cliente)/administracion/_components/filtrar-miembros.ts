@@ -1,8 +1,8 @@
 import {
   COMPANY_ROLE_LABELS,
   formatMemberLastSeen,
-  MEMBER_STATUS_COLORS,
   MEMBER_STATUS_LABELS,
+  MEMBER_STATUS_TONES,
   MemberStatus,
   memberStatus,
 } from "@/domain/models";
@@ -39,7 +39,7 @@ export function construirFilaMiembro(
     roleLabel: COMPANY_ROLE_LABELS[member.role],
     departmentLabel: departments.find((d) => d.id === member.departmentId)?.name ?? SIN_DATO,
     statusLabel: MEMBER_STATUS_LABELS[status],
-    statusColor: MEMBER_STATUS_COLORS[status],
+    statusTone: MEMBER_STATUS_TONES[status],
     lastSeenLabel: formatMemberLastSeen(member.lastSeenAt),
     editHref: rutaMiembro(member.id),
     canResendInvite: status === "pending",

@@ -3,6 +3,7 @@ export * from "./checkout.model";
 export * from "./client-dashboard.model";
 export * from "./company-address.model";
 export * from "./company-member.model";
+export * from "./invoice.model";
 export * from "./notification-preference.model";
 export * from "./order-status.model";
 export * from "./order-status-group.model";

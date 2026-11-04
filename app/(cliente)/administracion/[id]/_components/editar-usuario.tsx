@@ -15,8 +15,8 @@ import {
   COMPANY_ROLE_LABELS,
   COMPANY_ROLE_OPTIONS,
   formatMemberLastSeen,
-  MEMBER_STATUS_COLORS,
   MEMBER_STATUS_LABELS,
+  MEMBER_STATUS_TONES,
   memberStatus,
   separarNombreApellido,
   unirNombreApellido,
@@ -230,7 +230,7 @@ function FormularioEdicion({ member }: FormularioEdicionProps) {
             name,
             email,
             statusLabel: MEMBER_STATUS_LABELS[status],
-            statusColor: MEMBER_STATUS_COLORS[status],
+            statusTone: MEMBER_STATUS_TONES[status],
             lastSeenLabel: formatMemberLastSeen(member.lastSeenAt),
             createdLabel: `Creado el ${formatCaracasDateSlash(member.createdAt)}`,
           }}

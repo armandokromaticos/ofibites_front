@@ -86,7 +86,7 @@ export function OrRecentOrders({
       </div>
 
       {isLoading && (
-        <div className="flex flex-col divide-y divide-divider">
+        <div className="flex flex-col divide-y divide-border-subtle">
           <span className="sr-only">Cargando tus últimas órdenes</span>
           {Array.from({ length: skeletonRows }, (_, index) => (
             <div key={index} className="py-3 first:pt-1.5 last:pb-0">
@@ -109,7 +109,7 @@ export function OrRecentOrders({
       )}
 
       {!isLoading && !isEmpty && (
-        <ul className="flex flex-col divide-y divide-divider">
+        <ul className="flex flex-col divide-y divide-border-subtle">
           {orders.map(({ id, ...order }) => (
             <li key={id} className="py-3 first:pt-1.5 last:pb-0">
               <MlOrderRow

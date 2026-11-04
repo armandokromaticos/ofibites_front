@@ -1,8 +1,14 @@
-import { CheckoutErrorCode, CheckoutUnavailableError, CheckoutUnavailableItem } from "@/domain/types";
-import { getApiErrorMessage, getApiErrorMessages, isApiError } from "@/shared/utils";
+import {
+  CheckoutErrorCode,
+  CheckoutInvoiceOverdueError,
+  CheckoutUnavailableError,
+  CheckoutUnavailableItem,
+  OverdueInvoiceSummary,
+} from "@/domain/types";
+import { formatPrice, getApiErrorMessage, getApiErrorMessages, isApiError } from "@/shared/utils";
 
-/** A dónde lleva la acción de un error del checkout. */
-export type AccionErrorCheckout = "carrito" | "entrega";
+/** A dónde lleva la acción de un error del checkout. `factura`: pagar la vencida (`facturaVencida`). */
+export type AccionErrorCheckout = "carrito" | "entrega" | "factura";
 
 export interface ErrorCheckout {
   /** Frase inicial destacada. */
@@ -18,6 +24,15 @@ export interface ErrorCheckout {
    * reintentar, se busca el pedido en `GET /orders`.
    */
   incierto?: boolean;
+  /** `INVOICE_OVERDUE`: la factura vencida más antigua, para "Pagar la factura". */
+  facturaVencida?: OverdueInvoiceSummary;
+}
+
+/** Vencidas de un 400 `INVOICE_OVERDUE`, si el cuerpo las trae. */
+function facturasVencidas(body: unknown): OverdueInvoiceSummary[] {
+  if (typeof body !== "object" || body === null || !("overdueInvoices" in body)) return [];
+  const lista = (body as Partial<CheckoutInvoiceOverdueError>).overdueInvoices;
+  return Array.isArray(lista) ? lista : [];
 }
 
 /** Línea de un 400 de líneas no disponibles, si el cuerpo las trae. */
@@ -37,6 +52,8 @@ function codigo(body: unknown): CheckoutErrorCode | null {
 // Respaldo por texto (mensajes del back de T-26a) para un back sin `code`.
 const RESPALDO: { code: CheckoutErrorCode; patron: RegExp; status: number }[] = [
   { code: "COUPON_INVALID", patron: /código aplicado/i, status: 400 },
+  { code: "INVOICE_OVERDUE", patron: /factura vencida/i, status: 400 },
+  { code: "CREDIT_LIMIT_EXCEEDED", patron: /crédito disponible/i, status: 400 },
   { code: "TOTAL_CHANGED", patron: /precio|total del pedido/i, status: 409 },
   { code: "CART_CHANGED", patron: /./, status: 409 },
   { code: "CART_EMPTY", patron: /carrito está vacío/i, status: 400 },
@@ -61,8 +78,33 @@ function porCodigo(
   code: CheckoutErrorCode,
   detalleBack: string | null,
   items: CheckoutUnavailableItem[] | null,
+  body?: unknown,
 ): ErrorCheckout | null {
   switch (code) {
+    case "INVOICE_OVERDUE": {
+      const vencidas = facturasVencidas(body);
+      const primera = vencidas[0];
+      const cual =
+        vencidas.length > 1
+          ? `Tienes ${vencidas.length} facturas vencidas.`
+          : primera
+            ? `La factura ${primera.invoiceNumber} (${formatPrice(primera.balance)}) está vencida.`
+            : null;
+      return {
+        title: "Tu empresa tiene una factura vencida.",
+        detail: [cual, "Págala para poder confirmar pedidos nuevos: tu carrito se queda como está."]
+          .filter(Boolean)
+          .join(" "),
+        accion: primera ? "factura" : "carrito",
+        facturaVencida: primera,
+      };
+    }
+    case "CREDIT_LIMIT_EXCEEDED":
+      return {
+        title: "El pedido supera el crédito disponible.",
+        detail: detalleBack ?? "Paga facturas pendientes o reduce el pedido para continuar.",
+        accion: "carrito",
+      };
     case "TOTAL_CHANGED":
       return {
         title: "Los precios cambiaron.",
@@ -130,7 +172,7 @@ export function errorCheckout(error: unknown): ErrorCheckout {
       code = pista?.code ?? null;
     }
     if (!code && error.statusCode === 409) code = "CART_CHANGED";
-    const mapeado = code ? porCodigo(code, detalleBack, items) : null;
+    const mapeado = code ? porCodigo(code, detalleBack, items, error.body) : null;
     if (mapeado) return mapeado;
     return {
       title: "Revisa los datos de la entrega.",

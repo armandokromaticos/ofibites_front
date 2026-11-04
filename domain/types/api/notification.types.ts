@@ -4,7 +4,8 @@
 
 import type { OrderStatus } from "@/domain/models/order-status.model";
 
-export type NotificationType = "ORDER_STATUS";
+/** T-06 suma `INVOICE_GENERATED` y `PAYMENT_STATUS_CHANGED` (con `orderStatus: null`: el icono sale del `type`). */
+export type NotificationType = "ORDER_STATUS" | "INVOICE_GENERATED" | "PAYMENT_STATUS_CHANGED";
 
 export interface NotificationDto {
   id: string;
@@ -16,6 +17,8 @@ export interface NotificationDto {
   orderId: string | null;
   orderNumber: string | null;
   orderStatus: OrderStatus | null;
+  /** T-06: factura a la que se refiere el aviso, o `null`. */
+  invoiceId?: string | null;
   companyId: string | null;
   /** ISO; `null` = sin leer. */
   readAt: string | null;

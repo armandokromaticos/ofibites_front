@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 
-import { useCart, useCartLines, useClearCart, useRemoveCartItem } from "@/domain/hooks/cart";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { cartQueryKey, useCart, useCartLines, useClearCart, useRemoveCartItem } from "@/domain/hooks/cart";
+import { creditLineQueryKey } from "@/domain/hooks/invoices";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
 } from "@/domain/hooks/notifications";
+import { orderQueryKey, ordersQueryKey } from "@/domain/hooks/orders";
 import { CartLineModel } from "@/domain/models";
 import { useAuthStore } from "@/domain/stores";
 import { isApiError } from "@/shared/utils";
@@ -49,6 +53,7 @@ export function useTopBarCliente(): {
   notifications: OrNotificationsPopoverProps;
 } {
   const companyId = useAuthStore((state) => state.activeCompanyId);
+  const queryClient = useQueryClient();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -111,8 +116,15 @@ export function useTopBarCliente(): {
         message: notification.message,
         isUnread: notification.readAt === null,
         orderStatus: notification.orderStatus,
+        // T-06: factura emitida y pago revisado llegan con `orderStatus: null`; el icono sale del tipo.
+        kind:
+          notification.type === "INVOICE_GENERATED"
+            ? "invoice"
+            : notification.type === "PAYMENT_STATUS_CHANGED"
+              ? "payment"
+              : "order",
         createdAt: notification.createdAt,
-        // `/pedidos/<id>` aún no tiene página: sin enlace, el aviso solo se marca como leído.
+        // Solo enlaces a páginas que existen (`/pedidos/<id>` sí); si no, el aviso solo se marca como leído.
         href: notification.link && tienePaginaCliente(notification.link) ? notification.link : null,
       })),
       unreadCount: page?.unreadCount ?? 0,
@@ -121,6 +133,15 @@ export function useTopBarCliente(): {
       isRetrying: notificationsQuery.isFetching,
       onSelect: (item) => {
         if (item.isUnread) markRead.mutate(item.id);
+        // Un aviso de factura o de pago cambia lo que muestra el pedido (y el aviso del carrito): se vuelven a
+        // pedir aunque la caché sea reciente, también si ya se está en ese detalle.
+        if (item.kind === "invoice" || item.kind === "payment") {
+          // Prefijo de `orderQueryKey`: todos los pedidos de la empresa (el aviso puede ser de cualquiera).
+          void queryClient.invalidateQueries({ queryKey: orderQueryKey(companyId, "").slice(0, 2) });
+          void queryClient.invalidateQueries({ queryKey: ordersQueryKey(companyId) });
+          void queryClient.invalidateQueries({ queryKey: cartQueryKey(companyId) });
+          void queryClient.invalidateQueries({ queryKey: creditLineQueryKey(companyId) });
+        }
       },
       onMarkAllRead: () => markAllRead.mutate(),
       isMarkingAllRead: markAllRead.isPending,

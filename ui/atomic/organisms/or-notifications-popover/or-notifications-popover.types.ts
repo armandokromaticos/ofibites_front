@@ -6,8 +6,13 @@ export interface OrNotificationsPopoverItem {
   id: string;
   message: string;
   isUnread: boolean;
-  /** Estado del pedido al que se refiere: decide el icono. `null` → campana. */
+  /** Estado del pedido al que se refiere: decide el icono. `null` → campana (o el icono de `kind`). */
   orderStatus: OrderStatus | null;
+  /**
+   * Tipo de aviso (T-06): `invoice` (factura emitida) y `payment` (pago confirmado o rechazado) llevan su propio
+   * icono, porque llegan con `orderStatus: null`. Por defecto `order`.
+   */
+  kind?: "order" | "invoice" | "payment";
   /** ISO del aviso (la antigüedad se calcula al pintar, en hora de Caracas). */
   createdAt: string;
   /** A dónde lleva; `null` si no hay página (solo marca como leído). */

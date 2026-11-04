@@ -9,19 +9,29 @@ import { ChevronLeft, Truck } from "lucide-react";
 import { useCart, useCartLines, useClearCart, useRepeatOrder } from "@/domain/hooks/cart";
 import { useCatalog } from "@/domain/hooks/catalog";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
+import { useCanReportPayments } from "@/domain/hooks/invoices";
 import { firstDeliveryDate } from "@/domain/models";
 import { CartLineModel } from "@/domain/models";
 import { useAuthStore, useCartNoticeStore } from "@/domain/stores";
 import { duration } from "@/shared/motion";
 import { formatDateOnlyLong, formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
-import { AtButton, AtSkeleton, MlEmptyState, MlProductMiniCard, OrConfirmModal, OrOrderSummary } from "@/ui/atomic";
+import {
+  AtButton,
+  AtSkeleton,
+  MlEmptyState,
+  MlNoticeBanner,
+  MlProductMiniCard,
+  OrConfirmModal,
+  OrOrderSummary,
+} from "@/ui/atomic";
 
+import { avisosFactura } from "../../_data/aviso-factura";
 import { lineaDireccion } from "../../_data/direcciones";
 import { mensajeErrorCarrito } from "../../_data/errores-carrito";
 import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
 import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pedido";
 import { filasResumenCarrito } from "../../_data/resumen-pedido";
-import { RUTA_CHECKOUT, RUTA_ORDENAR, rutaProducto } from "../../_navegacion";
+import { RUTA_CARRITO, RUTA_CHECKOUT, RUTA_ORDENAR, rutaProducto } from "../../_navegacion";
 
 import { CuponCarrito } from "./cupon-carrito";
 import { EnvioGratis } from "./envio-gratis";
@@ -61,7 +71,16 @@ function productos(n: number): string {
 }
 
 /** Cabecera de la página: título de marca, número de productos y vuelta al catálogo. */
-function CabeceraCarrito({ lineCount, entrega }: { lineCount?: number; entrega: string }) {
+function CabeceraCarrito({
+  lineCount,
+  entrega,
+  enEspera = false,
+}: {
+  lineCount?: number;
+  entrega: string;
+  /** Factura vencida (Figma `3390:2636`): la píldora pasa a "en espera por una factura pendiente". */
+  enEspera?: boolean;
+}) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
       <div className="flex flex-col gap-2.5">
@@ -69,10 +88,17 @@ function CabeceraCarrito({ lineCount, entrega }: { lineCount?: number; entrega: 
           Tu carrito
         </h2>
         {lineCount !== undefined && lineCount > 0 && (
-          <p className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-sand px-5 py-1 text-sm leading-5 text-brand">
-            <Truck aria-hidden="true" className="size-4" />
-            {productos(lineCount)} · entrega estimada para el {entrega}
-          </p>
+          enEspera ? (
+            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-secondary-600 px-5 py-1 text-sm leading-5 text-white">
+              <Truck aria-hidden="true" className="size-4" />
+              {productos(lineCount)} · en espera por una factura pendiente
+            </p>
+          ) : (
+            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-sand px-5 py-1 text-sm leading-5 text-brand">
+              <Truck aria-hidden="true" className="size-4" />
+              {productos(lineCount)} · entrega estimada para el {entrega}
+            </p>
+          )
         )}
       </div>
       <Link
@@ -189,7 +215,7 @@ function CarritoEsqueleto() {
     <div role="status" aria-label="Cargando tu carrito" className="grid gap-[29px] lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_382px]">
       <div className="flex flex-col gap-0 rounded-card bg-content1 px-6">
         {[0, 1, 2].map((key) => (
-          <div key={key} className="flex gap-6 border-b border-divider py-5 last:border-0">
+          <div key={key} className="flex gap-6 border-b border-surface-sand/70 py-5 last:border-0">
             <AtSkeleton className="size-[88px] shrink-0" />
             <div className="flex flex-1 flex-col gap-2.5 pt-1">
               <AtSkeleton className="h-5 w-2/5 rounded-full" />
@@ -237,6 +263,10 @@ export function CarritoCliente() {
   const sede = addressesQuery.data?.find((address) => address.isShipping) ?? null;
   // El checkout rechaza líneas no disponibles (400): se avisa antes de entrar.
   const hayNoDisponibles = lines.some((line) => !line.isAvailable);
+  // T-06: factura vencida o crédito excedido bloquean "Continuar al checkout" (el servidor lo rechazaría igual).
+  const puedePagar = useCanReportPayments();
+  const factura = avisosFactura(cart, puedePagar, RUTA_CARRITO);
+  const bloqueado = hayNoDisponibles || factura.bloquea;
 
   const isUnavailable =
     !companyId ||
@@ -359,7 +389,7 @@ export function CarritoCliente() {
           </p>
           <EnvioGratis summary={cart.summary} />
           <CuponCarrito coupon={cart.coupon} />
-          {hayNoDisponibles ? (
+          {bloqueado ? (
             <>
               <AtButton
                 size="md"
@@ -371,7 +401,9 @@ export function CarritoCliente() {
                 Continuar al checkout
               </AtButton>
               <p id={CHECKOUT_NOTE_ID} className="-mt-1 text-center text-xs leading-5 text-danger-700">
-                Quita los productos que ya no están disponibles para continuar.
+                {hayNoDisponibles
+                  ? "Quita los productos que ya no están disponibles para continuar."
+                  : factura.motivo}
               </p>
             </>
           ) : (
@@ -387,7 +419,11 @@ export function CarritoCliente() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-6">
-      <CabeceraCarrito lineCount={cart && !isUnavailable ? lines.length : undefined} entrega={entrega} />
+      <CabeceraCarrito
+        lineCount={cart && !isUnavailable ? lines.length : undefined}
+        entrega={entrega}
+        enEspera={Boolean(cart?.invoiceAlert?.blocksCheckout)}
+      />
       <p className="flex items-center gap-2.5 rounded-control bg-content1 px-4 py-3 text-xs leading-5 text-muted sm:px-5">
         <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-accent" />
         <span>
@@ -395,6 +431,8 @@ export function CarritoCliente() {
           <strong className="font-semibold text-secondary-600">3:00 p.m. del día anterior</strong>
         </span>
       </p>
+      {!isUnavailable &&
+        factura.avisos.map(({ key, ...banner }) => <MlNoticeBanner key={key} {...banner} />)}
       {aviso && (
         <p
           ref={avisoRef}

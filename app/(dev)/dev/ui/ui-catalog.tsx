@@ -49,6 +49,7 @@ import {
   SAMPLE_SECONDARY_BANNER,
   SAMPLE_USER,
 } from "./catalog-data";
+import { PagosDemo } from "./pagos-demo";
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -567,6 +568,13 @@ export function UiCatalog() {
             </Specimen>
           ))}
         </div>
+      </Section>
+
+      <Section
+        id="pagos"
+        title="AtStatusChip · MlNoticeBanner · MlStatusNote · MlCreditLineCard · OrPaymentProofModal · OrInvoicePaymentModal · OrDocumentViewer"
+      >
+        <PagosDemo />
       </Section>
 
       <Section id="layout" title="TmAppLayout">

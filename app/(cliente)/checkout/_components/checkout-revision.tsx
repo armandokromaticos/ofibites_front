@@ -9,14 +9,22 @@ import { ChevronLeft, Info } from "lucide-react";
 import { useCheckout, useFindCheckoutOrder } from "@/domain/hooks/checkout";
 import { useActiveCompany } from "@/domain/hooks/companies";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
+import { useCanReportPayments } from "@/domain/hooks/invoices";
 import { useCheckoutDraftStore } from "@/domain/stores";
 import { CheckoutRequest } from "@/domain/types";
 import { formatDateOnlyLong, formatPrice, formatWallTime, isApiError } from "@/shared/utils";
-import { AtButton, AtSkeleton, MlFormAlert, OrOrderSummary } from "@/ui/atomic";
+import { AtButton, AtSkeleton, MlFormAlert, MlNoticeBanner, OrOrderSummary } from "@/ui/atomic";
 
+import { avisosFactura } from "../../_data/aviso-factura";
 import { lineaDireccion } from "../../_data/direcciones";
 import { conteoPedido, filasResumenCarrito, lineasResumen } from "../../_data/resumen-pedido";
-import { RUTA_CARRITO, RUTA_CHECKOUT, RUTA_ORDENAR, rutaPedidoConfirmado } from "../../_navegacion";
+import {
+  RUTA_CARRITO,
+  RUTA_CHECKOUT,
+  RUTA_ORDENAR,
+  rutaPagarFactura,
+  rutaPedidoConfirmado,
+} from "../../_navegacion";
 import { ErrorCheckout, errorCheckout } from "../_data/errores-checkout";
 
 import { usePropietarioBorrador } from "./borrador";
@@ -130,6 +138,7 @@ export function CheckoutRevision() {
     mantener: confirmando || incierto,
   });
   const addressesQuery = useCompanyAddresses();
+  const puedePagar = useCanReportPayments();
   const [error, setError] = useState<ErrorCheckout | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -197,7 +206,10 @@ export function CheckoutRevision() {
   }
 
   const sede = addressesQuery.data?.find((address) => address.id === draft.deliveryAddressId) ?? null;
+  // T-06: factura vencida o crédito excedido (el servidor respondería INVOICE_OVERDUE / CREDIT_LIMIT_EXCEEDED).
+  const factura = avisosFactura(cart, puedePagar, RUTA_CARRITO);
   const hayNoDisponibles = lines.some((line) => !line.isAvailable);
+  const bloqueado = hayNoDisponibles || factura.bloquea;
 
   const confirmar = () => {
     if (enviando.current) return;
@@ -274,6 +286,9 @@ export function CheckoutRevision() {
   return (
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-6">
       {cabecera}
+      {factura.avisos.map(({ key, ...banner }) => (
+        <MlNoticeBanner key={key} {...banner} />
+      ))}
       <RejillaCheckout>
         <div className="flex min-w-0 flex-col gap-4">
           <section aria-labelledby="checkout-entrega-titulo" className="flex flex-col gap-5 rounded-card bg-content1 p-5 sm:p-6">
@@ -345,6 +360,14 @@ export function CheckoutRevision() {
                   Revisar el carrito
                 </Link>
               )}
+              {error.accion === "factura" && error.facturaVencida && puedePagar && (
+                <Link
+                  href={rutaPagarFactura(error.facturaVencida.orderId, RUTA_CARRITO)}
+                  className={`${CLASE_ENLACE} self-start text-[13px]`}
+                >
+                  Pagar la factura {error.facturaVencida.invoiceNumber}
+                </Link>
+              )}
               {error.accion === "entrega" && (
                 <Link href={RUTA_CHECKOUT} className={`${CLASE_ENLACE} self-start text-[13px]`}>
                   Cambiar la entrega
@@ -357,12 +380,17 @@ export function CheckoutRevision() {
               Quítalos o cámbialos en el carrito antes de confirmar.
             </MlFormAlert>
           )}
+          {!hayNoDisponibles && factura.bloquea && !error && (
+            <MlFormAlert id={NO_DISPONIBLES_ID} title="No puedes confirmar todavía.">
+              {factura.motivo}
+            </MlFormAlert>
+          )}
           <AtButton
             size="lg"
-            className={`h-[52px] w-full text-sm${hayNoDisponibles ? " cursor-not-allowed opacity-60" : ""}`}
-            aria-disabled={hayNoDisponibles || undefined}
-            aria-describedby={hayNoDisponibles ? NO_DISPONIBLES_ID : undefined}
-            onPress={hayNoDisponibles ? () => undefined : confirmar}
+            className={`h-[52px] w-full text-sm${bloqueado ? " cursor-not-allowed opacity-60" : ""}`}
+            aria-disabled={bloqueado || undefined}
+            aria-describedby={bloqueado && !error ? NO_DISPONIBLES_ID : undefined}
+            onPress={bloqueado ? () => undefined : confirmar}
             isLoading={checkout.isPending || confirmando}
           >
             Confirmar pedido
