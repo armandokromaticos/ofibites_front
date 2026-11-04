@@ -1,5 +1,5 @@
 // Datos de ejemplo para el catálogo (T-02)
-import { BookOpen, FileText, LayoutGrid, Truck, Utensils } from "lucide-react";
+import { BookOpen, FileText, Grid3x3, Truck, UtensilsCrossed } from "lucide-react";
 
 import {
   OrAccountMenuItem,
@@ -16,14 +16,14 @@ export const SAMPLE_NAV_ITEMS: OrAppSidebarItem[] = [
     label: "Dashboard",
     description: "Panel de control",
     href: "/dev/ui#dashboard",
-    icon: <LayoutGrid />,
+    icon: <Grid3x3 />,
   },
   {
     key: "ordenar",
     label: "Ordenar",
     description: "Pide comida a la oficina",
     href: "/dev/ui#ordenar",
-    icon: <Utensils />,
+    icon: <UtensilsCrossed />,
   },
   {
     key: "pedidos",

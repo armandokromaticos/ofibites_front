@@ -13,6 +13,7 @@ import { ClientDashboard, ClientRecommendationCategory } from "@/domain/models";
 import { bannerService, catalogService, companyAddressService, orderService } from "@/domain/services";
 import { useAuthStore } from "@/domain/stores";
 import { CatalogItem } from "@/domain/types";
+import { esImagenRecorte } from "@/shared/utils";
 
 import { conEstadoQaDashboard, EstadoQaDashboard } from "./estado-qa";
 
@@ -32,9 +33,34 @@ const itemsDeSeccion = (section: string): Promise<CatalogItem[]> =>
     .catch(() => []);
 
 /**
+ * Deja en cada categoría solo los ítems con imagen propia recortada (fondo transparente, como Morning Bite), para
+ * que todas las cards de recomendación se vean iguales. Las URLs únicas se comprueban en paralelo.
+ */
+async function soloConImagenRecorte(
+  porCategoria: Record<ClientRecommendationCategory, CatalogItem[]>,
+): Promise<Record<ClientRecommendationCategory, CatalogItem[]>> {
+  const urls = [
+    ...new Set(
+      Object.values(porCategoria)
+        .flat()
+        .map((item) => item.image)
+        .filter((image): image is string => Boolean(image)),
+    ),
+  ];
+  const resultados = await Promise.all(urls.map((url) => esImagenRecorte(url)));
+  const recortes = new Set(urls.filter((_, i) => resultados[i]));
+  return Object.fromEntries(
+    Object.entries(porCategoria).map(([categoria, items]) => [
+      categoria,
+      items.filter((item) => item.image !== null && recortes.has(item.image)),
+    ]),
+  ) as Record<ClientRecommendationCategory, CatalogItem[]>;
+}
+
+/**
  * Compone el Dashboard con los endpoints existentes (no hay uno propio), todo en paralelo:
  * - promociones: `GET /banners?section=home-carousel&active=true` (público).
- * - recomendaciones: `GET /catalog?section=` de desayunos, coffee-break y bebidas.
+ * - recomendaciones: `GET /catalog?section=` de desayunos, coffee-break y bebidas, solo los de imagen recortada.
  * - pedidos: `GET /orders` (con `X-Company-Id`), nombrados con el catálogo y las direcciones de la empresa.
  * Sin empresa activa, sin pedidos. El usuario sale de la sesión.
  */
@@ -57,12 +83,13 @@ async function getClientDashboard(companyId: string | null): Promise<ClientDashb
   const porCategoria = Object.fromEntries(
     categorias.map((categoria, i) => [categoria, porSeccion[i]]),
   ) as Record<ClientRecommendationCategory, CatalogItem[]>;
+  const recomendables = await soloConImagenRecorte(porCategoria);
   const { user, memberships } = useAuthStore.getState();
 
   return {
     user: toClientDashboardUser(user, memberships, companyId),
     promotions: toPromotions(banners),
-    recommendations: toRecommendations(porCategoria),
+    recommendations: toRecommendations(recomendables),
     ...toDashboardOrders(orders, toCatalogNames(catalogo, ...porSeccion), toAddressNames(addresses)),
   };
 }

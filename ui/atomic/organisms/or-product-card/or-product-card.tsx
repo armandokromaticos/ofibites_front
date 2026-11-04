@@ -69,14 +69,24 @@ export function OrProductCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 px-[14px]">
-        <Heading className="text-center text-[21px] font-bold leading-5 text-foreground">
+      {/*
+       * Título y descripción: máximo 2 líneas con "…" y siempre la altura de 2, para que en una fila de cards
+       * los textos empiecen a la misma altura y los botones (empujados abajo) queden alineados. El texto
+       * completo va en el `title` (tooltip nativo).
+       */}
+      <div className="flex flex-1 flex-col gap-3 px-[14px]">
+        <Heading
+          title={title}
+          className="line-clamp-2 min-h-10 text-center text-[21px] font-bold leading-5 text-foreground"
+        >
           {title}
         </Heading>
         {description && (
-          <p className="text-center text-xs leading-5 text-foreground">{description}</p>
+          <p title={description} className="line-clamp-2 min-h-10 text-center text-xs leading-5 text-foreground">
+            {description}
+          </p>
         )}
-        <div className="flex flex-col gap-[7px]">
+        <div className="mt-auto flex flex-col gap-[7px]">
           {onQuantityChange && (
             <MlQuantityStepper
               value={quantity}

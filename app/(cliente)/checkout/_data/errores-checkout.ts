@@ -36,6 +36,7 @@ function codigo(body: unknown): CheckoutErrorCode | null {
 
 // Respaldo por texto (mensajes del back de T-26a) para un back sin `code`.
 const RESPALDO: { code: CheckoutErrorCode; patron: RegExp; status: number }[] = [
+  { code: "COUPON_INVALID", patron: /código aplicado/i, status: 400 },
   { code: "TOTAL_CHANGED", patron: /precio|total del pedido/i, status: 409 },
   { code: "CART_CHANGED", patron: /./, status: 409 },
   { code: "CART_EMPTY", patron: /carrito está vacío/i, status: 400 },
@@ -92,6 +93,12 @@ function porCodigo(
         title: "Esa fecha está demasiado lejos.",
         detail: detalleBack ?? "Elige una fecha más cercana.",
         accion: "entrega",
+      };
+    case "COUPON_INVALID":
+      return {
+        title: "El código promocional ya no está vigente.",
+        detail: "Vuelve al carrito y quítalo para continuar.",
+        accion: "carrito",
       };
     case "ADDRESS_NOT_SHIPPING":
       return { title: "Esa sede no recibe entregas.", detail: "Vuelve a la entrega y elige otra.", accion: "entrega" };

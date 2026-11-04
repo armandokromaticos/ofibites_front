@@ -9,7 +9,7 @@ import { cn } from "@heroui/react";
 import { LogOut } from "lucide-react";
 
 import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
-import { AtAvatar, AtButton, AtTooltip } from "@/ui/atomic/atoms";
+import { AtAvatar, AtButton, AtMenuIcon, AtTooltip } from "@/ui/atomic/atoms";
 
 import { OrAppSidebarDrawerCloseReason, OrAppSidebarItem, OrAppSidebarProps } from "./or-app-sidebar.types";
 
@@ -21,30 +21,6 @@ const ICON_LIFT = cn(
   "motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-spring",
   "motion-safe:group-hover:-translate-y-0.5 motion-safe:group-focus-visible:-translate-y-0.5",
 );
-
-/** Líneas del icono de menú (mismo trazo que `Menu` de lucide) que se cruzan en una X al abrir. */
-const MENU_LINE = cn(
-  "origin-center [transform-box:fill-box]",
-  "motion-safe:transition-[translate,rotate,opacity] motion-safe:duration-(--duration-fast) motion-safe:ease-in-out",
-);
-
-function MenuMorphIcon({ isOpen }: { isOpen: boolean }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      className="size-5"
-    >
-      <path d="M4 5h16" className={cn(MENU_LINE, isOpen && "translate-y-[7px] rotate-45")} />
-      <path d="M4 12h16" className={cn(MENU_LINE, isOpen && "opacity-0")} />
-      <path d="M4 19h16" className={cn(MENU_LINE, isOpen && "-translate-y-[7px] -rotate-45")} />
-    </svg>
-  );
-}
 
 /*
  * Panel superpuesto: en el flujo el sidebar ocupa siempre el riel de 80 px; el panel de 236 px va encima
@@ -121,8 +97,8 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-lg text-primary [&_svg]:size-5",
-            isActive ? "bg-nav-active-icon-bg" : cn("bg-nav-icon-bg", ICON_LIFT),
+            "flex size-9 shrink-0 items-center justify-center rounded-lg [&_svg]:size-5",
+            isActive ? "bg-nav-active-icon-bg text-white" : cn("bg-nav-icon-bg text-primary", ICON_LIFT),
           )}
         >
           {item.icon}
@@ -503,7 +479,7 @@ export function OrAppSidebar({
               aria-controls={navId}
               onPress={onToggle}
             >
-              <MenuMorphIcon isOpen={isOpen} />
+              <AtMenuIcon isOpen={isOpen} />
             </AtButton>
           }
         />
@@ -571,7 +547,7 @@ export function OrAppSidebar({
                   aria-label="Cerrar menú"
                   onPress={() => closeDrawerRef.current("button")}
                 >
-                  <MenuMorphIcon isOpen />
+                  <AtMenuIcon isOpen />
                 </AtButton>
               }
             />

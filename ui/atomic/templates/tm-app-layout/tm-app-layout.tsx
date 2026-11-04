@@ -4,10 +4,9 @@ import { useEffect, useRef, useState, ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@heroui/react";
-import { Menu } from "lucide-react";
 
 import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
-import { AtAvatar, AtButton } from "@/ui/atomic/atoms";
+import { AtAvatar, AtButton, AtMenuIcon } from "@/ui/atomic/atoms";
 import {
   OrAccountMenu,
   OrAppSidebar,
@@ -121,7 +120,7 @@ export function TmAppLayout({
                   setIsDrawerOpen(true);
                 }}
               >
-                <Menu aria-hidden="true" />
+                <AtMenuIcon />
               </AtButton>
               {titleIcon && (
                 <span aria-hidden="true" className="hidden shrink-0 min-[400px]:block [&_svg]:size-[18px]">

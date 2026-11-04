@@ -48,13 +48,15 @@ export interface CartItem {
    * cotiza todas las líneas.
    */
   isAvailable: boolean;
+  /** Nombres de las etiquetas del producto o combo en el idioma pedido ("Sin gluten"); `[]` si no tiene. */
+  tags: string[];
 }
 
 /**
  * Resumen del carrito (contrato "Checkout fase 1", T-26a). Todo lo calcula el servidor en céntimos; el front solo
  * lo pinta. `tax` = (subtotal − discount) × taxRate; `shipping` = 0 desde `freeShippingThreshold` (150), si no la
  * tarifa fija ($5 por defecto), y 0 con el carrito vacío; `total` = subtotal − discount + tax + shipping.
- * `discount` = 0 en la fase 1 (sin cupón).
+ * `discount`: el del cupón vigente (`CartResponse.coupon`), calculado por el servidor; 0 sin cupón o si no está vigente.
  */
 export interface CartSummary {
   subtotal: number;
@@ -67,6 +69,20 @@ export interface CartSummary {
   total: number;
 }
 
+/** Cupón aplicado al carrito (`POST /cart/coupon`). El descuento en dinero es `summary.discount`: nunca se calcula aquí. */
+export interface CartCoupon {
+  code: string;
+  /** 10 = 10 %. Solo para mostrar. */
+  discountPercent: number;
+  /** `false` si dejó de valer: no descuenta y el checkout responde 400 hasta quitarlo. */
+  isValid: boolean;
+}
+
+/** Body de `POST /cart/coupon`. */
+export interface ApplyCartCouponRequest {
+  code: string;
+}
+
 /** Carrito único y compartido de la empresa, con precios recalculados por el servidor. Líneas por `createdAt` asc. */
 export interface CartResponse {
   id: string;
@@ -77,6 +93,8 @@ export interface CartResponse {
   totalUnits: number;
   /** Subtotal, IVA, envío y total del servidor. Va en todas las respuestas que devuelven el carrito (T-26a). */
   summary: CartSummary;
+  /** Cupón aplicado, o `null`. */
+  coupon: CartCoupon | null;
   createdAt: string;
   updatedAt: string;
 }

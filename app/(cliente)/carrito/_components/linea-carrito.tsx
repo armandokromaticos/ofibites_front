@@ -120,6 +120,7 @@ export function LineaCarrito({ line, onError, onStale, onRemoved, removeButtonRe
       // Una línea no disponible tiene la ficha desactivada (404): sin enlace.
       href={line.isAvailable ? rutaProducto(line.catalogId, line.kind) : undefined}
       description={description}
+      tags={line.tags}
       unitPriceLabel={line.hasModifiers ? undefined : formatPrice(line.unitPrice)}
       subtotalLabel={formatPrice(line.subtotal)}
       quantity={pendingQuantity ?? line.quantity}

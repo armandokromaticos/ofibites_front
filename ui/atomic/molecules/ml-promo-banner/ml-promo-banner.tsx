@@ -65,16 +65,20 @@ function MainDecoration({ isDrifting }: { isDrifting: boolean }) {
   );
 }
 
-function SecondaryDecoration() {
+function SecondaryDecoration({ backgroundSrc }: { backgroundSrc?: string }) {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-      <Image
-        src="/images/decor/flat-3.png"
-        alt=""
-        width={191}
-        height={78}
-        className="absolute right-[-60px] top-[40px] rotate-[-151.25deg] opacity-5"
-      />
+      {backgroundSrc ? (
+        <Image src={backgroundSrc} alt="" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+      ) : (
+        <Image
+          src="/images/decor/flat-3.png"
+          alt=""
+          width={191}
+          height={78}
+          className="absolute right-[-60px] top-[40px] rotate-[-151.25deg] opacity-5"
+        />
+      )}
     </div>
   );
 }
@@ -125,6 +129,7 @@ export function MlPromoBanner({
   animateEntrance = false,
   imageHover,
   imageFit = "contain",
+  backgroundSrc,
   href,
   linkLabel,
   className,
@@ -156,6 +161,7 @@ export function MlPromoBanner({
       animateEntrance={animateEntrance}
       imageHover={imageHover}
       imageFit={imageFit}
+      backgroundSrc={backgroundSrc}
       href={href}
       linkLabel={linkLabel}
       className={className}
@@ -235,6 +241,7 @@ function PromoBanner({
   animateEntrance = false,
   imageHover,
   imageFit = "contain",
+  backgroundSrc,
   href,
   linkLabel,
   className,
@@ -287,7 +294,11 @@ function PromoBanner({
 
   const content = (
     <>
-      {isMain ? <MainDecoration isDrifting={isDrifting} /> : <SecondaryDecoration />}
+      {isMain ? (
+        <MainDecoration isDrifting={isDrifting} />
+      ) : (
+        <SecondaryDecoration backgroundSrc={backgroundSrc} />
+      )}
 
       <div
         className={cn(

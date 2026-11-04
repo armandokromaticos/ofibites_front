@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
 import { useRepeatOrder } from "@/domain/hooks/cart";
-import { EstadoQaDashboard, useClientDashboard } from "@/domain/hooks/dashboard";
+import { EstadoQaDashboard, useClientDashboard, useClientUser } from "@/domain/hooks/dashboard";
 import {
   ClientActiveOrder,
   ClientRecentOrder,
@@ -88,6 +88,7 @@ function toOrderSteps(status: OrderStatus): MlActiveOrderCardStep[] | undefined 
   return ORDER_STEPS.map((step, stepIndex) => ({
     label: ORDER_STATUS_LABELS[step],
     isDone: stepIndex <= reached,
+    isCurrent: stepIndex === reached,
   }));
 }
 
@@ -208,7 +209,8 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
   const recommendationsMotion = listStagger(visibleRecommendations.length);
   const categoriesMotion = listStagger(CATEGORIAS_DASHBOARD.length);
 
-  const user = data?.user;
+  // De la sesión, no del snapshot cacheado del Dashboard: así el saludo cambia al editar el nombre en Mi perfil.
+  const user = useClientUser();
 
   let content: ReactNode;
   if (isError && !data) {
@@ -252,7 +254,12 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
             </AtButton>
           </MlFormAlert>
         )}
-        <div className="grid grid-cols-1 items-start gap-[27px] xl:grid-cols-[minmax(0,1fr)_288px] xl:gap-x-[29px] xl:gap-y-[14px]">
+        {/*
+          xl:grid-rows-[auto_auto_1fr]: la fila 3 (recomendaciones) es flexible, así absorbe lo que "Últimas órdenes"
+          (filas 2-3) mida de más. Sin ella, con pocas o ninguna recomendación, esa altura se repartía también a la
+          fila 2 y bajaba "Según tus preferencias", dejando un hueco bajo las promos.
+        */}
+        <div className="grid grid-cols-1 items-start gap-[27px] xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[auto_auto_1fr] xl:gap-x-[29px] xl:gap-y-[14px]">
           <div
             aria-busy={isPending || undefined}
             className="min-w-0 xl:col-start-1 xl:row-span-2 xl:row-start-1"
@@ -283,6 +290,7 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
                         imageAlt={category.imageAlt}
                         imagePosition={category.imagePosition}
                         imageFit={category.imageFit}
+                        backgroundSrc={category.backgroundSrc}
                         imageHover={CATEGORY_IMAGE_HOVER[category.id] ?? "zoom"}
                         href={categoryHref(category.id)}
                       />

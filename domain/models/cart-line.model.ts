@@ -18,4 +18,6 @@ export interface CartLineModel {
   isAvailable: boolean;
   /** Subtotal de la línea calculado por el servidor. */
   subtotal: number;
+  /** Etiquetas del producto ("Sin gluten"), como chips. */
+  tags: string[];
 }

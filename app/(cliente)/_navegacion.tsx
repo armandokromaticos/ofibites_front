@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { BookOpen, ClipboardList, LayoutGrid, Package, ShoppingCart, Utensils } from "lucide-react";
+import { BookOpen, Grid3x3, Package, ReceiptText, ShoppingCart, UtensilsCrossed } from "lucide-react";
 
 import { OrAccountMenuItem, OrAppSidebarItem } from "@/ui/atomic";
 
@@ -13,9 +13,9 @@ export const RUTA_ADMINISTRACION = "/administracion";
 export const RUTA_PERFIL = "/perfil";
 
 export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
-  { key: "dashboard", label: "Dashboard", description: "Panel de control", href: RUTA_DASHBOARD, icon: <LayoutGrid /> },
-  { key: "ordenar", label: "Ordenar", description: "Pide comida a la oficina", href: RUTA_ORDENAR, icon: <Utensils /> },
-  { key: "pedidos", label: "Pedidos", description: "Historial de tus pedidos", href: RUTA_PEDIDOS, icon: <ClipboardList /> },
+  { key: "dashboard", label: "Dashboard", description: "Panel de control", href: RUTA_DASHBOARD, icon: <Grid3x3 /> },
+  { key: "ordenar", label: "Ordenar", description: "Pide comida a la oficina", href: RUTA_ORDENAR, icon: <UtensilsCrossed /> },
+  { key: "pedidos", label: "Pedidos", description: "Historial de tus pedidos", href: RUTA_PEDIDOS, icon: <ReceiptText /> },
   {
     key: "administracion",
     label: "Administración",
@@ -144,7 +144,7 @@ export const PAGINAS_CLIENTE: PaginaCliente[] = [
   ...NAV_ITEMS_CLIENTE.map(({ href, label, icon, key }) => ({ href, label, icon, navKey: key })),
   { href: RUTA_CARRITO, label: "Carrito", icon: <ShoppingCart /> },
   // Figma 3462:2094: título "Checkout" con el icono de Ordenar, que sigue activo en el sidebar.
-  { href: RUTA_CHECKOUT, label: "Checkout", icon: <Utensils />, navKey: "ordenar" },
+  { href: RUTA_CHECKOUT, label: "Checkout", icon: <UtensilsCrossed />, navKey: "ordenar" },
   // Se llega desde Ordenar: su ítem sigue activo.
   { href: RUTA_PRODUCTO, label: "Detalle del producto", icon: <Package />, navKey: "ordenar" },
   // Figma 3651:1921: título "Mi perfil" con el icono de libro; ningún ítem del sidebar activo.

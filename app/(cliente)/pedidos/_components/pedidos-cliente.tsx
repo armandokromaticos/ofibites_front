@@ -32,11 +32,14 @@ const DATE_OPTIONS = [
 function Esqueleto() {
   return (
     <div className="flex flex-col gap-5">
-      <AtSkeleton className="h-[57px] rounded-full" />
-      <div className="flex flex-wrap gap-3">
-        {[160, 160, 160, 160].map((width, index) => (
-          <AtSkeleton key={index} className="h-10 rounded-full" style={{ width }} />
-        ))}
+      {/* Misma disposición que `OrOrderFiltersBar`: buscador y filtros en una fila desde xl. */}
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+        <AtSkeleton className="h-12 w-full rounded-full xl:min-w-[260px] xl:flex-1" />
+        <div className="flex flex-wrap gap-3 xl:flex-nowrap">
+          {[0, 1, 2, 3].map((index) => (
+            <AtSkeleton key={index} className="h-10 w-[210px] shrink-0 rounded-full" />
+          ))}
+        </div>
       </div>
       <AtSkeleton className="h-[360px] rounded-card" />
     </div>
@@ -193,7 +196,7 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-4 rounded-card bg-content1 p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
             Pedidos realizados

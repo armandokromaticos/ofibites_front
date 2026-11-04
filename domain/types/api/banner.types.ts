@@ -11,6 +11,8 @@ export interface BannerQuery {
 export interface Banner {
   id: string;
   title: string | null;
+  /** Opcional (máx. 160). Bajo el título en el banner principal del carrusel. */
+  subtitle: string | null;
   imageUrl: string | null;
   imageMobileUrl: string | null;
   altText: string;

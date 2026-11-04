@@ -4,6 +4,8 @@ export interface MlActiveOrderCardStep {
   label: string;
   /** Paso ya alcanzado (el actual incluido). */
   isDone: boolean;
+  /** Paso en el que está el pedido ahora: se resalta en color `accent`. */
+  isCurrent?: boolean;
 }
 
 export interface MlActiveOrderCardOrder {

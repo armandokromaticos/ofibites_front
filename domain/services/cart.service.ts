@@ -1,4 +1,4 @@
-import { AddCartItemRequest, CartResponse, RepeatCartResponse } from "@/domain/types";
+import { AddCartItemRequest, ApplyCartCouponRequest, CartResponse, RepeatCartResponse } from "@/domain/types";
 import { authFetcher } from "@/shared/utils/fetch";
 
 /**
@@ -36,6 +36,16 @@ export const cartService = {
    */
   repeatOrder: (orderId: string): Promise<RepeatCartResponse> =>
     authFetcher<RepeatCartResponse>(`/cart/repeat/${encodeURIComponent(orderId)}`, { method: "POST" }),
+
+  /**
+   * `POST /cart/coupon`: aplica (o sustituye) el cupón del carrito. Un 400 trae `message` en español listo para
+   * mostrar ("Ese código no existe.", "Ya usaste este código."…). Devuelve el carrito completo con `summary.discount`.
+   */
+  applyCoupon: (body: ApplyCartCouponRequest): Promise<CartResponse> =>
+    authFetcher<CartResponse>("/cart/coupon", { method: "POST", body: JSON.stringify(body) }),
+
+  /** `DELETE /cart/coupon`: quita el cupón. Devuelve el carrito completo. */
+  removeCoupon: (): Promise<CartResponse> => authFetcher<CartResponse>("/cart/coupon", { method: "DELETE" }),
 
   /** `DELETE /cart`: vacía el carrito de la empresa (compartido por todos sus compradores). */
   clear: (): Promise<CartResponse> => authFetcher<CartResponse>("/cart", { method: "DELETE" }),

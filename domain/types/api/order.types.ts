@@ -129,4 +129,5 @@ export type CheckoutErrorCode =
   | "CART_ITEMS_UNAVAILABLE"
   | "ADDRESS_NOT_SHIPPING"
   | "CART_CHANGED"
-  | "TOTAL_CHANGED";
+  | "TOTAL_CHANGED"
+  | "COUPON_INVALID";
