@@ -322,7 +322,7 @@ export function CheckoutRevision() {
           titleId="checkout-resumen"
           countLabel={conteoPedido(lines.length, cart.totalUnits)}
           lines={lineasResumen(lines)}
-          rows={filasResumenCarrito(summary)}
+          rows={filasResumenCarrito(summary, undefined, cart.coupon?.code)}
           totalLabel={formatPrice(summary.total)}
           className="lg:sticky lg:top-0"
         >

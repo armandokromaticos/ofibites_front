@@ -23,10 +23,33 @@ import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pe
 import { filasResumenCarrito } from "../../_data/resumen-pedido";
 import { RUTA_CHECKOUT, RUTA_ORDENAR, rutaProducto } from "../../_navegacion";
 
+import { CuponCarrito } from "./cupon-carrito";
 import { EnvioGratis } from "./envio-gratis";
 import { LineaCarrito } from "./linea-carrito";
 
 const CHECKOUT_NOTE_ID = "carrito-checkout-nota";
+
+/** Avisos bajo "Continuar al checkout" (Figma 3339:13048): lo destacado en negrita y el resto en gris. */
+const AVISOS_CHECKOUT = [
+  { titulo: "Pago seguro.", texto: "Pago Móvil, transferencia en Bs o USD, Zelle y crédito corporativo 15/30 días." },
+  { titulo: "Validación.", texto: "Te avisamos apenas confirmamos tu comprobante." },
+  { titulo: "Factura fiscal.", texto: "A nombre de tu empresa, con RIF y orden de compra." },
+] as const;
+
+function AvisosCheckout() {
+  return (
+    <ul className="flex flex-col gap-3 border-t border-surface-sand/70 pt-4">
+      {AVISOS_CHECKOUT.map((aviso) => (
+        <li key={aviso.titulo} className="flex items-start gap-2 text-[11px] leading-4 text-muted">
+          <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand" />
+          <span>
+            <strong className="font-semibold text-foreground">{aviso.titulo}</strong> {aviso.texto}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 const TITULO_ID = "carrito-titulo";
 
 function unidades(n: number): string {
@@ -287,10 +310,14 @@ export function CarritoCliente() {
     contenido = (
       <div className="grid items-start gap-[29px] lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_382px]">
         <div className="flex min-w-0 flex-col gap-10">
-          <section aria-label="Productos del carrito" className="rounded-card bg-content1 px-5 sm:px-7">
-            <ul className="divide-y divide-divider">
+          {/*
+            Divisor del Figma: arena al 70 % y de borde a borde de la card (el padding va en cada fila). `divider`
+            de HeroUI sale al 15 % de opacidad y sobre blanco no se ve.
+          */}
+          <section aria-label="Productos del carrito" className="rounded-card bg-content1">
+            <ul className="divide-y divide-surface-sand/70">
               {lines.map((line, index) => (
-                <li key={line.id}>
+                <li key={line.id} className="px-5 sm:px-7">
                   <LineaCarrito
                     line={line}
                     onError={(mensaje) => {
@@ -307,7 +334,7 @@ export function CarritoCliente() {
                 </li>
               ))}
             </ul>
-            <div className="flex justify-end border-t border-divider py-3">
+            <div className="flex justify-end border-t border-surface-sand/70 px-5 py-3 sm:px-7">
               <button
                 type="button"
                 onClick={() => setIsConfirmOpen(true)}
@@ -323,11 +350,15 @@ export function CarritoCliente() {
         <OrOrderSummary
           titleId="carrito-resumen"
           subtitle={sede ? `Sede: ${lineaDireccion(sede)}` : undefined}
-          rows={filasResumenCarrito(cart.summary, `Subtotal (${unidades(cart.totalUnits)})`)}
+          rows={filasResumenCarrito(cart.summary, `Subtotal (${unidades(cart.totalUnits)})`, cart.coupon?.code)}
           totalLabel={formatPrice(cart.summary.total)}
           className="lg:sticky lg:top-0"
         >
+          <p className="-mt-2 text-right text-[11px] leading-4 text-secondary-600">
+            Tasa BCV de referencia · el monto final en bolívares se calcula el día del pago.
+          </p>
           <EnvioGratis summary={cart.summary} />
+          <CuponCarrito coupon={cart.coupon} />
           {hayNoDisponibles ? (
             <>
               <AtButton
@@ -348,6 +379,7 @@ export function CarritoCliente() {
               Continuar al checkout
             </AtButton>
           )}
+          <AvisosCheckout />
         </OrOrderSummary>
       </div>
     );

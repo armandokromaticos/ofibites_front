@@ -17,6 +17,7 @@ function carritoVacio(cart: CartResponse): CartResponse {
     subtotal: 0,
     totalUnits: 0,
     summary: { ...cart.summary, subtotal: 0, discount: 0, tax: 0, shipping: 0, total: 0 },
+    coupon: null,
   };
 }
 

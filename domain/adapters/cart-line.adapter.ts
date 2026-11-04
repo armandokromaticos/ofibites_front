@@ -20,5 +20,7 @@ export function toCartLineModel(item: CartItem): CartLineModel {
     hasModifiers: item.modifiers.length > 0,
     isAvailable: item.isAvailable,
     subtotal: item.subtotal,
+    // `?? []`: un back anterior a este campo no lo envía.
+    tags: item.tags ?? [],
   };
 }

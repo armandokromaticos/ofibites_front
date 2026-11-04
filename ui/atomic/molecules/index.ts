@@ -6,6 +6,7 @@ export * from "./ml-carousel-row";
 export * from "./ml-cart-line";
 export * from "./ml-category-picker";
 export * from "./ml-choice-chips";
+export * from "./ml-coupon-field";
 export * from "./ml-empty-state";
 export * from "./ml-file-dropzone";
 export * from "./ml-filter-chips";

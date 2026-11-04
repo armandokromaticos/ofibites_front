@@ -20,6 +20,8 @@ export function etiquetaIva(taxRate: number | null | undefined): string {
 interface ImportesPedido {
   subtotal: number;
   discount?: number | null;
+  /** Código del cupón que origina el descuento ("Descuento (OFI10)"), si se conoce. */
+  discountCode?: string | null;
   shipping: number;
   tax: number;
   taxRate?: number | null;
@@ -34,7 +36,13 @@ export function filasResumen(
   const filas: OrOrderSummaryRow[] = [
     { label: etiquetaSubtotal, value: formatPrice(importes.subtotal) },
   ];
-  if (importes.discount) filas.push({ label: "Descuento", value: `− ${formatPrice(importes.discount)}` });
+  if (importes.discount && importes.discount > 0) {
+    filas.push({
+      label: importes.discountCode ? `Descuento (${importes.discountCode})` : "Descuento",
+      value: `− ${formatPrice(importes.discount)}`,
+      isHighlighted: true,
+    });
+  }
   filas.push(
     importes.shipping === 0
       ? { label: etiquetaEnvio, value: "Sin costo", isHighlighted: true }
@@ -44,12 +52,16 @@ export function filasResumen(
   return filas;
 }
 
-/** Filas del resumen del carrito (`CartResponse.summary`). */
+/**
+ * Filas del resumen del carrito (`CartResponse.summary`). Con `codigoCupon` (`CartResponse.coupon.code`), la fila del
+ * descuento lo nombra; el importe es siempre `summary.discount` del servidor (0 si el cupón no está vigente).
+ */
 export function filasResumenCarrito(
   summary: CartSummary,
   etiquetaSubtotal?: string,
+  codigoCupon?: string | null,
 ): OrOrderSummaryRow[] {
-  return filasResumen(summary, "Envío estimado", etiquetaSubtotal);
+  return filasResumen({ ...summary, discountCode: codigoCupon }, "Envío estimado", etiquetaSubtotal);
 }
 
 /** Líneas del carrito para el resumen lateral ("Cantidad: 2" y subtotal del servidor). */
