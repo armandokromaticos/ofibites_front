@@ -19,7 +19,7 @@ export function OrProfileCard({
 }: OrProfileCardProps) {
   return (
     <div className={cn("flex flex-col gap-4 rounded-card bg-content1 p-4", className)}>
-      <div className="flex flex-col gap-3 border-b border-divider pb-4">
+      <div className="flex flex-col gap-3 border-b border-border-subtle pb-4">
         <div className="flex min-w-0 items-center gap-3">
           <AtAvatar name={name} src={avatarSrc} isDecorative className="size-12 text-base" />
           <div className="flex min-w-0 flex-col">

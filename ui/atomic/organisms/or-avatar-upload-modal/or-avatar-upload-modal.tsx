@@ -279,7 +279,7 @@ export function OrAvatarUploadModal({
               </p>
             </ModalHeader>
             <ModalBody className="gap-4 px-5 pb-0 pt-4 sm:px-7">
-              <div className="border-t border-divider" />
+              <div className="border-t border-border-subtle" />
               {descripcionRechazo && (
                 <MlFormAlert id={errorId} title="No pudimos usar ese archivo." className="bg-danger-50">
                   {descripcionRechazo.detalle}
@@ -349,7 +349,7 @@ export function OrAvatarUploadModal({
                 </p>
               )}
             </ModalBody>
-            <ModalFooter className="mt-4 flex-col-reverse gap-3 border-t border-divider px-5 pb-6 pt-4 sm:mx-7 sm:flex-row sm:items-center sm:px-0 sm:pb-7">
+            <ModalFooter className="mt-4 flex-col-reverse gap-3 border-t border-border-subtle px-5 pb-6 pt-4 sm:mx-7 sm:flex-row sm:items-center sm:px-0 sm:pb-7">
               <p className="text-xs leading-4 text-muted sm:mr-auto">También puedes quedarte con tus iniciales.</p>
               <div className="flex justify-end gap-3">
                 <AtButton
@@ -388,7 +388,7 @@ export function OrAvatarUploadModal({
                 </p>
               </ModalHeader>
               <ModalBody className="gap-4 px-5 pb-0 pt-4 sm:px-7">
-                <div className="border-t border-divider" />
+                <div className="border-t border-border-subtle" />
                 {errorRecorte && (
                   <MlFormAlert title="No pudimos guardar tu foto." className="bg-danger-50">
                     {errorRecorte}
@@ -472,7 +472,7 @@ export function OrAvatarUploadModal({
                   </div>
                 </div>
               </ModalBody>
-              <ModalFooter className="mt-4 flex-wrap gap-3 border-t border-divider px-5 pb-6 pt-4 sm:mx-7 sm:px-0 sm:pb-7">
+              <ModalFooter className="mt-4 flex-wrap gap-3 border-t border-border-subtle px-5 pb-6 pt-4 sm:mx-7 sm:px-0 sm:pb-7">
                 <AtButton
                   size="lg"
                   variant="bordered"

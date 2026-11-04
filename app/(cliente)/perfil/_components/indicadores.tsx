@@ -24,7 +24,7 @@ import { OrConsumptionBreakdownTable } from "@/ui/atomic/organisms";
 import { RUTA_PEDIDOS } from "../../_navegacion";
 
 const SELECT_CLASSNAMES = {
-  trigger: "h-9 min-h-9 w-auto min-w-[160px] bg-content1 border-small border-divider",
+  trigger: "h-9 min-h-9 w-auto min-w-[160px] bg-content1 border-small border-border-subtle",
   value: "text-[13px] font-semibold text-foreground",
   selectorIcon: "text-muted",
 };
@@ -86,7 +86,7 @@ export function Indicadores({ canViewUserBreakdown }: IndicadoresProps) {
       aria-labelledby="perfil-indicadores-titulo"
       className="flex flex-col gap-6 rounded-card bg-content1 p-5 sm:p-6"
     >
-      <header className="flex flex-col gap-3 border-b border-divider pb-5 sm:flex-row sm:items-start sm:justify-between">
+      <header className="flex flex-col gap-3 border-b border-border-subtle pb-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <h2 id="perfil-indicadores-titulo" className="font-display text-xl font-bold leading-7 text-foreground">
             Indicadores de la empresa

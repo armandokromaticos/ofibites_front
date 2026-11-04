@@ -1,5 +1,5 @@
-import { ORDER_STATUS_GROUP_LABELS } from "@/domain/models";
-import { Department, Order, User } from "@/domain/types";
+import { ORDER_STATUS_GROUP_LABELS, paymentStatusListView } from "@/domain/models";
+import { Department, Order, OrderInvoice, User } from "@/domain/types";
 import { formatCaracasDateSlash, formatPrice } from "@/shared/utils";
 import { OrOrderTableRow } from "@/ui/atomic";
 
@@ -7,6 +7,7 @@ import { rutaPedido } from "../../_navegacion";
 import { nombreUsuarioPedido } from "../_data/nombre-usuario";
 
 import { FiltrosPedidos } from "./use-filtros-pedidos";
+import { PedidoARepetir, pedidoARepetir, sePuedeRepetir } from "./use-repetir-pedido";
 
 /** Fila de la tabla con los campos crudos que necesitan los filtros (no solo lo que se pinta). */
 export interface FilaPedido extends OrOrderTableRow {
@@ -18,6 +19,10 @@ export interface FilaPedido extends OrOrderTableRow {
    */
   filterUserId: string;
   createdAt: string;
+  /** Datos para "Repetir pedido" o `null` si el pedido no tiene líneas (mismo criterio que el detalle). */
+  repetir: PedidoARepetir | null;
+  /** Factura del pedido (T-06) para "Pagar factura" y "Descargar factura"; `null` sin factura. */
+  invoice: OrderInvoice | null;
 }
 
 const SIN_DATO = "—";
@@ -45,10 +50,13 @@ export function construirFilaPedido(
     amountLabel: order.total !== null ? formatPrice(order.total) : SIN_DATO,
     statusGroup: order.statusGroup,
     statusLabel: ORDER_STATUS_GROUP_LABELS[order.statusGroup],
+    payment: order.invoice ? paymentStatusListView(order.invoice.paymentStatus) : null,
     detailHref: rutaPedido(order.id),
     branchId: order.branchId,
     filterUserId,
     createdAt: order.createdAt,
+    repetir: sePuedeRepetir(order) ? pedidoARepetir(order) : null,
+    invoice: order.invoice ?? null,
   };
 }
 
@@ -63,7 +71,14 @@ function dentroDelRango(createdAt: string, fecha: FiltrosPedidos["fecha"], ahora
 function coincideBusqueda(fila: FilaPedido, q: string): boolean {
   const texto = q.trim().toLowerCase();
   if (!texto) return true;
-  const candidatos = [fila.orderNumber, fila.userLabel, fila.departmentLabel];
+  // T-06: también por número de factura (proforma o fiscal).
+  const candidatos = [
+    fila.orderNumber,
+    fila.userLabel,
+    fila.departmentLabel,
+    fila.invoice?.invoiceNumber ?? "",
+    fila.invoice?.fiscalNumber ?? "",
+  ];
   return candidatos.some((valor) => valor.toLowerCase().includes(texto));
 }
 

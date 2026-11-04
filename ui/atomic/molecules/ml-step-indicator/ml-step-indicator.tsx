@@ -24,7 +24,7 @@ export function MlStepIndicator({
   return (
     <div className={cn("relative w-full", className)}>
       {/* Pista: de centro a centro de los círculos de los extremos. */}
-      <div aria-hidden="true" className="absolute inset-x-[23.5px] top-1/2 h-1.5 -translate-y-1/2 bg-divider">
+      <div aria-hidden="true" className="absolute inset-x-[23.5px] top-1/2 h-1.5 -translate-y-1/2 bg-border-subtle">
         <div className="h-full bg-accent transition-[width] duration-300" style={{ width: `${progress}%` }} />
       </div>
       <ol

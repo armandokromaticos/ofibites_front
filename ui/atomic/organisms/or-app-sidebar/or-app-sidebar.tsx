@@ -40,11 +40,14 @@ function panelTransition(isOpen: boolean) {
 }
 
 function itemClip(isOpen: boolean) {
+  // Cerrado: el recorte coincide con el cuadrado de 60 × 60 (216 − 156) y con su radio de 12 px
+  // (`rounded-control`), así las cuatro esquinas del fondo del activo son iguales, como en el Figma. Solo con
+  // foco de teclado se abren 4 px por cada lado para no cortar el anillo.
   return cn(
     panelTransition(isOpen),
     isOpen
       ? "[clip-path:inset(-4px_-4px_-4px_-4px_round_16px)]"
-      : "[clip-path:inset(-4px_152px_-4px_-4px_round_16px)]",
+      : "[clip-path:inset(0px_156px_0px_0px_round_12px)] focus-visible:[clip-path:inset(-4px_152px_-4px_-4px_round_16px)]",
   );
 }
 
@@ -304,7 +307,7 @@ function SidebarPanel({
         )}
 
         {user && (
-          <div className="flex h-[84px] w-full shrink-0 items-center gap-[15px] border-t border-divider px-5 py-4">
+          <div className="flex h-[84px] w-full shrink-0 items-center gap-[15px] border-t border-border-subtle px-5 py-4">
             {/* Abierto, el nombre se lee al lado: el avatar no lo repite. */}
             <AtAvatar src={user.avatarSrc} name={user.name} isDecorative={isOpen} />
             <div

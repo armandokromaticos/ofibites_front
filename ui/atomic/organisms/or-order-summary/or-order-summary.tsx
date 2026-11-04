@@ -23,7 +23,7 @@ export function OrOrderSummary({
 }: OrOrderSummaryProps) {
   return (
     <aside aria-labelledby={titleId} className={cn("flex flex-col rounded-card bg-content1 p-5 sm:p-6", className)}>
-      <div className="flex flex-col gap-0.5 border-b border-divider pb-4">
+      <div className="flex flex-col gap-0.5 border-b border-border-subtle pb-4">
         <h2 id={titleId} className="font-display text-xl font-bold leading-7 text-foreground">
           {title}
         </h2>
@@ -31,10 +31,10 @@ export function OrOrderSummary({
         {subtitle && <p className="text-xs leading-5 text-brand">{subtitle}</p>}
       </div>
 
-      {header && <div className="border-b border-divider py-4">{header}</div>}
+      {header && <div className="border-b border-border-subtle py-4">{header}</div>}
 
       {lines.length > 0 && (
-        <ul aria-label="Productos" className="flex flex-col gap-3.5 border-b border-divider py-4">
+        <ul aria-label="Productos" className="flex flex-col gap-3.5 border-b border-border-subtle py-4">
           {lines.map((line) => (
             <li key={line.id} className="flex items-center gap-3">
               <span className="relative size-9 shrink-0 overflow-hidden rounded-md bg-surface-sand">
@@ -53,7 +53,7 @@ export function OrOrderSummary({
         </ul>
       )}
 
-      <dl className="flex flex-col gap-2 border-b border-divider py-4 text-[13px] leading-5">
+      <dl className="flex flex-col gap-2 border-b border-border-subtle py-4 text-[13px] leading-5">
         {rows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-4">
             <dt className="text-foreground">{row.label}</dt>

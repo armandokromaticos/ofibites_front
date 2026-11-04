@@ -221,7 +221,7 @@ export function DireccionesSedes({ isCompanyAdmin }: DireccionesSedesProps) {
 
   return (
     <section aria-labelledby="perfil-sedes-titulo" className="flex flex-col rounded-card bg-content1 p-5 sm:p-6">
-      <header className="flex flex-col gap-3 border-b border-divider pb-5 sm:flex-row sm:items-start sm:justify-between">
+      <header className="flex flex-col gap-3 border-b border-border-subtle pb-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <h2 id="perfil-sedes-titulo" className="font-display text-xl font-bold leading-7 text-foreground">
             Direcciones y sedes

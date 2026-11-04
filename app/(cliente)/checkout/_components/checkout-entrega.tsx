@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Clock, Plus } from "lucide-react";
 
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
+import { useCanReportPayments } from "@/domain/hooks/invoices";
 import {
   CHECKOUT_CUTOFF_NOTICE,
   CHECKOUT_LIMITS,
@@ -27,10 +28,12 @@ import {
   AtSkeleton,
   AtTextarea,
   MlFilterChips,
+  MlNoticeBanner,
   MlRadioCardGroup,
   OrOrderSummary,
 } from "@/ui/atomic";
 
+import { avisosFactura } from "../../_data/aviso-factura";
 import { lineaDireccion } from "../../_data/direcciones";
 import { conteoPedido, filasResumenCarrito, lineasResumen } from "../../_data/resumen-pedido";
 import { RUTA_CARRITO, RUTA_CHECKOUT_REVISION } from "../../_navegacion";
@@ -104,6 +107,7 @@ export function CheckoutEntrega() {
 function PasoEntrega() {
   const router = useRouter();
   const { estado, cart, lines, summary, cartQuery } = useCarritoCheckout();
+  const puedePagar = useCanReportPayments();
   const propietario = usePropietarioBorrador();
   const user = useAuthStore((state) => state.user);
   const esAdminEmpresa = useAuthStore(
@@ -180,6 +184,8 @@ function PasoEntrega() {
 
   const continuar = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    // T-06: con factura vencida o crédito excedido no se avanza (también con Enter en un campo).
+    if (cart?.invoiceAlert?.blocksCheckout || cart?.creditLine?.exceedsAvailable) return;
     const final: CheckoutDraft = { ...draft, deliveryAddressId: sedeElegida };
     const nuevos = validateCheckoutDraft(final);
     setErrors(nuevos);
@@ -289,9 +295,15 @@ function PasoEntrega() {
     );
   }
 
+  // T-06: factura vencida o crédito excedido. Se avisa aquí y no se deja seguir (la confirmación daría 400).
+  const factura = avisosFactura(cart, puedePagar, RUTA_CARRITO);
+
   return (
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-6">
       {cabecera}
+      {factura.avisos.map(({ key, ...banner }) => (
+        <MlNoticeBanner key={key} {...banner} />
+      ))}
       <RejillaCheckout>
         <div ref={formRef} className="min-w-0">
           <form id={FORM_ID} noValidate onSubmit={continuar} className="flex flex-col gap-4">
@@ -473,9 +485,26 @@ function PasoEntrega() {
           totalLabel={formatPrice(summary.total)}
           className="lg:sticky lg:top-0"
         >
-          <AtButton type="submit" form={FORM_ID} size="lg" className="h-[52px] w-full text-sm">
-            Continuar a la revisión
-          </AtButton>
+          {factura.bloquea ? (
+            <>
+              <AtButton
+                size="lg"
+                className="h-[52px] w-full cursor-not-allowed text-sm opacity-60"
+                aria-disabled="true"
+                aria-describedby="checkout-entrega-bloqueo"
+                onPress={() => undefined}
+              >
+                Continuar a la revisión
+              </AtButton>
+              <p id="checkout-entrega-bloqueo" className="-mt-1 text-center text-xs leading-5 text-danger-700">
+                {factura.motivo}
+              </p>
+            </>
+          ) : (
+            <AtButton type="submit" form={FORM_ID} size="lg" className="h-[52px] w-full text-sm">
+              Continuar a la revisión
+            </AtButton>
+          )}
           <Link
             href={RUTA_CARRITO}
             className="inline-flex items-center justify-center gap-1 self-center rounded-sm text-[13px] font-medium text-ghost-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"

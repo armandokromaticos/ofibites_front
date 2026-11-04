@@ -6,6 +6,7 @@ export * from "./companies";
 export * from "./company-addresses";
 export * from "./company-requests";
 export * from "./dashboard";
+export * from "./invoices";
 export * from "./notifications";
 export * from "./orders";
 export * from "./products";

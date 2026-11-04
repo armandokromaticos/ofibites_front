@@ -9,7 +9,7 @@ import { OrMemberFiltersBarOption, OrMemberFiltersBarProps } from "./or-member-f
 const SELECT_CLASSNAMES = {
   base: "w-full sm:w-auto sm:min-w-[170px]",
   label: "text-[13px] font-normal text-muted",
-  trigger: "h-10 min-h-10 bg-content1 border-small border-divider data-[hover=true]:border-border-input",
+  trigger: "h-10 min-h-10 bg-content1 border-small border-border-subtle data-[hover=true]:border-border-input",
   value: "text-[13px] font-medium text-foreground",
   selectorIcon: "text-muted",
 };

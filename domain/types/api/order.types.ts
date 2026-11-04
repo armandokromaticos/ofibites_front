@@ -2,6 +2,8 @@
 // del back (`src/core/application/dto/orders/order-response.dto.ts`). Los importes llegan en `null` para roles
 // sin acceso a precios.
 
+import type { OrderInvoice, OverdueInvoiceSummary } from "./invoice.types";
+
 export type OrderPriority = "LOW" | "MEDIUM" | "HIGH";
 
 /**
@@ -69,6 +71,11 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   items?: OrderItem[];
+  /**
+   * Factura del pedido (T-06): se emite al pasar a `CONFIRMED`. `null` si aún no se confirmó, si es anterior a T-06
+   * sin backfill o para `OPERATOR`. Opcional por si una respuesta antigua no lo trae.
+   */
+  invoice?: OrderInvoice | null;
 }
 
 /**
@@ -130,4 +137,35 @@ export type CheckoutErrorCode =
   | "ADDRESS_NOT_SHIPPING"
   | "CART_CHANGED"
   | "TOTAL_CHANGED"
-  | "COUPON_INVALID";
+  | "COUPON_INVALID"
+  /** T-06: la empresa tiene alguna factura vencida (cuerpo con `overdueInvoices`). */
+  | "INVOICE_OVERDUE"
+  /** T-06: el total supera el crédito disponible (cuerpo con `total` y `available`). */
+  | "CREDIT_LIMIT_EXCEEDED";
+
+/**
+ * `code` de `PATCH /orders/:id/status` y `POST /orders/:id/cancel` (T-06c; no los emite el checkout): 409 si el pedido
+ * cambió de estado entre la lectura y la escritura, 400 si su factura tiene pagos aprobados. El front aún no usa estos
+ * endpoints.
+ */
+export type OrderStatusUpdateErrorCode = "ORDER_STATUS_CHANGED" | "ORDER_HAS_APPROVED_PAYMENTS";
+
+/** Cuerpo del 400 `INVOICE_OVERDUE` de `POST /orders/checkout` (T-06). */
+export interface CheckoutInvoiceOverdueError {
+  statusCode: 400;
+  error: string;
+  message: string;
+  code: "INVOICE_OVERDUE";
+  /** Todas las vencidas, la más antigua primero. */
+  overdueInvoices: OverdueInvoiceSummary[];
+}
+
+/** Cuerpo del 400 `CREDIT_LIMIT_EXCEEDED` de `POST /orders/checkout` (T-06). */
+export interface CheckoutCreditLimitError {
+  statusCode: 400;
+  error: string;
+  message: string;
+  code: "CREDIT_LIMIT_EXCEEDED";
+  total: number;
+  available: number;
+}

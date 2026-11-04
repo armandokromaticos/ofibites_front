@@ -122,7 +122,7 @@ export function OrProfileBasicForm({
       aria-labelledby="perfil-datos-titulo"
       className={cn("flex flex-col rounded-card bg-content1 p-5 sm:p-6", className)}
     >
-      <header className="flex flex-col gap-2 border-b border-divider pb-5 sm:flex-row sm:items-start sm:justify-between">
+      <header className="flex flex-col gap-2 border-b border-border-subtle pb-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <h2 id="perfil-datos-titulo" className="font-display text-xl font-bold leading-7 text-foreground">
             Datos básicos
@@ -257,7 +257,7 @@ export function OrProfileBasicForm({
             empresa: si están errados, avísale a tu administrador.
           </p>
 
-          <div className="flex w-full flex-col-reverse gap-4 border-t border-divider pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col-reverse gap-4 border-t border-border-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
             <p id="perfil-datos-ayuda" className="text-xs leading-4 text-subtle">
               Guardar cambios se activa solo cuando edites algún campo.
             </p>
