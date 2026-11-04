@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from "react";
 
-import { Bell, ClipboardList, LayoutGrid, ShoppingCart, Truck } from "lucide-react";
+import { Bell, ClipboardList, Grid3x3, ShoppingCart, Truck } from "lucide-react";
 
 import { checkPasswordRules, getPasswordStrength } from "@/shared/utils";
 import {
@@ -583,7 +583,7 @@ export function UiCatalog() {
               navId: "sidebar-demo-layout",
             }}
             title="Dashboard"
-            titleIcon={<LayoutGrid />}
+            titleIcon={<Grid3x3 />}
             cart={{
               id: "cart-layout",
               count: 3,
