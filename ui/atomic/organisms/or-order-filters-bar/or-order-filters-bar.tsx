@@ -74,15 +74,16 @@ export function OrOrderFiltersBar({
   className,
 }: OrOrderFiltersBarProps) {
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
+    <div className={cn("flex flex-col gap-4 xl:flex-row xl:items-center", className)}>
       <MlSearchBar
         variant="catalog"
         label="Buscar pedido por número, usuario o producto"
         placeholder="Buscar pedido por número, usuario o producto"
         value={search}
         onValueChange={onSearchChange}
+        className="xl:min-w-[260px] xl:flex-1"
       />
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 xl:flex-nowrap">
         <FilterSelect label="Estado" options={statusOptions} value={statusValue} onChange={onStatusChange} />
         <FilterSelect label="Fecha" options={dateOptions} value={dateValue} onChange={onDateChange} />
         <FilterSelect
