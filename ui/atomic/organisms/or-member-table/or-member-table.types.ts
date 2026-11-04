@@ -1,3 +1,5 @@
+import { AtStatusChipTone } from "@/ui/atomic/atoms";
+
 export interface OrMemberTableRow {
   id: string;
   name: string;
@@ -5,7 +7,7 @@ export interface OrMemberTableRow {
   roleLabel: string;
   departmentLabel: string;
   statusLabel: string;
-  statusColor: "success" | "danger" | "warning";
+  statusTone: AtStatusChipTone;
   lastSeenLabel: string;
   editHref: string;
   /** Pendiente: nunca inició sesión. */

@@ -1,4 +1,5 @@
 import { CompanyRole } from "@/domain/types";
+import { AtStatusChipTone } from "@/ui/atomic/atoms";
 
 export interface OrMemberFormValues {
   firstName: string;
@@ -28,7 +29,7 @@ export interface OrMemberFormHeader {
   email: string | null;
   /** "Activo" / "Inactivo" / "Pendiente", ya traducido (ver `domain/models` → `MEMBER_STATUS_LABELS`). */
   statusLabel: string;
-  statusColor: "success" | "danger" | "warning";
+  statusTone: AtStatusChipTone;
   lastSeenLabel: string;
   createdLabel?: string | null;
 }

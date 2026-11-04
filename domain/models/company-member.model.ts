@@ -40,11 +40,14 @@ export const MEMBER_STATUS_LABELS: Record<MemberStatus, string> = {
   pending: "Pendiente",
 };
 
-/** Color de `AtChip` (HeroUI, `variant="flat"`) para el badge de estado. */
-export const MEMBER_STATUS_COLORS: Record<MemberStatus, "success" | "danger" | "warning"> = {
+/** Tono del chip de estado del miembro (subconjunto de `AtStatusChipTone`, el mismo chip que "Pedidos realizados"). */
+export type MemberStatusTone = "success" | "danger" | "inactive";
+
+/** Activo como Completado/Entregado, Pendiente como el pago pendiente e Inactivo en rojo (Figma 3463:2171). */
+export const MEMBER_STATUS_TONES: Record<MemberStatus, MemberStatusTone> = {
   active: "success",
-  inactive: "danger",
-  pending: "warning",
+  inactive: "inactive",
+  pending: "danger",
 };
 
 /** Opciones del filtro "Estado: Todos" de la lista. */
