@@ -14,6 +14,7 @@ export const CATEGORIAS_DASHBOARD: ClientDashboardCategory[] = [
     imageAlt: "Tres botellas de jugo natural",
     imagePosition: "start",
     imageFit: "bleed",
+    backgroundSrc: "/images/banners/dashboard-bebidas-bg.png",
   },
   {
     id: "desayunos",
@@ -23,5 +24,6 @@ export const CATEGORIAS_DASHBOARD: ClientDashboardCategory[] = [
     imageAlt: "Caja abierta con seis hojaldres rellenos",
     imagePosition: "end",
     imageFit: "bleed",
+    backgroundSrc: "/images/banners/dashboard-bolleria-bg.png",
   },
 ];

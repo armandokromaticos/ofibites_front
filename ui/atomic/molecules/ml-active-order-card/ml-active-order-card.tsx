@@ -77,9 +77,25 @@ export function MlActiveOrderCard({
                 )}
               >
                 {order.steps.map((step) => (
-                  <li key={step.label} className={cn("pt-1.5", step.isDone && "font-semibold text-brand")}>
+                  <li
+                    key={step.label}
+                    aria-current={step.isCurrent ? "step" : undefined}
+                    className={cn(
+                      "pt-1.5",
+                      // Hechos en verde; el actual en naranja; los que faltan, más claros (aún no se alcanzan).
+                      step.isCurrent
+                        ? "font-semibold text-accent"
+                        : step.isDone
+                          ? "font-semibold text-brand"
+                          : "text-subtle/60",
+                    )}
+                  >
                     {step.label}
-                    {step.isDone && <span className="sr-only"> (hecho)</span>}
+                    {step.isCurrent ? (
+                      <span className="sr-only"> (actual)</span>
+                    ) : (
+                      step.isDone && <span className="sr-only"> (hecho)</span>
+                    )}
                   </li>
                 ))}
               </ol>

@@ -37,6 +37,11 @@ export interface MlPromoBannerProps {
    */
   imageFit?: "contain" | "bleed";
   /**
+   * Solo `secondary`: fondo decorativo a toda la card (PNG transparente exportado del Figma), bajo el texto y la
+   * foto. Sin valor, la decoración genérica.
+   */
+  backgroundSrc?: string;
+  /**
    * Solo `secondary`: la card entera es un enlace a `href` y, al pasar o enfocar, aparece `ctaLabel`
    * (por defecto "Explorar") con una flecha. Sin `href` la card no es interactiva.
    */

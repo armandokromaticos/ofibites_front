@@ -67,7 +67,7 @@ export function toClientDashboardUser(
 // ---------------------------------------------------------------------------------------------------------------
 // Promociones (`GET /banners?section=home-carousel&active=true`)
 
-/** Banners con imagen, por `order`. El back no tiene subtítulo. */
+/** Banners con imagen, por `order`. El subtítulo, solo si trae texto. */
 export function toPromotions(banners: Banner[]): ClientDashboardPromotion[] {
   return banners
     .filter((banner): banner is Banner & { imageUrl: string } => Boolean(banner.imageUrl))
@@ -75,6 +75,7 @@ export function toPromotions(banners: Banner[]): ClientDashboardPromotion[] {
     .map((banner) => ({
       id: banner.id,
       title: banner.title ?? banner.altText,
+      ...(banner.subtitle?.trim() && { subtitle: banner.subtitle.trim() }),
       imageSrc: banner.imageUrl,
       imageAlt: banner.altText,
       ...(banner.linkUrl && { ctaHref: banner.linkUrl, ctaLabel: "Ordenar ahora" }),
