@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { ChevronLeft, Truck } from "lucide-react";
 
-import { useCart, useCartLines, useClearCart, useRepeatOrder } from "@/domain/hooks/cart";
+import { useCart, useCartLines, useClearCart, useQuickAddCartItem, useRepeatOrder } from "@/domain/hooks/cart";
 import { useCatalog } from "@/domain/hooks/catalog";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useCanReportPayments } from "@/domain/hooks/invoices";
@@ -105,12 +106,36 @@ function CabeceraCarrito({
   );
 }
 
-/** "Agrega a tu pedido": tres ítems del catálogo (destacados primero) que no estén ya en el carrito. */
+/**
+ * "Agrega a tu pedido": tres ítems del catálogo (destacados primero) que no estén ya en el carrito. Con precio único
+ * (un solo tamaño), el "+" añade 1 unidad sin salir (feedback Gaby, C3); al añadirse, el ítem pasa a las líneas y
+ * deja la lista. Si la ficha pide elegir algo (varios tamaños u opciones obligatorias), se navega a ella. Con
+ * varios precios, el "+" abre la ficha, como antes.
+ */
 function AgregaATuPedido({ lines }: { lines: CartLineModel[] }) {
+  const router = useRouter();
   const { data } = useCatalog({ pageSize: 8 });
+  const { quickAdd } = useQuickAddCartItem();
+  const [anadiendo, setAnadiendo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [anuncio, setAnuncio] = useState("");
   const enCarrito = new Set(lines.map((line) => `${line.kind}:${line.catalogId}`));
   const items = (data?.items.data ?? []).filter((item) => !enCarrito.has(`${item.kind}:${item.id}`)).slice(0, 3);
   if (items.length === 0) return null;
+
+  const anadir = (item: (typeof items)[number]) => {
+    if (anadiendo) return;
+    const clave = `${item.kind}:${item.id}`;
+    setAnadiendo(clave);
+    setError(null);
+    quickAdd(item.kind, item.id)
+      .then((resultado) => {
+        if (resultado === "ficha") router.push(rutaProducto(item.id, item.kind));
+        else setAnuncio(`${item.name} se añadió al carrito.`);
+      })
+      .catch((err: unknown) => setError(mensajeErrorCarrito(err, "anadir")))
+      .finally(() => setAnadiendo(null));
+  };
 
   return (
     <section aria-labelledby="carrito-agrega" className="flex flex-col gap-5">
@@ -125,10 +150,22 @@ function AgregaATuPedido({ lines }: { lines: CartLineModel[] }) {
               imageSrc={item.image ?? IMAGEN_PRODUCTO_POR_DEFECTO}
               priceLabel={formatPriceRange(item.priceFrom, item.priceTo)}
               href={rutaProducto(item.id, item.kind)}
+              {...(item.priceFrom === item.priceTo && {
+                onAdd: () => anadir(item),
+                isAdding: anadiendo === `${item.kind}:${item.id}`,
+              })}
             />
           </li>
         ))}
       </ul>
+      {error && (
+        <p role="alert" className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700">
+          {error}
+        </p>
+      )}
+      <p role="status" className="sr-only">
+        {anuncio}
+      </p>
     </section>
   );
 }

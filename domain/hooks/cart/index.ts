@@ -4,6 +4,7 @@ export * from "./useCart";
 export * from "./useCartCoupon";
 export * from "./useCartLines";
 export * from "./useClearCart";
+export * from "./useQuickAddCartItem";
 export * from "./useRemoveCartItem";
 export * from "./useRepeatOrder";
 export * from "./useUpdateCartItem";
