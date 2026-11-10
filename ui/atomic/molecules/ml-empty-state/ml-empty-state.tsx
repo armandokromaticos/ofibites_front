@@ -70,7 +70,7 @@ export function MlEmptyState({
       )}
       {actionLabel &&
         (actionHref ? (
-          <AtButton as={Link} href={actionHref} size="sm" className="mt-2">
+          <AtButton as={Link} href={actionHref} size="sm" className="mt-2" onPress={onAction}>
             {actionLabel}
           </AtButton>
         ) : (

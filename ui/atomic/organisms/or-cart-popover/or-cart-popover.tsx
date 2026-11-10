@@ -162,6 +162,8 @@ export function OrCartPopover({
             description="Explora el menú y arma tu pedido."
             actionLabel="Explorar el menú"
             actionHref={browseHref}
+            // El enlace navega, pero el popover no se cierra solo (y en /ordenar no habría cambio visible).
+            onAction={() => setOpen(false)}
           />
         )}
 
@@ -238,7 +240,13 @@ export function OrCartPopover({
         )}
 
         {hasLines && !showConfirm && (
-          <AtButton as={Link} href={cartHref} size="md" className="mt-3 h-[38px] w-full">
+          <AtButton
+            as={Link}
+            href={cartHref}
+            size="md"
+            className="mt-3 h-[38px] w-full"
+            onPress={() => setOpen(false)}
+          >
             Ver carrito
             <ArrowRight aria-hidden="true" className="size-4" />
           </AtButton>

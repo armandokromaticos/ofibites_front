@@ -15,7 +15,7 @@ export interface MlEmptyStateProps {
   headingLevel?: 2 | 3 | 4;
   /** Texto del botón. Sin `actionLabel` no se pinta. */
   actionLabel?: string;
-  /** Si se pasa, el botón es un enlace. */
+  /** Si se pasa, el botón es un enlace (y `onAction`, si llega, se llama además al pulsarlo: p. ej. cerrar un popover). */
   actionHref?: string;
   onAction?: () => void;
   isActionLoading?: boolean;
