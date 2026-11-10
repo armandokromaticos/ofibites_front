@@ -13,5 +13,7 @@ export interface MlOrderTimelineProps {
   completedCount: number;
   /** Nombre accesible de la lista. Por defecto "Estado del pedido". */
   label?: string;
+  /** `responsive` (por defecto): en fila desde `sm`. `vertical`: siempre en columna (columna lateral estrecha). */
+  orientation?: "responsive" | "vertical";
   className?: string;
 }
