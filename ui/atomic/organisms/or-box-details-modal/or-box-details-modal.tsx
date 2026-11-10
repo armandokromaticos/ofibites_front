@@ -78,13 +78,14 @@ export function OrBoxDetailsModal({
               onClick={onClose}
               aria-label="Cerrar detalles de la caja"
               className={cn(
-                "absolute right-4 top-4 z-10 flex size-10 items-center justify-center rounded-full",
-                "border-1 border-primary bg-content1/90 text-primary shadow-lift",
+                // Figma 3163:3064: círculo gris de 42 px con borde `primary` de 2 px y aspa de 12 px con trazo de 3.
+                "absolute right-4 top-4 z-10 flex size-[42px] items-center justify-center rounded-full sm:right-[25px] sm:top-[26px]",
+                "border-2 border-primary bg-close-fill text-primary",
                 "transition-[background-color,scale] duration-(--duration-instant) ease-out hover:bg-content1 active:scale-95",
                 "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-content1",
               )}
             >
-              <X aria-hidden="true" className="size-5" strokeWidth={2} />
+              <X aria-hidden="true" className="size-6" strokeWidth={3} />
             </button>
 
             {/* Un `div` y no `ModalBody`: este pondría `aria-describedby` y el lector leería todo el contenido al abrir.
