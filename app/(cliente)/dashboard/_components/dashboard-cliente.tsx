@@ -303,7 +303,9 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
 
           <section
             aria-label="Tu actividad"
-            className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:col-start-2 xl:row-start-1 xl:flex xl:gap-[14px]"
+            // xl: mide lo mismo que el banner principal (`min-h-[307px]` de `MlPromoBanner` main) y el pedido en curso se
+            // estira: el borde inferior de ambas columnas queda alineado (feedback Gaby, D3).
+            className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:col-start-2 xl:row-start-1 xl:flex xl:min-h-[307px] xl:gap-[14px]"
           >
             <MlGreetingCard
               name={user?.displayName ?? ""}
@@ -317,8 +319,8 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
               variants={fadeRise}
               initial={startedLoading && !isPending ? "hidden" : false}
               animate="visible"
-              // En md va junto al saludo: misma altura.
-              className="flex flex-col"
+              // En md va junto al saludo: misma altura. En xl ocupa lo que falta hasta el alto del banner.
+              className="flex flex-col xl:flex-1"
             >
               <MlActiveOrderCard
                 className="flex-1"
