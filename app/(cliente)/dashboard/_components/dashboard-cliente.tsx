@@ -3,7 +3,6 @@
 import { ReactNode, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { cn } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
@@ -318,17 +317,13 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
 
           {/*
             Columna derecha (saludo, pedido en curso y últimas órdenes): en xl es un solo bloque fijo (sticky) mientras
-            el resto hace scroll (feedback Gaby, D5). Su alto se limita a la ventana (menos top bar y márgenes) y, si no
-            cabe, se desplaza dentro: en portátiles bajos "Ver todos" sigue alcanzable. Hasta xl el envoltorio no pinta
-            caja (`contents`) y el saludo queda en la rejilla de una columna.
+            el resto hace scroll (feedback Gaby, D5). Sin scroll interno: si es más alta que la ventana, su parte baja se
+            ve al llegar al final de la página. `top-0` y no `top-6`: el inset del sticky se mide desde el padding de
+            `<main>` (42 px en xl), así que cualquier top > 0 la bajaba respecto al banner en reposo. Hasta xl el
+            envoltorio no pinta caja (`contents`) y el saludo queda en la
+            rejilla de una columna.
           */}
-          <div
-            className={cn(
-              "contents xl:sticky xl:top-6 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px]",
-              "xl:max-h-[calc(100dvh-72px-48px)] xl:self-start xl:overflow-y-auto xl:overscroll-contain",
-              "xl:[scrollbar-width:thin]",
-            )}
-          >
+          <div className="contents xl:sticky xl:top-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px] xl:self-start">
             <section
               aria-label="Tu actividad"
               // xl: mide lo mismo que el banner principal (`min-h-[307px]` de `MlPromoBanner` main) y el pedido en curso se
