@@ -356,7 +356,7 @@ function PromoBanner({
         className={cn(
           "relative z-10 shrink-0",
           // Sin diseño móvil en Figma: por debajo de sm el banner principal oculta la foto.
-          isMain ? "hidden w-[47%] max-w-[463px] sm:block" : "w-[40%] max-w-[216px] sm:w-[45%]",
+          isMain ? "hidden w-1/2 max-w-[500px] sm:block" : "w-[40%] max-w-[216px] sm:w-[45%]",
           // La foto se eleva y gira 1° al pasar sobre el banner principal.
           isMain &&
             cn(
@@ -370,9 +370,12 @@ function PromoBanner({
           src={imageSrc}
           alt={imageAlt}
           fill
-          sizes={isMain ? "463px" : "216px"}
+          sizes={isMain ? "500px" : "216px"}
           className={cn(
-            isMain && "object-cover object-left",
+            // Anclada a la derecha: las fotos de producto que llegan como banner traen aire transparente a la
+            // izquierda (p. ej. la caja de coffee break, 2:1); con `object-left` se veía el aire y la caja quedaba
+            // pequeña o cortada (feedback Gaby, D2).
+            isMain && "object-cover object-right",
             !isMain && "object-contain",
             // A sangre: pegada a su lado y abajo (el banner recorta con su radio).
             isBleed && (imageAtStart ? "object-left-bottom" : "object-right-bottom"),
