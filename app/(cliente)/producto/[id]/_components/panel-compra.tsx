@@ -85,7 +85,7 @@ function errorCarrito(error: unknown): Extract<ResultadoCompra, { tipo: "error" 
     case 403:
       return {
         tipo: "error",
-        mensaje: "Tu cuenta no puede añadir productos al carrito de la empresa. Si crees que es un error, contacta con Ofibites.",
+        mensaje: "Tu cuenta no puede añadir productos a tu carrito. Si crees que es un error, contacta con Ofibites.",
       };
     case 404:
       return ES_DE_EMPRESA.test(delBack)
@@ -229,7 +229,8 @@ export function PanelCompra({ item, imagenCaja }: PanelCompraProps) {
         )}
       </div>
 
-      <div className="flex flex-col gap-[35px] pt-1">
+      {/* `mt-auto`: con la fila más alta que el contenido (lg), el bloque de compra baja hasta el pie del panel. */}
+      <div className="flex flex-col gap-[35px] pt-1 lg:mt-auto">
         {!isCombo && opciones.length > 1 && (
           <MlSegmentedControl
             name="personas"

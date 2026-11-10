@@ -15,6 +15,11 @@ export const CART_MUTATION_KEY = ["cart"] as const;
  * - `onSettled` vuelve a pedir el carrito solo cuando termina la última escritura en curso: con varias a la vez
  *   (dos líneas, o popover y página) las respuestas pueden llegar desordenadas, y así gana el estado final del
  *   servidor y no la última respuesta en llegar.
+ *
+ * Ese refetch va en segundo plano (`void`, sin devolver la promesa). Si `onSettled` la devuelve, React Query la
+ * espera: la mutación sigue `pending` (y los `onSuccess` de `mutate`/`mutateAsync` no llegan) hasta que responde
+ * también `GET /cart`, aunque la respuesta de la escritura ya trae el carrito nuevo. Eso dejaba "Añadir al carrito"
+ * en "Añadiendo…" sin aviso de éxito y la línea del carrito en espera (feedback Gaby, P5 y C2).
  */
 export function useCartMutationOptions() {
   const queryClient = useQueryClient();
@@ -30,7 +35,7 @@ export function useCartMutationOptions() {
     },
     onSettled: () => {
       if (queryClient.isMutating({ mutationKey: CART_MUTATION_KEY }) === 1) {
-        return queryClient.invalidateQueries({ queryKey: cartQueryKey(companyId) });
+        void queryClient.invalidateQueries({ queryKey: cartQueryKey(companyId) });
       }
     },
   };

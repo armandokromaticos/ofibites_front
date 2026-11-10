@@ -114,11 +114,18 @@ export function MlProductGallery({
                     // En lg el ancho lo da la columna del grid (72 / 92 px); un ancho fijo la desbordaba con el padding.
                     "relative aspect-[92/102] w-[72px] shrink-0 overflow-hidden rounded-[6px] bg-content1 lg:w-full",
                     "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-                    "transition-[opacity,box-shadow] duration-(--duration-instant) ease-out",
-                    isActive ? "ring-2 ring-primary" : "opacity-70 hover:opacity-100",
+                    "group",
                   )}
                 >
                   <Image src={src} alt="" fill sizes="92px" className="object-cover" />
+                  {/* Figma: la elegida va limpia, sin borde; las demás, bajo un velo blanco que se aclara al pasar. */}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "pointer-events-none absolute inset-0 bg-content1 transition-opacity duration-(--duration-instant) ease-out",
+                      isActive ? "opacity-0" : "opacity-60 group-hover:opacity-30",
+                    )}
+                  />
                 </button>
               );
             })}

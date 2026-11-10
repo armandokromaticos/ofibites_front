@@ -79,6 +79,9 @@ export function AtIconButton({
           "motion-reduce:transition-[opacity]!",
           // Punto de 10 px (8 + borde blanco de 2) dentro de la esquina del botón, como en la entrega de diseño.
           badgeDot && "size-3 min-w-3 border-2 top-[9px] right-[10px]",
+          // Contador: círculo de 22 px (20 + borde) que crece en píldora con 2 dígitos (feedback de diseño T-35:
+          // el `sm` de HeroUI quedaba chico para el número).
+          !badgeDot && "h-[22px] min-w-[22px] px-1 rounded-full text-xs leading-none",
           hasBadge && badgePing && (badgeDot ? "ofi-ping after:border-secondary" : "ofi-ping after:border-primary"),
         ),
       }}

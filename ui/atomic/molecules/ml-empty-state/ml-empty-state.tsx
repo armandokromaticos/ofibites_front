@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@heroui/react";
@@ -16,6 +17,9 @@ export function MlEmptyState({
   title,
   description,
   icon,
+  illustrationSrc,
+  titleTone = "foreground",
+  actionVariant = "solid",
   tone = "neutral",
   size = "md",
   headingLevel = 3,
@@ -28,6 +32,10 @@ export function MlEmptyState({
   const Heading = `h${headingLevel}` as const;
   const isError = tone === "error";
   const isSmall = size === "sm";
+  const actionProps =
+    actionVariant === "bordered"
+      ? ({ variant: "bordered", color: "primary", className: "mt-2 border-1 border-primary text-primary" } as const)
+      : ({ className: "mt-2" } as const);
 
   return (
     <div
@@ -38,7 +46,9 @@ export function MlEmptyState({
         className,
       )}
     >
-      {icon && (
+      {illustrationSrc ? (
+        <Image src={illustrationSrc} alt="" width={49} height={44} className="mb-1 shrink-0" />
+      ) : icon && (
         <span
           aria-hidden="true"
           className={cn(
@@ -52,7 +62,8 @@ export function MlEmptyState({
       )}
       <Heading
         className={cn(
-          "text-balance font-display font-bold text-foreground",
+          "text-balance font-display font-bold",
+          titleTone === "brand" ? "text-brand" : "text-foreground",
           isSmall ? "text-lg leading-6" : "text-[22px] leading-7",
         )}
       >
@@ -70,11 +81,11 @@ export function MlEmptyState({
       )}
       {actionLabel &&
         (actionHref ? (
-          <AtButton as={Link} href={actionHref} size="sm" className="mt-2">
+          <AtButton as={Link} href={actionHref} size="sm" {...actionProps} onPress={onAction}>
             {actionLabel}
           </AtButton>
         ) : (
-          <AtButton size="sm" className="mt-2" onPress={onAction} isLoading={isActionLoading}>
+          <AtButton size="sm" {...actionProps} onPress={onAction} isLoading={isActionLoading}>
             {actionLabel}
           </AtButton>
         ))}

@@ -233,9 +233,24 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
      * Una sola rejilla con las cuatro piezas en orden de lectura (promos y categorías, saludo y pedido en
      * curso, recomendaciones, últimas órdenes):
      * - Hasta xl, una columna en ese orden; desde md, saludo y pedido en curso van lado a lado.
-     * - xl (≥ 1280): las dos columnas del Figma. La de 288 px apila saludo y últimas órdenes sin depender de
-     *   la altura de las promos: estas ocupan las filas 1-2 y las órdenes las filas 2-3.
+     * - xl (≥ 1280): las dos columnas del Figma. La de 288 px (saludo, pedido en curso y últimas órdenes) es un
+     *   bloque fijo que ocupa las filas 1-2; promos en la fila 1 y recomendaciones en la 2.
+     * - Últimas órdenes se pinta en la columna fija (xl) o al final de la rejilla (hasta xl), nunca en las dos.
      */
+    // Se pinta en dos sitios (columna fija en xl y final de la rejilla hasta xl), con `display: none` en el otro:
+    // así el orden del foco coincide con el visual en todos los anchos (WCAG 1.3.2 y 2.4.3).
+    const ultimasOrdenes = (className: string) => (
+      <OrRecentOrders
+        className={className}
+        isLoading={isPending}
+        orders={data?.recentOrders.map(toRecentOrderItem) ?? []}
+        viewAllHref={RUTA_PEDIDOS}
+        onRepeat={repetirPedido}
+        repeatingOrderId={repeatingOrderId}
+        repeatError={repeatError}
+        emptyActionHref={RUTA_ORDENAR}
+      />
+    );
     content = (
       <div className="flex flex-col gap-[27px]">
         {/* Falló una actualización pero hay datos previos: aviso discreto y se siguen mostrando. */}
@@ -255,14 +270,13 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
           </MlFormAlert>
         )}
         {/*
-          xl:grid-rows-[auto_auto_1fr]: la fila 3 (recomendaciones) es flexible, así absorbe lo que "Últimas órdenes"
-          (filas 2-3) mida de más. Sin ella, con pocas o ninguna recomendación, esa altura se repartía también a la
-          fila 2 y bajaba "Según tus preferencias", dejando un hueco bajo las promos.
+          xl:grid-rows-[auto_1fr]: la fila 2 (recomendaciones) es flexible, así absorbe lo que la columna derecha (filas
+          1-2) mida de más. Sin ella, esa altura se repartía también a la fila 1 y dejaba un hueco bajo las promos.
         */}
-        <div className="grid grid-cols-1 items-start gap-[27px] xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[auto_auto_1fr] xl:gap-x-[29px] xl:gap-y-[14px]">
+        <div className="grid grid-cols-1 items-start gap-[27px] xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[auto_1fr] xl:gap-x-[29px]">
           <div
             aria-busy={isPending || undefined}
-            className="min-w-0 xl:col-start-1 xl:row-span-2 xl:row-start-1"
+            className="min-w-0 xl:col-start-1 xl:row-start-1"
           >
             {isPending ? (
               <>
@@ -301,39 +315,53 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
             )}
           </div>
 
-          <section
-            aria-label="Tu actividad"
-            className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:col-start-2 xl:row-start-1 xl:flex xl:gap-[14px]"
-          >
-            <MlGreetingCard
-              name={user?.displayName ?? ""}
-              isLoading={isPending}
-              ctaHref={RUTA_ORDENAR}
-              ctaTourId={OBJETIVOS_TOUR.realizarPedido}
-            />
-            {/* Al llegar los datos (tras el esqueleto), la card entra con fadeRise. */}
-            <motion.div
-              key={isPending ? "cargando" : "lista"}
-              variants={fadeRise}
-              initial={startedLoading && !isPending ? "hidden" : false}
-              animate="visible"
-              // En md va junto al saludo: misma altura.
-              className="flex flex-col"
+          {/*
+            Columna derecha (saludo, pedido en curso y últimas órdenes): en xl es un solo bloque fijo (sticky) mientras
+            el resto hace scroll (feedback Gaby, D5). Sin scroll interno: si es más alta que la ventana, su parte baja se
+            ve al llegar al final de la página. `top-0` y no `top-6`: el inset del sticky se mide desde el padding de
+            `<main>` (42 px en xl), así que cualquier top > 0 la bajaba respecto al banner en reposo. Hasta xl el
+            envoltorio no pinta caja (`contents`) y el saludo queda en la
+            rejilla de una columna.
+          */}
+          <div className="contents xl:sticky xl:top-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px] xl:self-start">
+            <section
+              aria-label="Tu actividad"
+              // xl: mide lo mismo que el banner principal (`min-h-[307px]` de `MlPromoBanner` main) y el pedido en curso se
+              // estira: el borde inferior de ambas columnas queda alineado (feedback Gaby, D3).
+              className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:flex xl:min-h-[307px] xl:gap-[14px]"
             >
-              <MlActiveOrderCard
-                className="flex-1"
+              <MlGreetingCard
+                name={user?.displayName ?? ""}
                 isLoading={isPending}
-                order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
+                ctaHref={RUTA_ORDENAR}
+                ctaTourId={OBJETIVOS_TOUR.realizarPedido}
               />
-            </motion.div>
-          </section>
+              {/* Al llegar los datos (tras el esqueleto), la card entra con fadeRise. */}
+              <motion.div
+                key={isPending ? "cargando" : "lista"}
+                variants={fadeRise}
+                initial={startedLoading && !isPending ? "hidden" : false}
+                animate="visible"
+                // En md va junto al saludo: misma altura. En xl ocupa lo que falta hasta el alto del banner.
+                className="flex flex-col xl:flex-1"
+              >
+                <MlActiveOrderCard
+                  className="flex-1"
+                  isLoading={isPending}
+                  order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
+                />
+              </motion.div>
+            </section>
+
+            {/* Solo en xl: aquí forma parte de la columna fija. Hasta xl se pinta al final de la rejilla. */}
+            {ultimasOrdenes("hidden min-w-0 xl:flex")}
+          </div>
 
           {(isPending || data.recommendations.length > 0) && (
             <div
               aria-busy={isPending || undefined}
               data-tour={OBJETIVOS_TOUR.recomendados}
-              // En xl la separación entre filas es la de la columna derecha (14 px): 13 más hasta los 27.
-              className="min-w-0 xl:col-start-1 xl:row-start-3 xl:mt-[13px]"
+              className="min-w-0 xl:col-start-1 xl:row-start-2"
             >
               {isPending ? (
                 <RecommendationsSkeleton />
@@ -411,16 +439,8 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
             </div>
           )}
 
-          <OrRecentOrders
-            className="min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-2"
-            isLoading={isPending}
-            orders={data?.recentOrders.map(toRecentOrderItem) ?? []}
-            viewAllHref={RUTA_PEDIDOS}
-            onRepeat={repetirPedido}
-            repeatingOrderId={repeatingOrderId}
-            repeatError={repeatError}
-            emptyActionHref={RUTA_ORDENAR}
-          />
+          {/* Hasta xl: al final, tras las recomendaciones (el orden del DOM coincide con el visual). */}
+          {ultimasOrdenes("min-w-0 xl:hidden")}
         </div>
       </div>
     );

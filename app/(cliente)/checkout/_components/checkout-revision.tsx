@@ -403,7 +403,7 @@ export function CheckoutRevision() {
             Volver a entrega
           </Link>
           <p className="flex gap-2 text-[11px] leading-4 text-muted before:mt-1.5 before:size-1.5 before:shrink-0 before:rounded-full before:bg-brand before:content-['']">
-            Al confirmar creamos el pedido y vaciamos el carrito de tu empresa.
+            Al confirmar creamos el pedido y vaciamos tu carrito.
           </p>
         </OrOrderSummary>
       </RejillaCheckout>

@@ -205,69 +205,85 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
   } else {
     content = (
       <div className="flex flex-col gap-5">
-        <OrOrderFiltersBar
-          search={filtros.q}
-          onSearchChange={(q) => actualizar({ q, pagina: 1 })}
-          statusOptions={statusOptions}
-          statusValue={filtros.grupo ?? "all"}
-          onStatusChange={(value) =>
-            actualizar({ grupo: value === "all" ? undefined : (value as OrderStatusGroup), pagina: 1 })
+        {errorAccion && filasFiltradas.length > 0 && (
+          <p
+            ref={errorRef}
+            role="alert"
+            tabIndex={-1}
+            className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700 outline-none"
+          >
+            {errorAccion}
+          </p>
+        )}
+        {/* Figma 3562:1180: filtros, tabla y paginación en una sola card. Sin resultados (3564:1218), la
+            tabla conserva la cabecera y el vacío va dentro, con el tomate y "Limpiar filtros" como botón
+            secundario. */}
+        <OrOrderTable
+          rows={filasPagina}
+          busyOrderId={repetir.pedidoEnCurso ?? descargandoId}
+          onRowAction={(row, key) => {
+            const fila = filasPagina.find((item) => item.id === row.id);
+            if (!fila) return;
+            if (key === ACCION_REPETIR && fila.repetir) {
+              setErrorDescarga(null);
+              repetir.abrir(fila.repetir);
+            }
+            if (key === ACCION_DESCARGAR) descargarFactura(fila);
+          }}
+          topContent={
+            <div className="px-5 py-[18px]">
+              <OrOrderFiltersBar
+                search={filtros.q}
+                onSearchChange={(q) => actualizar({ q, pagina: 1 })}
+                statusOptions={statusOptions}
+                statusValue={filtros.grupo ?? "all"}
+                onStatusChange={(value) =>
+                  actualizar({ grupo: value === "all" ? undefined : (value as OrderStatusGroup), pagina: 1 })
+                }
+                dateOptions={DATE_OPTIONS}
+                dateValue={filtros.fecha}
+                defaultDateValue="30"
+                onDateChange={(value) => actualizar({ fecha: value as RangoFechaPedidos, pagina: 1 })}
+                branchOptions={branchOptions}
+                branchValue={filtros.sede ?? "all"}
+                onBranchChange={(value) => actualizar({ sede: value === "all" ? undefined : value, pagina: 1 })}
+                isLoadingBranches={branchesQuery.isPending}
+                userOptions={userOptions}
+                userValue={filtros.usuario ?? "all"}
+                onUserChange={(value) => actualizar({ usuario: value === "all" ? undefined : value, pagina: 1 })}
+              />
+            </div>
           }
-          dateOptions={DATE_OPTIONS}
-          dateValue={filtros.fecha}
-          onDateChange={(value) => actualizar({ fecha: value as RangoFechaPedidos, pagina: 1 })}
-          branchOptions={branchOptions}
-          branchValue={filtros.sede ?? "all"}
-          onBranchChange={(value) => actualizar({ sede: value === "all" ? undefined : value, pagina: 1 })}
-          isLoadingBranches={branchesQuery.isPending}
-          userOptions={userOptions}
-          userValue={filtros.usuario ?? "all"}
-          onUserChange={(value) => actualizar({ usuario: value === "all" ? undefined : value, pagina: 1 })}
-        />
-
-        {filasFiltradas.length === 0 ? (
-          <div className="rounded-card bg-content1">
+          bottomContent={
+            filasFiltradas.length > 0 && (
+              <div className="flex flex-col items-center gap-3 border-t border-surface-sand px-5 py-4 sm:flex-row sm:justify-between">
+                <p className="text-xs text-placeholder">
+                  Mostrando {filasPagina.length} de {filasFiltradas.length} pedidos
+                </p>
+                <MlPagination
+                  page={pagina}
+                  totalPages={totalPages}
+                  onChange={(p) => actualizar({ pagina: p })}
+                  label="Páginas de pedidos"
+                  surface="card"
+                />
+              </div>
+            )
+          }
+          emptyContent={
             <MlEmptyState
               headingLevel={2}
+              illustrationSrc="/images/empty/tomate.png"
+              titleTone="brand"
               title="No encontramos pedidos con esos filtros"
               description="Prueba con un rango de fechas más amplio, o quita alguno de los filtros que tienes activos."
               actionLabel={hayFiltrosActivos ? "Limpiar filtros" : undefined}
+              actionVariant="bordered"
               onAction={hayFiltrosActivos ? limpiarFiltros : undefined}
+              className="py-12"
             />
-          </div>
-        ) : (
-          <>
-            {errorAccion && (
-              <p
-                ref={errorRef}
-                role="alert"
-                tabIndex={-1}
-                className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700 outline-none"
-              >
-                {errorAccion}
-              </p>
-            )}
-            <OrOrderTable
-              rows={filasPagina}
-              busyOrderId={repetir.pedidoEnCurso ?? descargandoId}
-              onRowAction={(row, key) => {
-                const fila = filasPagina.find((item) => item.id === row.id);
-                if (!fila) return;
-                if (key === ACCION_REPETIR && fila.repetir) {
-                  setErrorDescarga(null);
-                  repetir.abrir(fila.repetir);
-                }
-                if (key === ACCION_DESCARGAR) descargarFactura(fila);
-              }}
-            />
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-              <p className="text-xs text-muted">
-                Mostrando {filasPagina.length} de {filasFiltradas.length} pedidos
-              </p>
-              <MlPagination page={pagina} totalPages={totalPages} onChange={(p) => actualizar({ pagina: p })} label="Páginas de pedidos" />
-            </div>
-          </>
-        )}
+          }
+        />
       </div>
     );
   }
@@ -279,7 +295,7 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
           <h1 className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
             Pedidos realizados
           </h1>
-          <p className="max-w-[52ch] text-sm leading-[22px] text-muted">
+          <p className="text-sm leading-[17px] text-brand">
             Todo lo que ha pedido tu empresa, con su estado de entrega y de pago.
           </p>
         </div>

@@ -3,18 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { ChevronLeft, Truck } from "lucide-react";
 
-import { useCart, useCartLines, useClearCart, useRepeatOrder } from "@/domain/hooks/cart";
+import { useCart, useCartLines, useClearCart, useQuickAddCartItem, useRepeatOrder } from "@/domain/hooks/cart";
 import { useCatalog } from "@/domain/hooks/catalog";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useCanReportPayments } from "@/domain/hooks/invoices";
-import { firstDeliveryDate } from "@/domain/models";
 import { CartLineModel } from "@/domain/models";
 import { useAuthStore, useCartNoticeStore } from "@/domain/stores";
 import { duration } from "@/shared/motion";
-import { formatDateOnlyLong, formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
+import { formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
 import {
   AtButton,
   AtSkeleton,
@@ -70,15 +70,16 @@ function productos(n: number): string {
   return `${n} ${n === 1 ? "producto" : "productos"}`;
 }
 
-/** Cabecera de la página: título de marca, número de productos y vuelta al catálogo. */
+/**
+ * Cabecera de la página: título de marca y vuelta al catálogo. La píldora de productos solo aparece con factura
+ * vencida; la de "entrega estimada" se quitó por el feedback de diseño (T-35).
+ */
 function CabeceraCarrito({
   lineCount,
-  entrega,
   enEspera = false,
 }: {
   lineCount?: number;
-  entrega: string;
-  /** Factura vencida (Figma `3390:2636`): la píldora pasa a "en espera por una factura pendiente". */
+  /** Factura vencida (Figma `3390:2636`): píldora "en espera por una factura pendiente". */
   enEspera?: boolean;
 }) {
   return (
@@ -87,18 +88,11 @@ function CabeceraCarrito({
         <h2 id={TITULO_ID} tabIndex={-1} className="font-display text-[28px] font-bold leading-9 tracking-[-0.03em] text-foreground outline-none">
           Tu carrito
         </h2>
-        {lineCount !== undefined && lineCount > 0 && (
-          enEspera ? (
-            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-secondary-600 px-5 py-1 text-sm leading-5 text-white">
-              <Truck aria-hidden="true" className="size-4" />
-              {productos(lineCount)} · en espera por una factura pendiente
-            </p>
-          ) : (
-            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-sand px-5 py-1 text-sm leading-5 text-brand">
-              <Truck aria-hidden="true" className="size-4" />
-              {productos(lineCount)} · entrega estimada para el {entrega}
-            </p>
-          )
+        {enEspera && lineCount !== undefined && lineCount > 0 && (
+          <p className="inline-flex w-fit items-center gap-2 rounded-full bg-secondary-600 px-5 py-1 text-sm leading-5 text-white">
+            <Truck aria-hidden="true" className="size-4" />
+            {productos(lineCount)} · en espera por una factura pendiente
+          </p>
         )}
       </div>
       <Link
@@ -112,31 +106,97 @@ function CabeceraCarrito({
   );
 }
 
-/** "Agrega a tu pedido": tres ítems del catálogo (destacados primero) que no estén ya en el carrito. */
+/**
+ * "Agrega a tu pedido": tres ítems del catálogo (destacados primero) que no estén ya en el carrito. Con precio único
+ * (un solo tamaño), el "+" añade 1 unidad sin salir (feedback Gaby, C3); al añadirse, el ítem pasa a las líneas y
+ * deja la lista. Si la ficha pide elegir algo (varios tamaños u opciones obligatorias), se navega a ella. Con
+ * varios precios, el "+" abre la ficha, como antes.
+ */
 function AgregaATuPedido({ lines }: { lines: CartLineModel[] }) {
+  const router = useRouter();
   const { data } = useCatalog({ pageSize: 8 });
+  const { quickAdd } = useQuickAddCartItem();
+  const [anadiendo, setAnadiendo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [anuncio, setAnuncio] = useState("");
+  const listaRef = useRef<HTMLUListElement>(null);
+  // Posición del "+" recién usado: al añadirse, su card se desmonta y el foco caería en <body>.
+  const focoTrasAnadir = useRef<number | null>(null);
   const enCarrito = new Set(lines.map((line) => `${line.kind}:${line.catalogId}`));
   const items = (data?.items.data ?? []).filter((item) => !enCarrito.has(`${item.kind}:${item.id}`)).slice(0, 3);
-  if (items.length === 0) return null;
+  const claves = items.map((item) => `${item.kind}:${item.id}`).join("|");
+
+  // Tras añadir: foco al "+" que ocupa su sitio (o al anterior), al título de la sección o, si la sección se fue
+  // por quedarse sin candidatos, al título de la página.
+  useEffect(() => {
+    const index = focoTrasAnadir.current;
+    if (index === null) return;
+    focoTrasAnadir.current = null;
+    const acciones = listaRef.current?.querySelectorAll<HTMLElement>("[data-mini-card-action]") ?? [];
+    const destino =
+      acciones[Math.min(index, acciones.length - 1)] ??
+      document.getElementById("carrito-agrega") ??
+      document.getElementById(TITULO_ID);
+    destino?.focus();
+  }, [claves]);
+
+  const anadir = (item: (typeof items)[number], index: number) => {
+    if (anadiendo) return;
+    const clave = `${item.kind}:${item.id}`;
+    setAnadiendo(clave);
+    setError(null);
+    quickAdd(item.kind, item.id)
+      .then((resultado) => {
+        if (resultado === "ficha") {
+          router.push(rutaProducto(item.id, item.kind));
+          return;
+        }
+        focoTrasAnadir.current = index;
+        setAnuncio(`${item.name} se añadió al carrito.`);
+      })
+      .catch((err: unknown) => setError(mensajeErrorCarrito(err, "anadir")))
+      .finally(() => setAnadiendo(null));
+  };
 
   return (
-    <section aria-labelledby="carrito-agrega" className="flex flex-col gap-5">
-      <h2 id="carrito-agrega" className="font-display text-[23px] font-bold leading-8 tracking-[-0.03em] text-foreground">
-        Agrega a tu pedido
-      </h2>
-      <ul className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((item) => (
-          <li key={`${item.kind}:${item.id}`}>
-            <MlProductMiniCard
-              name={item.name}
-              imageSrc={item.image ?? IMAGEN_PRODUCTO_POR_DEFECTO}
-              priceLabel={formatPriceRange(item.priceFrom, item.priceTo)}
-              href={rutaProducto(item.id, item.kind)}
-            />
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      {/* Siempre montada y en el mismo sitio, aunque no queden candidatos: si no, el último anuncio no se leería. */}
+      <p role="status" className="sr-only">
+        {anuncio}
+      </p>
+      {items.length > 0 && (
+        <section aria-labelledby="carrito-agrega" className="flex flex-col gap-5">
+          <h2
+            id="carrito-agrega"
+            tabIndex={-1}
+            className="font-display text-[23px] font-bold leading-8 tracking-[-0.03em] text-foreground outline-none"
+          >
+            Agrega a tu pedido
+          </h2>
+          <ul ref={listaRef} className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((item, index) => (
+              <li key={`${item.kind}:${item.id}`}>
+                <MlProductMiniCard
+                  name={item.name}
+                  imageSrc={item.image ?? IMAGEN_PRODUCTO_POR_DEFECTO}
+                  priceLabel={formatPriceRange(item.priceFrom, item.priceTo)}
+                  href={rutaProducto(item.id, item.kind)}
+                  {...(item.priceFrom === item.priceTo && {
+                    onAdd: () => anadir(item, index),
+                    isAdding: anadiendo === `${item.kind}:${item.id}`,
+                  })}
+                />
+              </li>
+            ))}
+          </ul>
+          {error && (
+            <p role="alert" className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700">
+              {error}
+            </p>
+          )}
+        </section>
+      )}
+    </>
   );
 }
 
@@ -256,8 +316,6 @@ export function CarritoCliente() {
     avisoRef.current?.focus();
   }, [aviso]);
   const cart = cartQuery.data;
-  // Primera fecha que permite el corte de las 15:00 de Caracas (la misma regla que el selector del checkout).
-  const [entrega] = useState(() => formatDateOnlyLong(firstDeliveryDate()).toLowerCase());
   // "Sede: …" del resumen: la primera sede de entrega de la agenda; sin sedes o con error, no se pinta.
   const addressesQuery = useCompanyAddresses();
   const sede = addressesQuery.data?.find((address) => address.isShipping) ?? null;
@@ -421,7 +479,6 @@ export function CarritoCliente() {
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-6">
       <CabeceraCarrito
         lineCount={cart && !isUnavailable ? lines.length : undefined}
-        entrega={entrega}
         enEspera={Boolean(cart?.invoiceAlert?.blocksCheckout)}
       />
       <p className="flex items-center gap-2.5 rounded-control bg-content1 px-4 py-3 text-xs leading-5 text-muted sm:px-5">
@@ -456,7 +513,7 @@ export function CarritoCliente() {
         isConfirming={clear.isPending}
         isDestructive
         title="¿Vaciar el carrito?"
-        description="Se quitarán todos los productos del pedido de tu empresa. El carrito es compartido: también deja de verlo el resto de compradores."
+        description="Se quitarán todos los productos de tu carrito."
         confirmLabel="Vaciar carrito"
       />
     </div>

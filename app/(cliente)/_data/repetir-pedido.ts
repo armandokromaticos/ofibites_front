@@ -31,7 +31,7 @@ export function mensajeErrorRepetir(error: unknown, esUltimo = false): string {
         ? "Ningún producto de tu último pedido sigue disponible. Explora el catálogo."
         : "Ningún producto de este pedido sigue disponible. Explora el catálogo para armar uno nuevo.";
     }
-    if (error.statusCode === 403) return "No tienes acceso para repetir este pedido en el carrito de tu empresa.";
+    if (error.statusCode === 403) return "No tienes acceso para repetir este pedido en tu carrito.";
     if (error.statusCode === 404) {
       return esUltimo
         ? "Aún no tienes pedidos para repetir en esta empresa. Explora el catálogo y arma el primero."

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { BookOpen, Grid3x3, Package, ReceiptText, ShoppingCart, UtensilsCrossed } from "lucide-react";
+import { BookOpen, Grid3x3, ReceiptText, ShoppingCart, UtensilsCrossed } from "lucide-react";
 
 import { OrAccountMenuItem, OrAppSidebarItem } from "@/ui/atomic";
 
@@ -156,7 +156,7 @@ export const PAGINAS_CLIENTE: PaginaCliente[] = [
   // Figma 3462:2094: título "Checkout" con el icono de Ordenar, que sigue activo en el sidebar.
   { href: RUTA_CHECKOUT, label: "Checkout", icon: <UtensilsCrossed />, navKey: "ordenar" },
   // Se llega desde Ordenar: su ítem sigue activo.
-  { href: RUTA_PRODUCTO, label: "Detalle del producto", icon: <Package />, navKey: "ordenar" },
+  { href: RUTA_PRODUCTO, label: "Detalle del producto", icon: <UtensilsCrossed />, navKey: "ordenar" },
   // Figma 3651:1921: título "Mi perfil" con el icono de libro; ningún ítem del sidebar activo.
   { href: RUTA_PERFIL, label: "Mi perfil", icon: <BookOpen /> },
 ];

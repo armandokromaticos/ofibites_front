@@ -17,7 +17,7 @@ import {
 import { ConsumptionBreakdownDimension } from "@/domain/types";
 import { getApiErrorMessage } from "@/shared/utils";
 import { formatPrice, formatSignedPercent } from "@/shared/utils/money";
-import { AtButton, AtSkeleton } from "@/ui/atomic/atoms";
+import { AtButton, AtSkeleton, SELECT_POPOVER_PROPS } from "@/ui/atomic/atoms";
 import { MlBarChart, MlEmptyState, MlFormAlert, MlKpiCard, MlRankedList } from "@/ui/atomic/molecules";
 import { OrConsumptionBreakdownTable } from "@/ui/atomic/organisms";
 
@@ -108,6 +108,7 @@ export function Indicadores({ canViewUserBreakdown }: IndicadoresProps) {
               if (event.target.value) setMonth(event.target.value);
             }}
             classNames={SELECT_CLASSNAMES}
+            popoverProps={SELECT_POPOVER_PROPS}
           >
             {options.map((option) => (
               <SelectItem key={option.value}>{option.label}</SelectItem>

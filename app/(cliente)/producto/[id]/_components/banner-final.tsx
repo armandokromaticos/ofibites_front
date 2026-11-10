@@ -18,8 +18,9 @@ import { RUTA_ORDENAR } from "../../../_navegacion";
  * taparían el texto: solo queda el fondo.
  *
  * Movimiento, como la decoración del banner principal del Dashboard: las cajas derivan muy despacio (`ofi-drift`,
- * 18 s ida y vuelta) solo mientras el banner se ve, y crecen un poco al pasar sobre él. El contenedor sobresale
- * 16 px por cada lado para que la deriva no destape los bordes. Con movimiento reducido, quietas.
+ * 18 s ida y vuelta) solo mientras el banner se ve, y crecen un poco al pasar sobre él. El PNG ya es el banner
+ * entero (fondo transparente en los bordes): el contenedor no sobresale, porque con `object-cover` el sobrante
+ * recortaba las cajas de los lados (feedback Gaby, P10). Con movimiento reducido, quietas.
  */
 export function BannerFinal() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -32,7 +33,7 @@ export function BannerFinal() {
       className="group/banner relative isolate flex min-h-[266px] items-center justify-center overflow-hidden rounded-card bg-brand-soft px-6 py-10"
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10 hidden md:block">
-        <div className={cn("absolute -inset-4", isDrifting && "ofi-drift")}>
+        <div className={cn("absolute inset-0", isDrifting && "ofi-drift")}>
           <div
             className={cn(
               "absolute inset-0",

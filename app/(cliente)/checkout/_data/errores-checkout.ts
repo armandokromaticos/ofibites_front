@@ -113,7 +113,7 @@ function porCodigo(
     case "CART_CHANGED":
       return {
         title: "El carrito cambió mientras confirmabas.",
-        detail: "Alguien de tu empresa lo modificó o ya se confirmó. Actualizamos el resumen: revísalo y vuelve a confirmar.",
+        detail: "Lo modificaste en otra pestaña o ya se confirmó. Actualizamos el resumen: revísalo y vuelve a confirmar.",
       };
     case "CART_EMPTY":
       return { title: "Tu carrito está vacío.", detail: "Agrega productos antes de confirmar.", accion: "carrito" };

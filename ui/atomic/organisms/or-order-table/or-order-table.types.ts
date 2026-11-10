@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 import { OrderStatusGroup } from "@/domain/types";
 import { AtStatusChipTone } from "@/ui/atomic/atoms";
 
@@ -46,5 +48,11 @@ export interface OrOrderTableProps {
   onRowAction?: (row: OrOrderTableRow, actionKey: string) => void;
   /** Id del pedido con una acción en curso: su botón "···" queda deshabilitado. */
   busyOrderId?: string | null;
+  /** Contenido sin filas (bajo la cabecera, como en el Figma 3564:1218). Por defecto, un texto corto. */
+  emptyContent?: ReactNode;
+  /** Barra sobre la cabecera, dentro de la card (buscador y filtros, Figma 3562:1381). */
+  topContent?: ReactNode;
+  /** Pie dentro de la card (conteo y paginación, Figma 3562:1504). */
+  bottomContent?: ReactNode;
   className?: string;
 }

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 
 import {
+  cn,
   Table,
   TableBody,
   TableCell,
@@ -43,7 +44,6 @@ import {
   OrOrderSummary,
 } from "@/ui/atomic";
 
-import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../../_data/imagenes";
 import { filasResumen } from "../../../_data/resumen-pedido";
 import { RUTA_ORDENAR, RUTA_PEDIDOS } from "../../../_navegacion";
 import { pedidoARepetir, sePuedeRepetir, useRepetirPedido } from "../../_components/use-repetir-pedido";
@@ -145,17 +145,6 @@ export function DetallePedido({ orderId }: { orderId: string }) {
     { label: "Notas", value: order.notes },
   ].filter((fila) => fila.value);
 
-  const resumenLineas = items.map((item) => {
-    const key = item.comboId ? `combo:${item.comboId}` : `product:${item.productId}`;
-    return {
-      id: item.id,
-      name: nombres?.get(key) ?? "Producto",
-      imageSrc: IMAGEN_PRODUCTO_POR_DEFECTO,
-      detail: `Cantidad: ${item.quantity}`,
-      subtotalLabel: item.subtotal !== null ? formatPrice(item.subtotal) : "—",
-    };
-  });
-
   const puedeRepetir = sePuedeRepetir(order);
   const abrirConfirmacion = () => repetir.abrir(pedidoARepetir(order));
 
@@ -171,19 +160,20 @@ export function DetallePedido({ orderId }: { orderId: string }) {
         Volver a pedidos
       </Link>
 
-      <section className="flex flex-col gap-4 rounded-card bg-content1 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col gap-2">
-            <h1 id={TITULO_ID} className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
-              Pedido #{numero}
-            </h1>
-            <div className="flex flex-wrap items-center gap-2">
+      <section className="flex flex-col gap-4 rounded-card bg-content1 px-6 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Figma 3632:1686: título y chips en una fila; debajo, quién y cuándo en `brand` de 14 px. */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h1 id={TITULO_ID} className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
+                Pedido #{numero}
+              </h1>
               <AtStatusChip tone={ORDER_STATUS_GROUP_TONES[order.statusGroup]}>
                 {estadoLabel}
               </AtStatusChip>
               {pago.chip && <AtStatusChip tone={pago.chip.tone}>{pago.chip.label}</AtStatusChip>}
             </div>
-            <p className="text-[13px] leading-5 text-muted">
+            <p className="text-sm leading-5 text-brand">
               Creado el {formatCaracasDateSlash(order.createdAt)} por {usuario}
               {departamento ? ` · ${departamento}` : ""}
             </p>
@@ -225,33 +215,18 @@ export function DetallePedido({ orderId }: { orderId: string }) {
         )}
       </section>
 
-      <section aria-label="Seguimiento" className="rounded-card bg-content1 px-5 py-5 sm:px-6">
-        {pasoActual >= 0 ? (
-          <MlOrderTimeline
-            label="Seguimiento"
-            steps={ORDER_STATUS_GROUP_STEPS.map((grupo) => ({
-              label: ORDER_STATUS_GROUP_LABELS[grupo],
-            }))}
-            completedCount={pasoActual + 1}
-          />
-        ) : (
-          <p className="text-sm leading-5 text-foreground">
-            Este pedido está <strong className="font-semibold">{estadoLabel.toLowerCase()}</strong>.
-          </p>
-        )}
-      </section>
-
       <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
           <section aria-labelledby="pedido-info-titulo" className="flex flex-col gap-4 rounded-card bg-content1 p-5 sm:p-6">
             <h2 id="pedido-info-titulo" className={CLASE_TITULO_BLOQUE}>
               Información del pedido
             </h2>
-            <dl className="flex flex-col gap-2.5 text-[13px] leading-5">
+            {/* Figma 3632:1686: dos columnas, etiqueta de 11 px encima del valor de 14 px. */}
+            <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
               {detalle.map((fila) => (
-                <div key={fila.label} className="grid gap-0.5 sm:grid-cols-[minmax(0,200px)_minmax(0,1fr)] sm:gap-6">
-                  <dt className="text-muted">{fila.label}</dt>
-                  <dd className="font-semibold text-foreground sm:text-right">{fila.value}</dd>
+                <div key={fila.label} className="flex min-w-0 flex-col gap-1">
+                  <dt className="text-[11px] font-semibold leading-4 text-muted">{fila.label}</dt>
+                  <dd className="break-words text-sm leading-5 text-foreground">{fila.value}</dd>
                 </div>
               ))}
             </dl>
@@ -266,10 +241,23 @@ export function DetallePedido({ orderId }: { orderId: string }) {
                 {items.length} {items.length === 1 ? "producto" : "productos"} · {unidades} {unidades === 1 ? "unidad" : "unidades"}
               </p>
             </div>
-            <Table aria-label="Productos del pedido" shadow="none" radius="none" removeWrapper>
+            <Table
+              aria-label="Productos del pedido"
+              shadow="none"
+              radius="none"
+              removeWrapper
+              // Figma: cabecera sin fondo (10 px), filas separadas por una línea `surface-sand` e importes a la derecha.
+              classNames={{
+                th: cn(
+                  "h-8 bg-transparent px-0 text-[10px] font-semibold text-foreground first:rounded-none last:rounded-none",
+                  "[&:not(:first-child)]:pl-4 [&:not(:first-child)]:text-right",
+                ),
+                td: "h-14 border-t border-surface-sand px-0 text-[13px] [&:not(:first-child)]:pl-4 [&:not(:first-child)]:text-right",
+              }}
+            >
               <TableHeader>
                 <TableColumn>PRODUCTO</TableColumn>
-                <TableColumn>PRECIO</TableColumn>
+                <TableColumn>PRECIO UNIT.</TableColumn>
                 <TableColumn>CANTIDAD</TableColumn>
                 <TableColumn>TOTAL</TableColumn>
               </TableHeader>
@@ -278,9 +266,9 @@ export function DetallePedido({ orderId }: { orderId: string }) {
                   const key = item.comboId ? `combo:${item.comboId}` : `product:${item.productId}`;
                   return (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium text-foreground">{nombres?.get(key) ?? "Producto"}</TableCell>
+                      <TableCell className="font-semibold text-foreground">{nombres?.get(key) ?? "Producto"}</TableCell>
                       <TableCell>{item.unitPrice !== null ? formatPrice(item.unitPrice) : "—"}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell className="font-semibold text-foreground">{item.quantity}</TableCell>
                       <TableCell className="font-semibold text-foreground">
                         {item.subtotal !== null ? formatPrice(item.subtotal) : "—"}
                       </TableCell>
@@ -292,34 +280,58 @@ export function DetallePedido({ orderId }: { orderId: string }) {
           </section>
         </div>
 
-        <OrOrderSummary
-          title="Total del pedido"
-          titleId="pedido-resumen-titulo"
-          countLabel={items.length > 0 ? `${items.length} productos · ${unidades} unidades` : undefined}
-          lines={resumenLineas}
-          rows={
-            tieneImportes
-              ? filasResumen({
-                  subtotal: order.subtotal ?? 0,
-                  discount: order.discount,
-                  shipping: order.shipping ?? 0,
-                  tax: order.tax ?? 0,
-                })
-              : []
-          }
-          totalLabel={order.total !== null ? formatPrice(order.total) : "—"}
-          className="lg:sticky lg:top-0"
-        >
-          {pago.resumen}
-          {puedeRepetir && (
-            <AtButton size="lg" className="h-[52px] w-full text-sm" onPress={abrirConfirmacion} isLoading={repetir.isPending}>
-              Repetir este pedido
+        {/* Figma 3632:1686: columna derecha con el total (sin repetir las líneas, que ya están en la tabla) y el
+            seguimiento debajo, en vertical. */}
+        <div className="flex min-w-0 flex-col gap-4 sm:gap-5 lg:sticky lg:top-0">
+          <OrOrderSummary
+            title="Total del pedido"
+            titleId="pedido-resumen-titulo"
+            rows={
+              tieneImportes
+                ? filasResumen({
+                    subtotal: order.subtotal ?? 0,
+                    discount: order.discount,
+                    shipping: order.shipping ?? 0,
+                    tax: order.tax ?? 0,
+                  })
+                : []
+            }
+            totalLabel={order.total !== null ? formatPrice(order.total) : "—"}
+          >
+            {pago.resumen}
+            {puedeRepetir && (
+              <AtButton size="lg" className="h-[52px] w-full text-sm" onPress={abrirConfirmacion} isLoading={repetir.isPending}>
+                Repetir este pedido
+              </AtButton>
+            )}
+            <AtButton as={Link} href={RUTA_ORDENAR} size="lg" variant="bordered" color="default" className="h-[52px] w-full border-1 border-border-input text-sm text-ghost-foreground">
+              Hacer otro pedido
             </AtButton>
-          )}
-          <AtButton as={Link} href={RUTA_ORDENAR} size="lg" variant="bordered" color="default" className="h-[52px] w-full border-1 border-border-input text-sm text-ghost-foreground">
-            Hacer otro pedido
-          </AtButton>
-        </OrOrderSummary>
+          </OrOrderSummary>
+
+          <section
+            aria-labelledby="pedido-seguimiento-titulo"
+            className="flex flex-col gap-4 rounded-card bg-content1 p-5 sm:p-6"
+          >
+            <h2 id="pedido-seguimiento-titulo" className={CLASE_TITULO_BLOQUE}>
+              Seguimiento
+            </h2>
+            {pasoActual >= 0 ? (
+              <MlOrderTimeline
+                labelledBy="pedido-seguimiento-titulo"
+                orientation="vertical"
+                steps={ORDER_STATUS_GROUP_STEPS.map((grupo) => ({
+                  label: ORDER_STATUS_GROUP_LABELS[grupo],
+                }))}
+                completedCount={pasoActual + 1}
+              />
+            ) : (
+              <p className="text-sm leading-5 text-foreground">
+                Este pedido está <strong className="font-semibold">{estadoLabel.toLowerCase()}</strong>.
+              </p>
+            )}
+          </section>
+        </div>
       </div>
 
       <OrConfirmModal {...repetir.modalProps} />

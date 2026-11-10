@@ -162,6 +162,8 @@ export function OrCartPopover({
             description="Explora el menú y arma tu pedido."
             actionLabel="Explorar el menú"
             actionHref={browseHref}
+            // El enlace navega, pero el popover no se cierra solo (y en /ordenar no habría cambio visible).
+            onAction={() => setOpen(false)}
           />
         )}
 
@@ -205,16 +207,18 @@ export function OrCartPopover({
         {showConfirm && (
           <div role="group" aria-labelledby={confirmId} className="mt-3 rounded-control bg-background p-3">
             <p id={confirmId} className="text-[13px] leading-5 text-foreground">
-              <span className="font-semibold">¿Vaciar el carrito?</span> Se quitarán todos los productos del pedido de
-              tu empresa.
+              <span className="font-semibold">¿Vaciar el carrito?</span> Se quitarán todos los productos de tu
+              carrito.
             </p>
             <div className="mt-3 flex justify-end gap-2">
               <AtButton
                 ref={cancelClearRef}
                 size="sm"
-                variant="light"
-                color="default"
-                className="text-ghost-foreground"
+                variant="bordered"
+                color="primary"
+                // Patrón de confirmación destructiva del Figma (p. ej. "Eliminar sede" 3659:2271): Cancelar con
+                // borde `primary` de 1 px y la acción en `secondary` (#e64400).
+                className="border-1 border-primary text-primary"
                 onPress={() => {
                   focusClearButton.current = true;
                   setIsConfirmingClear(false);
@@ -223,7 +227,7 @@ export function OrCartPopover({
               >
                 Cancelar
               </AtButton>
-              <AtButton size="sm" color="danger" className="bg-danger-700" onPress={() => {
+              <AtButton size="sm" color="secondary" onPress={() => {
                   focusTitleAfterClear.current = true;
                   onClear?.();
                 }}
@@ -236,7 +240,13 @@ export function OrCartPopover({
         )}
 
         {hasLines && !showConfirm && (
-          <AtButton as={Link} href={cartHref} size="md" className="mt-3 h-[38px] w-full">
+          <AtButton
+            as={Link}
+            href={cartHref}
+            size="md"
+            className="mt-3 h-[38px] w-full"
+            onPress={() => setOpen(false)}
+          >
             Ver carrito
             <ArrowRight aria-hidden="true" className="size-4" />
           </AtButton>

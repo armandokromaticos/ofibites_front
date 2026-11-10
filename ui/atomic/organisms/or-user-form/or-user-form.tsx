@@ -5,7 +5,7 @@ import { Info } from "lucide-react";
 
 import { USER_ROLE_LABELS } from "@/domain/models/auth.model";
 import { UserRole } from "@/domain/types";
-import { AtInput } from "@/ui/atomic/atoms";
+import { AtInput, SELECT_POPOVER_PROPS } from "@/ui/atomic/atoms";
 import { MlForm } from "@/ui/atomic/molecules";
 
 import { OrUserFormProps } from "./or-user-form.types";
@@ -89,6 +89,7 @@ export function OrUserForm({
             {isEditing && (
               <Select
                 label="Rol"
+                popoverProps={SELECT_POPOVER_PROPS}
                 name="role"
                 placeholder="Selecciona un rol"
                 defaultSelectedKeys={defaultValues?.role ? [defaultValues.role] : ["CLIENT"]}

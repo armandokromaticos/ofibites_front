@@ -15,6 +15,8 @@ export interface OrOrderFiltersBarProps {
 
   dateOptions: OrOrderFiltersBarOption[];
   dateValue: string;
+  /** Rango por defecto ("30"): con otro, el filtro de fecha se pinta como activo. */
+  defaultDateValue?: string;
   onDateChange: (value: string) => void;
 
   branchOptions: OrOrderFiltersBarOption[];
