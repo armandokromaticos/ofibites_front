@@ -212,9 +212,11 @@ export function OrCartPopover({
               <AtButton
                 ref={cancelClearRef}
                 size="sm"
-                variant="light"
-                color="default"
-                className="text-ghost-foreground"
+                variant="bordered"
+                color="primary"
+                // Patrón de confirmación destructiva del Figma (p. ej. "Eliminar sede" 3659:2271): Cancelar con
+                // borde `primary` de 1 px y la acción en `secondary` (#e64400).
+                className="border-1 border-primary text-primary"
                 onPress={() => {
                   focusClearButton.current = true;
                   setIsConfirmingClear(false);
@@ -223,7 +225,7 @@ export function OrCartPopover({
               >
                 Cancelar
               </AtButton>
-              <AtButton size="sm" color="danger" className="bg-danger-700" onPress={() => {
+              <AtButton size="sm" color="secondary" onPress={() => {
                   focusTitleAfterClear.current = true;
                   onClear?.();
                 }}

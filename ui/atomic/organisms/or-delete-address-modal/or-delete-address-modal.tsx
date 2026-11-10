@@ -86,15 +86,15 @@ export function OrDeleteAddressModal({
         <ModalFooter className="gap-2 px-6 pb-6 pt-4">
           <AtButton
             size="md"
-            variant="light"
-            color="default"
-            className="text-ghost-foreground"
+            variant="bordered"
+            color="primary"
+            className="border-1 border-primary text-primary"
             onPress={onClose}
             isDisabled={isDeleting}
           >
             Cancelar
           </AtButton>
-          <AtButton size="md" color="danger" className="bg-danger-700" onPress={onConfirm} isLoading={isDeleting}>
+          <AtButton size="md" color="secondary" onPress={onConfirm} isLoading={isDeleting}>
             Eliminar sede
           </AtButton>
         </ModalFooter>

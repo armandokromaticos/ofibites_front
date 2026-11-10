@@ -50,9 +50,11 @@ export function OrConfirmModal({
         <ModalFooter className="gap-2 px-6 pb-6 pt-4">
           <AtButton
             size="md"
-            variant="light"
-            color="default"
-            className="text-ghost-foreground"
+            variant="bordered"
+            color="primary"
+            // Patrón de confirmación del Figma (p. ej. "Eliminar sede" 3659:2271): Cancelar con borde `primary`
+            // de 1 px y la acción destructiva en `secondary` (#e64400).
+            className="border-1 border-primary text-primary"
             onPress={onClose}
             isDisabled={isConfirming}
           >
@@ -60,8 +62,7 @@ export function OrConfirmModal({
           </AtButton>
           <AtButton
             size="md"
-            color={isDestructive ? "danger" : "primary"}
-            className={isDestructive ? "bg-danger-700" : undefined}
+            color={isDestructive ? "secondary" : "primary"}
             onPress={onConfirm}
             isLoading={isConfirming}
           >
