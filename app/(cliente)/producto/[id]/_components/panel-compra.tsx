@@ -85,7 +85,7 @@ function errorCarrito(error: unknown): Extract<ResultadoCompra, { tipo: "error" 
     case 403:
       return {
         tipo: "error",
-        mensaje: "Tu cuenta no puede añadir productos al carrito de la empresa. Si crees que es un error, contacta con Ofibites.",
+        mensaje: "Tu cuenta no puede añadir productos a tu carrito. Si crees que es un error, contacta con Ofibites.",
       };
     case 404:
       return ES_DE_EMPRESA.test(delBack)

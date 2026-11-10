@@ -2,8 +2,8 @@ import { AddCartItemRequest, ApplyCartCouponRequest, CartResponse, RepeatCartRes
 import { authFetcher } from "@/shared/utils/fetch";
 
 /**
- * Carrito de la empresa activa: `authFetcher` envía `X-Company-Id` (sin él, el back responde 400). Todas las
- * escrituras responden 200 con el carrito completo y los precios recalculados.
+ * Carrito del usuario en la empresa activa (uno por usuario y empresa): `authFetcher` envía `X-Company-Id` (sin
+ * él, el back responde 400). Todas las escrituras responden 200 con el carrito completo y los precios recalculados.
  */
 export const cartService = {
   get: (): Promise<CartResponse> => authFetcher<CartResponse>("/cart"),
@@ -47,6 +47,6 @@ export const cartService = {
   /** `DELETE /cart/coupon`: quita el cupón. Devuelve el carrito completo. */
   removeCoupon: (): Promise<CartResponse> => authFetcher<CartResponse>("/cart/coupon", { method: "DELETE" }),
 
-  /** `DELETE /cart`: vacía el carrito de la empresa (compartido por todos sus compradores). */
+  /** `DELETE /cart`: vacía el carrito del usuario en la empresa activa. */
   clear: (): Promise<CartResponse> => authFetcher<CartResponse>("/cart", { method: "DELETE" }),
 };

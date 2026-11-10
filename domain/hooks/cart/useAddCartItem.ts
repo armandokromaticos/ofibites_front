@@ -6,7 +6,7 @@ import { AddCartItemRequest } from "@/domain/types";
 import { useCartMutationOptions } from "./cart-mutation";
 
 /**
- * `POST /cart/items`. La respuesta es el carrito completo de la empresa: se guarda en la caché de `useCart` y el
+ * `POST /cart/items`. La respuesta es el carrito completo del usuario: se guarda en la caché de `useCart` y el
  * contador de la top bar se actualiza sin otra petición.
  */
 export function useAddCartItem() {
