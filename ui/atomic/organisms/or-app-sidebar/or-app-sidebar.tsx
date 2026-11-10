@@ -40,14 +40,14 @@ function panelTransition(isOpen: boolean) {
 }
 
 function itemClip(isOpen: boolean) {
-  // Cerrado: el recorte coincide con el cuadrado de 60 × 60 (216 − 156) y con su radio de 12 px
+  // Cerrado: el recorte es el cuadrado de 48 × 48 centrado en el riel (216 − 6 − 162) con su radio de 12 px
   // (`rounded-control`), así las cuatro esquinas del fondo del activo son iguales, como en el Figma. Solo con
   // foco de teclado se abren 4 px por cada lado para no cortar el anillo.
   return cn(
     panelTransition(isOpen),
     isOpen
       ? "[clip-path:inset(-4px_-4px_-4px_-4px_round_16px)]"
-      : "[clip-path:inset(0px_156px_0px_0px_round_12px)] focus-visible:[clip-path:inset(-4px_152px_-4px_-4px_round_16px)]",
+      : "[clip-path:inset(0px_162px_0px_6px_round_12px)] focus-visible:[clip-path:inset(-4px_158px_-4px_2px_round_16px)]",
   );
 }
 
@@ -91,7 +91,7 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
         aria-label={isOpen ? undefined : item.label}
         onClick={onNavigate}
         className={cn(
-          "group flex h-[60px] w-full items-center gap-3 rounded-control px-3 transition-colors",
+          "group flex h-12 w-full items-center gap-3 rounded-control px-3.5 transition-colors",
           isActive ? "bg-nav-active shadow-xs" : "hover:bg-background",
           itemClip(isOpen),
           FOCUS_RING,
@@ -100,7 +100,7 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-lg [&_svg]:size-5",
+            "flex size-8 shrink-0 items-center justify-center rounded-lg [&_svg]:size-[18px]",
             isActive ? "bg-nav-active-icon-bg text-white" : cn("bg-nav-icon-bg text-primary", ICON_LIFT),
           )}
         >
@@ -156,7 +156,7 @@ function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonPro
         aria-disabled={isLoggingOut || undefined}
         aria-label={isOpen ? undefined : label}
         className={cn(
-          "group flex h-12 w-full items-center gap-3 rounded-control px-3 text-muted transition-colors hover:bg-background",
+          "group flex h-12 w-full items-center gap-3 rounded-control px-3.5 text-muted transition-colors hover:bg-background",
           itemClip(isOpen),
           isLoggingOut && "cursor-wait opacity-70",
           FOCUS_RING,
@@ -165,7 +165,7 @@ function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonPro
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-lg bg-nav-icon-bg text-primary [&_svg]:size-5",
+            "flex size-8 shrink-0 items-center justify-center rounded-lg bg-nav-icon-bg text-primary [&_svg]:size-[18px]",
             !isLoggingOut && ICON_LIFT,
           )}
         >
@@ -252,7 +252,7 @@ function SidebarPanel({
 
   return (
     <>
-      <div className="flex w-full flex-col gap-10">
+      <div className="flex w-full flex-col gap-7">
         <div className="flex flex-col items-start gap-5">
           <Link
             href={homeHref}
@@ -278,7 +278,8 @@ function SidebarPanel({
         </div>
 
         <nav id={navId} aria-label="Principal" className="w-full px-2.5">
-          <ul className="flex flex-col gap-5">
+          {/* T-35 (feedback Gaby): ítems de 48 px con 6 px entre ellos (antes 60 + 20) para que quepan más opciones. */}
+          <ul className="flex flex-col gap-1.5">
             {items.map((item, index) => (
               <li key={item.key}>
                 <SidebarLink
