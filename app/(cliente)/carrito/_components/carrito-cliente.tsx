@@ -119,54 +119,84 @@ function AgregaATuPedido({ lines }: { lines: CartLineModel[] }) {
   const [anadiendo, setAnadiendo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [anuncio, setAnuncio] = useState("");
+  const listaRef = useRef<HTMLUListElement>(null);
+  // Posición del "+" recién usado: al añadirse, su card se desmonta y el foco caería en <body>.
+  const focoTrasAnadir = useRef<number | null>(null);
   const enCarrito = new Set(lines.map((line) => `${line.kind}:${line.catalogId}`));
   const items = (data?.items.data ?? []).filter((item) => !enCarrito.has(`${item.kind}:${item.id}`)).slice(0, 3);
-  if (items.length === 0) return null;
+  const claves = items.map((item) => `${item.kind}:${item.id}`).join("|");
 
-  const anadir = (item: (typeof items)[number]) => {
+  // Tras añadir: foco al "+" que ocupa su sitio (o al anterior), al título de la sección o, si la sección se fue
+  // por quedarse sin candidatos, al título de la página.
+  useEffect(() => {
+    const index = focoTrasAnadir.current;
+    if (index === null) return;
+    focoTrasAnadir.current = null;
+    const acciones = listaRef.current?.querySelectorAll<HTMLElement>("[data-mini-card-action]") ?? [];
+    const destino =
+      acciones[Math.min(index, acciones.length - 1)] ??
+      document.getElementById("carrito-agrega") ??
+      document.getElementById(TITULO_ID);
+    destino?.focus();
+  }, [claves]);
+
+  const anadir = (item: (typeof items)[number], index: number) => {
     if (anadiendo) return;
     const clave = `${item.kind}:${item.id}`;
     setAnadiendo(clave);
     setError(null);
     quickAdd(item.kind, item.id)
       .then((resultado) => {
-        if (resultado === "ficha") router.push(rutaProducto(item.id, item.kind));
-        else setAnuncio(`${item.name} se añadió al carrito.`);
+        if (resultado === "ficha") {
+          router.push(rutaProducto(item.id, item.kind));
+          return;
+        }
+        focoTrasAnadir.current = index;
+        setAnuncio(`${item.name} se añadió al carrito.`);
       })
       .catch((err: unknown) => setError(mensajeErrorCarrito(err, "anadir")))
       .finally(() => setAnadiendo(null));
   };
 
   return (
-    <section aria-labelledby="carrito-agrega" className="flex flex-col gap-5">
-      <h2 id="carrito-agrega" className="font-display text-[23px] font-bold leading-8 tracking-[-0.03em] text-foreground">
-        Agrega a tu pedido
-      </h2>
-      <ul className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((item) => (
-          <li key={`${item.kind}:${item.id}`}>
-            <MlProductMiniCard
-              name={item.name}
-              imageSrc={item.image ?? IMAGEN_PRODUCTO_POR_DEFECTO}
-              priceLabel={formatPriceRange(item.priceFrom, item.priceTo)}
-              href={rutaProducto(item.id, item.kind)}
-              {...(item.priceFrom === item.priceTo && {
-                onAdd: () => anadir(item),
-                isAdding: anadiendo === `${item.kind}:${item.id}`,
-              })}
-            />
-          </li>
-        ))}
-      </ul>
-      {error && (
-        <p role="alert" className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700">
-          {error}
-        </p>
-      )}
+    <>
+      {/* Siempre montada y en el mismo sitio, aunque no queden candidatos: si no, el último anuncio no se leería. */}
       <p role="status" className="sr-only">
         {anuncio}
       </p>
-    </section>
+      {items.length > 0 && (
+        <section aria-labelledby="carrito-agrega" className="flex flex-col gap-5">
+          <h2
+            id="carrito-agrega"
+            tabIndex={-1}
+            className="font-display text-[23px] font-bold leading-8 tracking-[-0.03em] text-foreground outline-none"
+          >
+            Agrega a tu pedido
+          </h2>
+          <ul ref={listaRef} className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((item, index) => (
+              <li key={`${item.kind}:${item.id}`}>
+                <MlProductMiniCard
+                  name={item.name}
+                  imageSrc={item.image ?? IMAGEN_PRODUCTO_POR_DEFECTO}
+                  priceLabel={formatPriceRange(item.priceFrom, item.priceTo)}
+                  href={rutaProducto(item.id, item.kind)}
+                  {...(item.priceFrom === item.priceTo && {
+                    onAdd: () => anadir(item, index),
+                    isAdding: anadiendo === `${item.kind}:${item.id}`,
+                  })}
+                />
+              </li>
+            ))}
+          </ul>
+          {error && (
+            <p role="alert" className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700">
+              {error}
+            </p>
+          )}
+        </section>
+      )}
+    </>
   );
 }
 

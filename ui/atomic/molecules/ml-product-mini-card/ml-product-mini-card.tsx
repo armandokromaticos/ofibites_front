@@ -18,6 +18,7 @@ const PLUS = cn(
  * - Sin `onAdd`, el "+" es ese enlace.
  * - Con `onAdd` (el ítem se puede añadir sin elegir nada), el enlace es el nombre y el "+" es un botón encima que
  *   añade al carrito sin salir; mientras añade, muestra un spinner y queda `aria-disabled`.
+ * El "+" (botón o enlace) lleva `data-mini-card-action` para que la página pueda moverle el foco.
  */
 export function MlProductMiniCard({
   name,
@@ -68,6 +69,7 @@ export function MlProductMiniCard({
         <button
           type="button"
           aria-label={addLabel ?? `Añadir ${name} al carrito`}
+          data-mini-card-action=""
           aria-disabled={isAdding || undefined}
           onClick={() => !isAdding && onAdd()}
           // Encima del enlace que cubre la card (`z-10`).
@@ -83,6 +85,7 @@ export function MlProductMiniCard({
         <Link
           href={href}
           aria-label={linkLabel ?? `Ver ${name}`}
+          data-mini-card-action=""
           className={cn(PLUS, "group-hover:bg-primary group-hover:text-primary-foreground", cubreLaCard)}
         >
           <Plus aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
