@@ -111,6 +111,7 @@ export function OrOrderTable({
   isLoading = false,
   onRowAction,
   busyOrderId,
+  emptyContent = "No encontramos pedidos.",
   className,
 }: OrOrderTableProps) {
   return (
@@ -131,7 +132,7 @@ export function OrOrderTable({
       <TableBody
         isLoading={isLoading}
         loadingContent={<Spinner label="Cargando tus pedidos" />}
-        emptyContent="No encontramos pedidos."
+        emptyContent={emptyContent}
       >
         {rows.map((row) => (
           <TableRow key={row.id}>

@@ -226,15 +226,24 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
         />
 
         {filasFiltradas.length === 0 ? (
-          <div className="rounded-card bg-content1">
-            <MlEmptyState
-              headingLevel={2}
-              title="No encontramos pedidos con esos filtros"
-              description="Prueba con un rango de fechas más amplio, o quita alguno de los filtros que tienes activos."
-              actionLabel={hayFiltrosActivos ? "Limpiar filtros" : undefined}
-              onAction={hayFiltrosActivos ? limpiarFiltros : undefined}
-            />
-          </div>
+          // Figma 3564:1218: la tabla conserva su cabecera y el vacío va dentro, con el tomate y "Limpiar filtros"
+          // como botón secundario.
+          <OrOrderTable
+            rows={[]}
+            emptyContent={
+              <MlEmptyState
+                headingLevel={2}
+                illustrationSrc="/images/empty/tomate.png"
+                titleTone="brand"
+                title="No encontramos pedidos con esos filtros"
+                description="Prueba con un rango de fechas más amplio, o quita alguno de los filtros que tienes activos."
+                actionLabel={hayFiltrosActivos ? "Limpiar filtros" : undefined}
+                actionVariant="bordered"
+                onAction={hayFiltrosActivos ? limpiarFiltros : undefined}
+                className="py-12"
+              />
+            }
+          />
         ) : (
           <>
             {errorAccion && (
