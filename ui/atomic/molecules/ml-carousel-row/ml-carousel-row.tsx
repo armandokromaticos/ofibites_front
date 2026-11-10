@@ -3,16 +3,20 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { cn } from "@heroui/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { MlCarouselRowProps } from "./ml-carousel-row.types";
 
+// Figma 3151:2135: zona de 49 px con un círculo gris de 41 px y una flecha `brand` de trazo 2, sobre las cards
+// (a 14 px del borde de la fila). El círculo es el `span` interior; el botón conserva el área táctil.
 const ARROW = cn(
   "absolute top-1/2 z-10 hidden size-[49px] -translate-y-1/2 items-center justify-center rounded-full md:flex",
-  "bg-content1 text-primary shadow-lift",
+  "text-brand",
   "transition-[opacity,scale] duration-(--duration-instant) ease-out active:scale-95",
   "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
 );
+
+const ARROW_CIRCLE = "flex size-[41px] items-center justify-center rounded-full bg-control-fill";
 
 /**
  * Fila horizontal deslizable con flechas (el "Carrusel" de recomendaciones del Figma, 3151:2410). Es una lista con
@@ -79,9 +83,11 @@ export function MlCarouselRow({
         aria-controls={listId}
         aria-disabled={edges.start || undefined}
         onClick={() => !edges.start && scrollBy(-1)}
-        className={cn(ARROW, "-left-3", edges.start && "cursor-not-allowed opacity-40")}
+        className={cn(ARROW, "left-[10px]", edges.start && "cursor-not-allowed opacity-40")}
       >
-        <ChevronLeft aria-hidden="true" className="size-5" strokeWidth={2.25} />
+        <span aria-hidden="true" className={ARROW_CIRCLE}>
+          <ArrowLeft className="size-6" strokeWidth={2} />
+        </span>
       </button>
       <button
         type="button"
@@ -89,9 +95,11 @@ export function MlCarouselRow({
         aria-controls={listId}
         aria-disabled={edges.end || undefined}
         onClick={() => !edges.end && scrollBy(1)}
-        className={cn(ARROW, "-right-3", edges.end && "cursor-not-allowed opacity-40")}
+        className={cn(ARROW, "right-[10px]", edges.end && "cursor-not-allowed opacity-40")}
       >
-        <ChevronRight aria-hidden="true" className="size-5" strokeWidth={2.25} />
+        <span aria-hidden="true" className={ARROW_CIRCLE}>
+          <ArrowRight className="size-6" strokeWidth={2} />
+        </span>
       </button>
     </div>
   );

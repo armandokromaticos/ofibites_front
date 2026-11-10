@@ -50,8 +50,9 @@
      (~3,7:1, por debajo de AA en 11 px: color del Figma pedido explícitamente). */
   --color-inactive: #980000;
   --color-inactive-foreground: #631500;
-  /* T-35 (feedback Gaby): relleno del botón circular de cerrar sobre fotos (pop-up "Detalles de la caja", Figma 3163:3064). */
-  --color-close-fill: #d9d9d9;
+  /* T-35 (feedback Gaby): relleno gris de los botones circulares sobre fotos y cards: cerrar del pop-up "Detalles de
+     la caja" (Figma 3163:3064) y flechas del carrusel (3151:2135). */
+  --color-control-fill: #d9d9d9;
 
   /* T-02: sombra de las imágenes de producto (las cards no llevan sombra). */
   --drop-shadow-product: 0 9px 9px rgb(0 0 0 / 0.25);

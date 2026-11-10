@@ -81,7 +81,7 @@ export function OrBoxDetailsModal({
               className={cn(
                 // Figma 3163:3064: círculo gris de 42 px con borde `primary` de 2 px y aspa de 12 px con trazo de 3.
                 "absolute right-4 top-4 z-10 flex size-[42px] items-center justify-center rounded-full sm:right-[25px] sm:top-[26px]",
-                "border-2 border-primary bg-close-fill text-primary",
+                "border-2 border-primary bg-control-fill text-primary",
                 "transition-[background-color,scale] duration-(--duration-instant) ease-out hover:bg-content1 active:scale-95",
                 "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-content1",
               )}
