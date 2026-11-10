@@ -26,7 +26,8 @@ const FILAS_NUTRICION: { key: keyof OrBoxDetailsNutrition; label: string; unidad
 ];
 
 const TITULO = "font-display text-[26px] font-extrabold leading-8 text-primary";
-const PANEL = "rounded-[18px] bg-content1";
+// Figma 3163:3051: el pop-up va sobre `#FAF8F3` (≈ `surface-cream`), con el panel de ingredientes en blanco.
+const PANEL = "rounded-[15px] bg-content1";
 
 /**
  * Pop-up "Detalles de la caja" (Figma 3163:3051): foto a sangre arriba con botón de cerrar circular, ingredientes
@@ -65,7 +66,7 @@ export function OrBoxDetailsModal({
         wrapper: "px-4",
         // Márgenes también en `sm`: el tema de HeroUI pone `sm:my-16 sm:mx-6` y el modal desbordaba el wrapper, que
         // también scrollea (doble scroll). `100%` es la altura del wrapper (viewport visual), no `100dvh`.
-        base: "mx-0 my-4 sm:mx-0 sm:my-4 max-h-[calc(100%-2rem)] w-full max-w-[782px] overflow-hidden rounded-card bg-background shadow-none",
+        base: "mx-0 my-4 sm:mx-0 sm:my-4 max-h-[calc(100%-2rem)] w-full max-w-[782px] overflow-hidden rounded-card bg-surface-cream shadow-none",
         backdrop: "bg-primary/25 backdrop-blur-[2px]",
       }}
     >
@@ -112,12 +113,12 @@ export function OrBoxDetailsModal({
                     <ul
                       className={cn(
                         PANEL,
-                        "grid grid-cols-1 gap-x-8 gap-y-4 px-5 py-6 sm:grid-cols-2 sm:gap-y-6 sm:px-[70px] sm:py-8",
+                        "grid grid-cols-1 gap-x-8 gap-y-4 px-5 py-6 sm:grid-cols-2 sm:gap-y-10 sm:px-[70px] sm:py-[30px]",
                       )}
                     >
                       {ingredients.map((ingrediente) => (
                         <li key={ingrediente.id} className="flex items-center gap-4">
-                          <span className="relative flex size-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-background">
+                          <span className="relative flex size-[46px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-cream">
                             {ingrediente.imageSrc ? (
                               <Image src={ingrediente.imageSrc} alt="" fill sizes="46px" className="object-contain" />
                             ) : (
@@ -140,11 +141,12 @@ export function OrBoxDetailsModal({
                     Información nutricional
                   </h2>
                   {filasNutricion.length > 0 ? (
-                    <dl className={cn(PANEL, "grid grid-cols-1 gap-x-12 px-5 py-2 sm:grid-cols-2 sm:px-[30px] sm:py-4")}>
+                    // Figma 3158:2907: una columna de filas de 34 px que alternan blanco y `#FAF8F3`, sin separadores.
+                    <dl className="flex flex-col overflow-hidden rounded-[15px] bg-content1">
                       {filasNutricion.map(({ key, label, unidad, valor }) => (
                         <div
                           key={key}
-                          className="flex items-baseline justify-between gap-4 border-b border-divider py-3 last:border-b-0"
+                          className="flex min-h-[34px] items-center justify-between gap-4 px-[21px] py-1.5 odd:bg-surface-cream"
                         >
                           <dt className="text-sm font-bold leading-5 text-foreground">{label}</dt>
                           <dd className="text-sm font-medium tabular-nums leading-5 text-foreground">
