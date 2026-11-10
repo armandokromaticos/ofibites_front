@@ -65,10 +65,12 @@ export function MlCarouselRow({
         aria-label={label}
         onScroll={update}
         className={cn(
-          "flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 sm:gap-[27px]",
+          "flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth sm:gap-[27px]",
           "motion-reduce:scroll-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          // Aire para que la card que sube al pasar no se recorte arriba.
-          "-mt-2 pt-2",
+          // `overflow-x` también recorta en vertical: aire alrededor (anulado con margen negativo) para que la card que
+          // sube al pasar y su `shadow-lift-card` (hasta ~36 px abajo y ~14 a los lados) no se corten. Simétrico en
+          // vertical para que las flechas sigan centradas; `scroll-px` alinea el snap con el borde real de la fila.
+          "-mx-4 -my-10 scroll-px-4 px-4 py-10",
         )}
       >
         {items.map((item, i) => (
