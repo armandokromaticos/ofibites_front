@@ -34,6 +34,9 @@
      barras (2,8:1 sobre crema); el texto "Media" va en el tono oscuro, que llega a AA (~5,4:1). */
   --color-strength-medium: #9c8e37;
   --color-strength-medium-foreground: #6b6125;
+  /* T-35 (feedback Gaby): conteo "N productos" bajo las categorías de Ordenar (Figma 3067:17606), más claro
+     que `brand`. Pedido explícito de diseño; ~3,3:1 sobre blanco, por debajo de AA para 12 px. */
+  --color-brand-caption: #9c8e37;
   /* T-19: fondo del badge "POPULAR" de las cards del catálogo (Figma 3067:17606), con texto negro (~17:1). */
   --color-highlight: #e2fb57;
   /* T-06d: fondo de la vista ampliada de comprobantes y facturas (Figma 3639:2063, casi negro verdoso). */

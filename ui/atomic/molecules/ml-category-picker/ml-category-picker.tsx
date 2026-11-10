@@ -144,7 +144,7 @@ export function MlCategoryPicker<T extends string>({
                 <span className="line-clamp-2 max-w-[110px] text-sm font-bold leading-[17px] text-brand">
                   {option.name}
                 </span>
-                {option.caption && <span className="text-xs leading-4 text-brand">{option.caption}</span>}
+                {option.caption && <span className="text-xs leading-4 text-brand-caption">{option.caption}</span>}
               </span>
             </button>
           );
