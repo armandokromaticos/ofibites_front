@@ -46,5 +46,5 @@ export function useQuickAddCartItem() {
     return "anadido";
   };
 
-  return { quickAdd, isPending: add.isPending };
+  return { quickAdd };
 }

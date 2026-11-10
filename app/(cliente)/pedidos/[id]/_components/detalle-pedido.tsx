@@ -318,7 +318,7 @@ export function DetallePedido({ orderId }: { orderId: string }) {
             </h2>
             {pasoActual >= 0 ? (
               <MlOrderTimeline
-                label="Seguimiento"
+                labelledBy="pedido-seguimiento-titulo"
                 orientation="vertical"
                 steps={ORDER_STATUS_GROUP_STEPS.map((grupo) => ({
                   label: ORDER_STATUS_GROUP_LABELS[grupo],

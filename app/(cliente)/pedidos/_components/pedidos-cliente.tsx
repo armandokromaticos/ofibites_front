@@ -219,7 +219,7 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
             tabla conserva la cabecera y el vacío va dentro, con el tomate y "Limpiar filtros" como botón
             secundario. */}
         <OrOrderTable
-          rows={filasFiltradas.length === 0 ? [] : filasPagina}
+          rows={filasPagina}
           busyOrderId={repetir.pedidoEnCurso ?? descargandoId}
           onRowAction={(row, key) => {
             const fila = filasPagina.find((item) => item.id === row.id);

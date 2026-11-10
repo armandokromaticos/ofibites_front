@@ -14,13 +14,15 @@ export function MlOrderTimeline({
   steps,
   completedCount,
   label = "Estado del pedido",
+  labelledBy,
   orientation = "responsive",
   className,
 }: MlOrderTimelineProps) {
   const enFila = orientation === "responsive";
   return (
     <ol
-      aria-label={label}
+      aria-label={labelledBy ? undefined : label}
+      aria-labelledby={labelledBy}
       className={cn("grid gap-3", enFila && "sm:grid-cols-(--timeline-cols) sm:gap-1.5", className)}
       style={{ "--timeline-cols": `repeat(${steps.length}, minmax(0, 1fr))` } as CSSProperties}
     >

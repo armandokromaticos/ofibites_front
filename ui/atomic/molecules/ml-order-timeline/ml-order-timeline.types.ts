@@ -13,6 +13,8 @@ export interface MlOrderTimelineProps {
   completedCount: number;
   /** Nombre accesible de la lista. Por defecto "Estado del pedido". */
   label?: string;
+  /** Id de un título visible que ya nombra la lista: se usa con `aria-labelledby` en lugar de `label`. */
+  labelledBy?: string;
   /** `responsive` (por defecto): en fila desde `sm`. `vertical`: siempre en columna (columna lateral estrecha). */
   orientation?: "responsive" | "vertical";
   className?: string;
