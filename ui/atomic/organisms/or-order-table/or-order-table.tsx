@@ -50,13 +50,18 @@ function RowMenu({
           aria-label={`Acciones del pedido #${row.orderNumber}`}
           disabled={isBusy}
           className={cn(
-            "flex size-8 items-center justify-center rounded-full text-foreground",
-            "transition-colors duration-(--duration-fast) hover:bg-background aria-expanded:bg-background",
+            // Figma 3562:1421: píldora crema de 32 px con "···" en `primary`.
+            "flex size-8 items-center justify-center rounded-full bg-background text-primary",
+            "transition-colors duration-(--duration-fast) hover:bg-surface-sand aria-expanded:bg-surface-sand",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
             isBusy && "opacity-50",
           )}
         >
-          {isBusy ? <Spinner size="sm" color="current" /> : <MoreHorizontal aria-hidden="true" className="size-4" />}
+          {isBusy ? (
+            <Spinner size="sm" color="current" />
+          ) : (
+            <MoreHorizontal aria-hidden="true" className="size-4" strokeWidth={2.5} />
+          )}
         </button>
       </DropdownTrigger>
       <DropdownMenu
@@ -105,17 +110,45 @@ function RowMenu({
  * Tabla de "Pedidos realizados" (Figma 3562:1180): nº de pedido, fecha, departamento, usuario, tipo, monto, estado
  * de pago (PAGO, T-06: "—" sin factura) y estado del pedido, con el menú "···" por fila ("Ver pedido" siempre + las
  * `actions` que mande la página).
+ *
+ * Una sola card blanca de radio 15: `topContent` (filtros) arriba, cabecera crema de 38 px, filas de 60 px separadas
+ * por líneas `surface-sand` y `bottomContent` (paginación) al pie. La barra y el pie quedan fuera del scroll
+ * horizontal de la tabla en pantallas estrechas.
  */
+const CLASSNAMES = {
+  base: "gap-0 overflow-hidden rounded-[15px] bg-content1",
+  wrapper: "rounded-none bg-transparent p-0 shadow-none",
+  th: cn(
+    "h-[38px] bg-background px-5 text-[10px] font-semibold uppercase text-muted first:rounded-none last:rounded-none",
+    "border-y border-surface-sand",
+  ),
+  td: "h-[60px] whitespace-nowrap px-5 text-[13px] text-foreground",
+  tr: "border-b border-surface-sand last:border-b-0",
+  emptyWrapper: "h-auto",
+};
+
 export function OrOrderTable({
   rows,
   isLoading = false,
   onRowAction,
   busyOrderId,
   emptyContent = "No encontramos pedidos.",
+  topContent,
+  bottomContent,
   className,
 }: OrOrderTableProps) {
   return (
-    <Table aria-label="Pedidos realizados" shadow="none" radius="lg" className={className}>
+    <Table
+      aria-label="Pedidos realizados"
+      shadow="none"
+      radius="none"
+      topContent={topContent}
+      topContentPlacement="outside"
+      bottomContent={bottomContent}
+      bottomContentPlacement="outside"
+      classNames={CLASSNAMES}
+      className={className}
+    >
       <TableHeader>
         <TableColumn>Nº DE PEDIDO</TableColumn>
         <TableColumn>FECHA</TableColumn>
@@ -136,7 +169,7 @@ export function OrOrderTable({
       >
         {rows.map((row) => (
           <TableRow key={row.id}>
-            <TableCell className="font-semibold text-foreground">#{row.orderNumber}</TableCell>
+            <TableCell className="font-semibold text-primary">#{row.orderNumber}</TableCell>
             <TableCell>
               {row.dateTime ? <time dateTime={row.dateTime}>{row.dateLabel}</time> : row.dateLabel}
             </TableCell>

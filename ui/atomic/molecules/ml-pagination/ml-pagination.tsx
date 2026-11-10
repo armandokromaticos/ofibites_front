@@ -20,7 +20,7 @@ function slots(page: number, total: number): Slot[] {
 }
 
 const BUTTON = cn(
-  "flex size-10 items-center justify-center rounded-full text-sm font-semibold tabular-nums",
+  "flex items-center justify-center rounded-full text-sm font-semibold tabular-nums",
   "transition-colors duration-(--duration-fast) ease-out",
   "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
 );
@@ -30,8 +30,19 @@ const BUTTON = cn(
  * `aria-current="page"`. En los extremos, anterior/siguiente quedan `aria-disabled` (no `disabled`: el foco no
  * cae a `<body>` si se estaba sobre ellos, tech-rules/atomic).
  */
-export function MlPagination({ page, totalPages, onChange, label, className }: MlPaginationProps) {
+export function MlPagination({
+  page,
+  totalPages,
+  onChange,
+  label,
+  surface = "background",
+  className,
+}: MlPaginationProps) {
   if (totalPages <= 1) return null;
+
+  const isCard = surface === "card";
+  const button = cn(BUTTON, isCard ? "size-8 text-xs" : "size-10");
+  const idle = isCard ? "bg-background text-primary" : "bg-content1 text-primary";
 
   const isFirst = page <= 1;
   const isLast = page >= totalPages;
@@ -45,7 +56,7 @@ export function MlPagination({ page, totalPages, onChange, label, className }: M
             aria-label="Página anterior"
             aria-disabled={isFirst || undefined}
             onClick={() => !isFirst && onChange(page - 1)}
-            className={cn(BUTTON, "bg-content1 text-primary", isFirst ? "cursor-default opacity-40" : "hover:bg-surface-sand")}
+            className={cn(button, idle, isFirst ? "cursor-default opacity-40" : "hover:bg-surface-sand")}
           >
             <ChevronLeft aria-hidden="true" className="size-[18px]" />
           </button>
@@ -59,17 +70,19 @@ export function MlPagination({ page, totalPages, onChange, label, className }: M
                 aria-current={slot === page ? "page" : undefined}
                 onClick={() => slot !== page && onChange(slot)}
                 className={cn(
-                  BUTTON,
-                  slot === page
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-content1 text-primary hover:bg-surface-sand",
+                  button,
+                  slot === page ? "bg-primary text-primary-foreground" : cn(idle, "hover:bg-surface-sand"),
                 )}
               >
                 {slot}
               </button>
             </li>
           ) : (
-            <li key={slot} aria-hidden="true" className="flex size-10 items-center justify-center text-sm text-muted">
+            <li
+              key={slot}
+              aria-hidden="true"
+              className={cn("flex items-center justify-center text-sm text-muted", isCard ? "size-8" : "size-10")}
+            >
               …
             </li>
           ),
@@ -80,7 +93,7 @@ export function MlPagination({ page, totalPages, onChange, label, className }: M
             aria-label="Página siguiente"
             aria-disabled={isLast || undefined}
             onClick={() => !isLast && onChange(page + 1)}
-            className={cn(BUTTON, "bg-content1 text-primary", isLast ? "cursor-default opacity-40" : "hover:bg-surface-sand")}
+            className={cn(button, idle, isLast ? "cursor-default opacity-40" : "hover:bg-surface-sand")}
           >
             <ChevronRight aria-hidden="true" className="size-[18px]" />
           </button>
