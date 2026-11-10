@@ -483,7 +483,7 @@ export function CarritoCliente() {
         isConfirming={clear.isPending}
         isDestructive
         title="¿Vaciar el carrito?"
-        description="Se quitarán todos los productos del pedido de tu empresa. El carrito es compartido: también deja de verlo el resto de compradores."
+        description="Se quitarán todos los productos de tu carrito."
         confirmLabel="Vaciar carrito"
       />
     </div>

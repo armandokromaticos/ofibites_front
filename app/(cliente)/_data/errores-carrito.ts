@@ -12,7 +12,7 @@ export function mensajeErrorCarrito(error: unknown, accion: AccionCarrito): stri
   }
   if (isApiError(error) && error.statusCode === 404) {
     return accion === "vaciar"
-      ? "No encontramos el carrito de tu empresa. Recarga la página."
+      ? "No encontramos tu carrito. Recarga la página."
       : "Ese producto ya no estaba en el carrito: actualizamos tu pedido.";
   }
   if (isApiError(error) && error.statusCode === 403) return "No tienes permisos para cambiar este carrito.";

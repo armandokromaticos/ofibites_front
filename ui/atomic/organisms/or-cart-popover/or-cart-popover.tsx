@@ -207,8 +207,8 @@ export function OrCartPopover({
         {showConfirm && (
           <div role="group" aria-labelledby={confirmId} className="mt-3 rounded-control bg-background p-3">
             <p id={confirmId} className="text-[13px] leading-5 text-foreground">
-              <span className="font-semibold">¿Vaciar el carrito?</span> Se quitarán todos los productos del pedido de
-              tu empresa.
+              <span className="font-semibold">¿Vaciar el carrito?</span> Se quitarán todos los productos de tu
+              carrito.
             </p>
             <div className="mt-3 flex justify-end gap-2">
               <AtButton
