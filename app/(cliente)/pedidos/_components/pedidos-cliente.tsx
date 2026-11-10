@@ -279,7 +279,7 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
           <h1 className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
             Pedidos realizados
           </h1>
-          <p className="max-w-[52ch] text-sm leading-[22px] text-muted">
+          <p className="text-sm leading-[17px] text-brand">
             Todo lo que ha pedido tu empresa, con su estado de entrega y de pago.
           </p>
         </div>
