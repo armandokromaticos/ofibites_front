@@ -10,11 +10,10 @@ import { useCart, useCartLines, useClearCart, useRepeatOrder } from "@/domain/ho
 import { useCatalog } from "@/domain/hooks/catalog";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useCanReportPayments } from "@/domain/hooks/invoices";
-import { firstDeliveryDate } from "@/domain/models";
 import { CartLineModel } from "@/domain/models";
 import { useAuthStore, useCartNoticeStore } from "@/domain/stores";
 import { duration } from "@/shared/motion";
-import { formatDateOnlyLong, formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
+import { formatPrice, formatPriceRange, isApiError } from "@/shared/utils";
 import {
   AtButton,
   AtSkeleton,
@@ -70,15 +69,16 @@ function productos(n: number): string {
   return `${n} ${n === 1 ? "producto" : "productos"}`;
 }
 
-/** Cabecera de la página: título de marca, número de productos y vuelta al catálogo. */
+/**
+ * Cabecera de la página: título de marca y vuelta al catálogo. La píldora de productos solo aparece con factura
+ * vencida; la de "entrega estimada" se quitó por el feedback de diseño (T-35).
+ */
 function CabeceraCarrito({
   lineCount,
-  entrega,
   enEspera = false,
 }: {
   lineCount?: number;
-  entrega: string;
-  /** Factura vencida (Figma `3390:2636`): la píldora pasa a "en espera por una factura pendiente". */
+  /** Factura vencida (Figma `3390:2636`): píldora "en espera por una factura pendiente". */
   enEspera?: boolean;
 }) {
   return (
@@ -87,18 +87,11 @@ function CabeceraCarrito({
         <h2 id={TITULO_ID} tabIndex={-1} className="font-display text-[28px] font-bold leading-9 tracking-[-0.03em] text-foreground outline-none">
           Tu carrito
         </h2>
-        {lineCount !== undefined && lineCount > 0 && (
-          enEspera ? (
-            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-secondary-600 px-5 py-1 text-sm leading-5 text-white">
-              <Truck aria-hidden="true" className="size-4" />
-              {productos(lineCount)} · en espera por una factura pendiente
-            </p>
-          ) : (
-            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-sand px-5 py-1 text-sm leading-5 text-brand">
-              <Truck aria-hidden="true" className="size-4" />
-              {productos(lineCount)} · entrega estimada para el {entrega}
-            </p>
-          )
+        {enEspera && lineCount !== undefined && lineCount > 0 && (
+          <p className="inline-flex w-fit items-center gap-2 rounded-full bg-secondary-600 px-5 py-1 text-sm leading-5 text-white">
+            <Truck aria-hidden="true" className="size-4" />
+            {productos(lineCount)} · en espera por una factura pendiente
+          </p>
         )}
       </div>
       <Link
@@ -256,8 +249,6 @@ export function CarritoCliente() {
     avisoRef.current?.focus();
   }, [aviso]);
   const cart = cartQuery.data;
-  // Primera fecha que permite el corte de las 15:00 de Caracas (la misma regla que el selector del checkout).
-  const [entrega] = useState(() => formatDateOnlyLong(firstDeliveryDate()).toLowerCase());
   // "Sede: …" del resumen: la primera sede de entrega de la agenda; sin sedes o con error, no se pinta.
   const addressesQuery = useCompanyAddresses();
   const sede = addressesQuery.data?.find((address) => address.isShipping) ?? null;
@@ -421,7 +412,6 @@ export function CarritoCliente() {
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-6">
       <CabeceraCarrito
         lineCount={cart && !isUnavailable ? lines.length : undefined}
-        entrega={entrega}
         enEspera={Boolean(cart?.invoiceAlert?.blocksCheckout)}
       />
       <p className="flex items-center gap-2.5 rounded-control bg-content1 px-4 py-3 text-xs leading-5 text-muted sm:px-5">
