@@ -73,12 +73,16 @@ export function FichaProducto({ id, kind, estadoQa }: FichaProductoProps) {
 function FichaContenido({ item }: { item: CatalogItemDetail }) {
   return (
     <div className="mx-auto flex w-full max-w-[1296px] flex-col gap-12 xl:gap-[60px]">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,585fr)_minmax(0,681fr)] lg:items-start xl:gap-[29px]">
+      {/* Figma 3100:29600: galería (585) y panel (681) con el mismo alto (544 en 1440) y bordes alineados: el panel
+          se estira a la altura de la fila y deja el bloque de compra abajo. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,585fr)_minmax(0,681fr)] lg:items-stretch xl:gap-[29px]">
         <MlProductGallery
           images={item.images}
           productName={item.name}
           fallbackSrc={IMAGEN_PRODUCTO_POR_DEFECTO}
           preload
+          // Su alto lo da la foto; si el panel crece más (descripción larga), la galería no se estira.
+          className="lg:self-start"
         />
         <PanelCompra item={item} imagenCaja={item.images[0] ?? IMAGEN_PRODUCTO_POR_DEFECTO} />
       </div>

@@ -229,7 +229,8 @@ export function PanelCompra({ item, imagenCaja }: PanelCompraProps) {
         )}
       </div>
 
-      <div className="flex flex-col gap-[35px] pt-1">
+      {/* `mt-auto`: con la fila más alta que el contenido (lg), el bloque de compra baja hasta el pie del panel. */}
+      <div className="flex flex-col gap-[35px] pt-1 lg:mt-auto">
         {!isCombo && opciones.length > 1 && (
           <MlSegmentedControl
             name="personas"
