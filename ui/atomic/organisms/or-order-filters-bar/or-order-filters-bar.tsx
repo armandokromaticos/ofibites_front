@@ -2,6 +2,7 @@
 
 import { cn, Select, SelectItem } from "@heroui/react";
 
+import { SELECT_POPOVER_PROPS } from "@/ui/atomic/atoms";
 import { MlSearchBar } from "@/ui/atomic/molecules";
 
 import { OrOrderFiltersBarOption, OrOrderFiltersBarProps } from "./or-order-filters-bar.types";
@@ -42,6 +43,7 @@ function FilterSelect({
         if (event.target.value) onChange(event.target.value);
       }}
       classNames={SELECT_CLASSNAMES}
+      popoverProps={SELECT_POPOVER_PROPS}
     >
       {options.map((option) => (
         <SelectItem key={option.value}>{option.label}</SelectItem>

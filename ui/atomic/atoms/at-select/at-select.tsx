@@ -4,6 +4,13 @@ import { cn, Select } from "@heroui/react";
 
 import { AtSelectProps } from "./at-select.types";
 
+/**
+ * HeroUI fija en línea el ancho de la lista al del trigger, y las opciones largas se cortaban ("Progra…").
+ * `minWidth: max-content` deja que la lista crezca hasta mostrar la opción completa sin quedar más estrecha que
+ * el trigger (feedback de diseño T-35). Úsalo también en los `Select` de HeroUI que no pasan por `AtSelect`.
+ */
+export const SELECT_POPOVER_PROPS = { style: { minWidth: "max-content" } } as const;
+
 export function AtSelect<T extends object = object>({
   variant = "bordered",
   radius = "full",
@@ -14,6 +21,7 @@ export function AtSelect<T extends object = object>({
     <Select<T>
       variant={variant}
       radius={radius}
+      popoverProps={SELECT_POPOVER_PROPS}
       classNames={{
         ...classNames,
         trigger: cn(
