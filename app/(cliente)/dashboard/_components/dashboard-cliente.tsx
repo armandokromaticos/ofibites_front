@@ -3,6 +3,7 @@
 import { ReactNode, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { cn } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
@@ -235,8 +236,22 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
      * - Hasta xl, una columna en ese orden; desde md, saludo y pedido en curso van lado a lado.
      * - xl (≥ 1280): las dos columnas del Figma. La de 288 px (saludo, pedido en curso y últimas órdenes) es un
      *   bloque fijo que ocupa las filas 1-2; promos en la fila 1 y recomendaciones en la 2.
-     * - En el DOM las últimas órdenes van con la columna derecha; hasta xl se pintan al final (`order-last`).
+     * - Últimas órdenes se pinta en la columna fija (xl) o al final de la rejilla (hasta xl), nunca en las dos.
      */
+    // Se pinta en dos sitios (columna fija en xl y final de la rejilla hasta xl), con `display: none` en el otro:
+    // así el orden del foco coincide con el visual en todos los anchos (WCAG 1.3.2 y 2.4.3).
+    const ultimasOrdenes = (className: string) => (
+      <OrRecentOrders
+        className={className}
+        isLoading={isPending}
+        orders={data?.recentOrders.map(toRecentOrderItem) ?? []}
+        viewAllHref={RUTA_PEDIDOS}
+        onRepeat={repetirPedido}
+        repeatingOrderId={repeatingOrderId}
+        repeatError={repeatError}
+        emptyActionHref={RUTA_ORDENAR}
+      />
+    );
     content = (
       <div className="flex flex-col gap-[27px]">
         {/* Falló una actualización pero hay datos previos: aviso discreto y se siguen mostrando. */}
@@ -303,10 +318,17 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
 
           {/*
             Columna derecha (saludo, pedido en curso y últimas órdenes): en xl es un solo bloque fijo (sticky) mientras
-            el resto hace scroll (feedback Gaby, D5). Hasta xl el envoltorio no pinta caja (`contents`) y sus piezas
-            siguen en la rejilla de una columna.
+            el resto hace scroll (feedback Gaby, D5). Su alto se limita a la ventana (menos top bar y márgenes) y, si no
+            cabe, se desplaza dentro: en portátiles bajos "Ver todos" sigue alcanzable. Hasta xl el envoltorio no pinta
+            caja (`contents`) y el saludo queda en la rejilla de una columna.
           */}
-          <div className="contents xl:sticky xl:top-6 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px] xl:self-start">
+          <div
+            className={cn(
+              "contents xl:sticky xl:top-6 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px]",
+              "xl:max-h-[calc(100dvh-72px-48px)] xl:self-start xl:overflow-y-auto xl:overscroll-contain",
+              "xl:[scrollbar-width:thin]",
+            )}
+          >
             <section
               aria-label="Tu actividad"
               // xl: mide lo mismo que el banner principal (`min-h-[307px]` de `MlPromoBanner` main) y el pedido en curso se
@@ -336,17 +358,8 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
               </motion.div>
             </section>
 
-            <OrRecentOrders
-              // Hasta xl va al final, tras las recomendaciones (como antes de agruparla en la columna fija).
-              className="min-w-0 max-xl:order-last"
-              isLoading={isPending}
-              orders={data?.recentOrders.map(toRecentOrderItem) ?? []}
-              viewAllHref={RUTA_PEDIDOS}
-              onRepeat={repetirPedido}
-              repeatingOrderId={repeatingOrderId}
-              repeatError={repeatError}
-              emptyActionHref={RUTA_ORDENAR}
-            />
+            {/* Solo en xl: aquí forma parte de la columna fija. Hasta xl se pinta al final de la rejilla. */}
+            {ultimasOrdenes("hidden min-w-0 xl:flex")}
           </div>
 
           {(isPending || data.recommendations.length > 0) && (
@@ -430,6 +443,9 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
               )}
             </div>
           )}
+
+          {/* Hasta xl: al final, tras las recomendaciones (el orden del DOM coincide con el visual). */}
+          {ultimasOrdenes("min-w-0 xl:hidden")}
         </div>
       </div>
     );
