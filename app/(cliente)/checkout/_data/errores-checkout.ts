@@ -127,7 +127,7 @@ function porCodigo(
     case "DELIVERY_CUTOFF":
       return {
         title: "Esa fecha ya no llega al corte.",
-        detail: detalleBack ?? "Los pedidos se agendan hasta las 3:00 p.m. del día anterior. Elige otra fecha.",
+        detail: detalleBack ?? "Los pedidos se agendan hasta las 3:00 p. m. del día anterior. Elige otra fecha.",
         accion: "entrega",
       };
     case "DELIVERY_HORIZON":

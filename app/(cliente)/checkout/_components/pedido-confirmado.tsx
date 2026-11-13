@@ -28,7 +28,7 @@ import { CLASE_TITULO_BLOQUE } from "./campos";
 const PEDIDOS_PRONTO_ID = "pedido-confirmado-pedidos-pronto";
 const TITULO_ID = "pedido-confirmado-titulo";
 
-/** "Jueves 26 de septiembre · 9:00 a.m." (fecha `@db.Date` y hora de pared, sin convertir zona). */
+/** "Jueves 26 de septiembre · 9:00 a. m." (fecha `@db.Date` y hora de pared, sin convertir zona). */
 function entregaDe(order: Order): string | null {
   const fecha = dateOnlyFromApi(order.deliveryDate);
   if (!fecha) return null;

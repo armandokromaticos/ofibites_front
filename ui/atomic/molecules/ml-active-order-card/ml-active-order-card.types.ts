@@ -12,7 +12,7 @@ export interface MlActiveOrderCardOrder {
   productName: string;
   /** "10 boxes". */
   quantityLabel: string;
-  /** "Llega a las 10:30 am". */
+  /** "Llega a las 10:30 a. m.". */
   etaLabel: string;
   /** Texto del estado ("En camino"). */
   statusLabel: string;

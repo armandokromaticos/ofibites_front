@@ -27,11 +27,21 @@ export function formatCaracasShortDate(iso: string): string {
   return `${Number(part("day"))} de ${SHORT_MONTHS[Number(part("month")) - 1]}`;
 }
 
-/** Hora del Figma en hora de Caracas: "10:30 am". Con una ISO inválida devuelve "—". */
+/**
+ * Hora en formato de la RAE: "9:00 a. m.", "3:30 p. m." y "12:00 m." (mediodía en punto). Única fuente del formato
+ * de hora de la app (T-39): la usan `formatCaracasTime` (instantes) y `formatWallTime` (horas de pared).
+ */
+function formatHour12(hours: number, minutes: string): string {
+  if (hours === 12 && minutes === "00") return "12:00 m.";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hour12}:${minutes} ${hours < 12 ? "a. m." : "p. m."}`;
+}
+
+/** Hora de un instante en hora de Caracas: "10:30 a. m." (ver `formatHour12`). Con una ISO inválida devuelve "—". */
 export function formatCaracasTime(iso: string): string {
   if (!isValidIso(iso)) return INVALID_DATE_LABEL;
-  const part = getCaracasParts(iso, { hour: "numeric", minute: "2-digit", hour12: true });
-  return `${part("hour")}:${part("minute")} ${part("dayPeriod").toLowerCase()}`;
+  const part = getCaracasParts(iso, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  return formatHour12(Number(part("hour")), part("minute"));
 }
 
 /**
@@ -58,7 +68,7 @@ export function formatCaracasDateSlash(iso: string): string {
   return `${part("day")}/${part("month")}/${part("year")}`;
 }
 
-/** Fecha y hora completas en hora de Caracas ("4 de Sep, 10:30 am"), p. ej. para el `title` de un `<time>`. */
+/** Fecha y hora completas en hora de Caracas ("4 de Sep, 10:30 a. m."), p. ej. para el `title` de un `<time>`. */
 export function formatCaracasDateTime(iso: string): string {
   if (!isValidIso(iso)) return INVALID_DATE_LABEL;
   return `${formatCaracasShortDate(iso)}, ${formatCaracasTime(iso)}`;
@@ -139,15 +149,11 @@ export function isWallTime(value: string): boolean {
 }
 
 /**
- * Hora de pared del checkout (Figma 3462:2094): "8:00 a.m.", "12:00 m." (mediodía), "1:30 p.m.". Es la hora de
- * Caracas tal como se guardó, sin convertir. Con un valor inválido devuelve "—".
+ * Hora de pared del checkout: "8:00 a. m.", "12:00 m." (mediodía), "1:30 p. m." (formato RAE, `formatHour12`). Es
+ * la hora de Caracas tal como se guardó, sin convertir. Con un valor inválido devuelve "—".
  */
 export function formatWallTime(time: string): string {
   const match = WALL_TIME.exec(time);
   if (!match) return INVALID_DATE_LABEL;
-  const hours = Number(match[1]);
-  const minutes = match[2];
-  if (hours === 12 && minutes === "00") return "12:00 m.";
-  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-  return `${hour12}:${minutes} ${hours < 12 ? "a.m." : "p.m."}`;
+  return formatHour12(Number(match[1]), match[2]);
 }

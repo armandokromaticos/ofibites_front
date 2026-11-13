@@ -485,7 +485,7 @@ export function CarritoCliente() {
         <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-accent" />
         <span>
           Los pedidos se agendan hasta las{" "}
-          <strong className="font-semibold text-secondary-600">3:00 p.m. del día anterior</strong>
+          <strong className="font-semibold text-secondary-600">3:00 p. m. del día anterior</strong>
         </span>
       </p>
       {!isUnavailable &&

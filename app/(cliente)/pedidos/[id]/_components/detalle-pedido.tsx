@@ -55,7 +55,7 @@ import { usePagoPedido } from "./use-pago-pedido";
 const TITULO_ID = "pedido-detalle-titulo";
 const CLASE_TITULO_BLOQUE = "font-display text-xl font-bold leading-7 text-foreground";
 
-/** "Jueves 26 de septiembre · 9:00 a.m." (fecha `@db.Date` y hora de pared, sin convertir zona). */
+/** "Jueves 26 de septiembre · 9:00 a. m." (fecha `@db.Date` y hora de pared, sin convertir zona). */
 function entregaDe(deliveryDate: string | null, deliveryTime: string | null): string | null {
   const fecha = dateOnlyFromApi(deliveryDate);
   if (!fecha) return null;

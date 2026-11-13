@@ -31,9 +31,9 @@ export function diaMes(iso: string): string {
   return formatCaracasDateSlash(iso).slice(0, 5);
 }
 
-/** "9:40 a. m." de un instante, en hora de Caracas (el Figma escribe "a. m." / "p. m."). */
+/** "9:40 a. m." de un instante, en hora de Caracas (formato RAE de `formatCaracasTime`). */
 export function hora(iso: string): string {
-  return formatCaracasTime(iso).replace(/\s?am$/, " a. m.").replace(/\s?pm$/, " p. m.");
+  return formatCaracasTime(iso);
 }
 
 /** `true` si el instante cae hoy en Caracas. */

@@ -35,7 +35,7 @@ export const CHECKOUT_SUGGESTED_TIMES = ["08:00", "09:00", "10:30", "12:00"] as 
 const CUTOFF_MINUTES = 15 * 60;
 
 /** Texto del aviso de corte (decisión del usuario 2026-10-16). */
-export const CHECKOUT_CUTOFF_NOTICE = "Los pedidos se agendan hasta las 3:00 p.m. del día anterior.";
+export const CHECKOUT_CUTOFF_NOTICE = "Los pedidos se agendan hasta las 3:00 p. m. del día anterior.";
 
 /**
  * Primera fecha de entrega que se puede pedir ahora mismo (regla de T-26a, que el back también valida): mañana en
@@ -83,7 +83,7 @@ export function validateCheckoutDraft(
   if (!draft.deliveryDate) errors.deliveryDate = "Elige la fecha de entrega.";
   else if (!isDateOnly(draft.deliveryDate)) errors.deliveryDate = "Escribe una fecha válida.";
   else if (draft.deliveryDate < first) {
-    errors.deliveryDate = "Esa fecha ya no llega al corte de las 3:00 p.m. del día anterior. Elige otra.";
+    errors.deliveryDate = "Esa fecha ya no llega al corte de las 3:00 p. m. del día anterior. Elige otra.";
   } else if (draft.deliveryDate > lastDeliveryDate(now)) {
     errors.deliveryDate = `Solo agendamos pedidos hasta ${CHECKOUT_MAX_DAYS_AHEAD} días por adelantado. Elige una fecha anterior.`;
   }
