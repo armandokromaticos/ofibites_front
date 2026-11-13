@@ -18,7 +18,7 @@ import {
 } from "@/domain/models";
 import { useCartNoticeStore } from "@/domain/stores";
 import { duration, ease, fadeRise, listStagger } from "@/shared/motion";
-import { formatCaracasShortDate, formatCaracasTime } from "@/shared/utils";
+import { formatCaracasShortDate, formatCaracasTime, isCaracasToday } from "@/shared/utils";
 import {
   AtButton,
   AtSkeleton,
@@ -100,13 +100,20 @@ function formatBoxes(boxes: number): string {
   return `${boxes} ${boxes === 1 ? "box" : "boxes"}`;
 }
 
+/** "Llega hoy a las 10:30 a. m." solo si la llegada es hoy en Caracas; otro día, con la fecha corta (T-39). */
+function etaLabel(estimatedArrival: string | null | undefined): string {
+  if (!estimatedArrival) return "Hora de entrega por confirmar";
+  const hora = formatCaracasTime(estimatedArrival);
+  return isCaracasToday(estimatedArrival)
+    ? `Llega hoy a las ${hora}`
+    : `Llega el ${formatCaracasShortDate(estimatedArrival)} a las ${hora}`;
+}
+
 function toActiveOrderCard(order: ClientActiveOrder): MlActiveOrderCardOrder {
   return {
     productName: order.productName,
     quantityLabel: formatBoxes(order.boxes),
-    etaLabel: order.estimatedArrival
-      ? `Llega a las ${formatCaracasTime(order.estimatedArrival)}`
-      : "Hora de entrega por confirmar",
+    etaLabel: etaLabel(order.estimatedArrival),
     statusLabel: ORDER_STATUS_LABELS[order.status],
     statusIcon: STATUS_ICONS[order.status],
     isInTransit: order.status === "IN_TRANSIT",
@@ -235,7 +242,7 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
      * - Hasta xl, una columna en ese orden; desde md, saludo y pedido en curso van lado a lado.
      * - xl (≥ 1280): las dos columnas del Figma. La de 288 px (saludo, pedido en curso y últimas órdenes) es un
      *   bloque fijo que ocupa las filas 1-2; promos en la fila 1 y recomendaciones en la 2.
-     * - Últimas órdenes se pinta en la columna fija (xl) o al final de la rejilla (hasta xl), nunca en las dos.
+     * - Últimos pedidos se pinta en la columna fija (xl) o al final de la rejilla (hasta xl), nunca en las dos.
      */
     // Se pinta en dos sitios (columna fija en xl y final de la rejilla hasta xl), con `display: none` en el otro:
     // así el orden del foco coincide con el visual en todos los anchos (WCAG 1.3.2 y 2.4.3).
@@ -356,6 +363,29 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
             {/* Solo en xl: aquí forma parte de la columna fija. Hasta xl se pinta al final de la rejilla. */}
             {ultimasOrdenes("hidden min-w-0 xl:flex")}
           </div>
+
+          {/* Sin ninguna recomendación: el estado "Para empezar" (T-39), distinto del vacío por filtro. */}
+          {!isPending && data.recommendations.length === 0 && (
+            <section
+              aria-labelledby="preferencias-titulo"
+              className="flex min-w-0 flex-col gap-6 xl:col-start-1 xl:row-start-2"
+            >
+              <h2
+                id="preferencias-titulo"
+                className="font-display text-[28px] font-bold leading-[37px] tracking-[-0.04em] text-foreground"
+              >
+                Según tus preferencias
+              </h2>
+              <div className="rounded-card bg-content1">
+                <MlEmptyState
+                  size="sm"
+                  headingLevel={3}
+                  title="Para empezar"
+                  description="Con los primeros pedidos te mostramos sugerencias a la medida."
+                />
+              </div>
+            </section>
+          )}
 
           {(isPending || data.recommendations.length > 0) && (
             <div

@@ -13,13 +13,13 @@ export const RUTA_ADMINISTRACION = "/administracion";
 export const RUTA_PERFIL = "/perfil";
 
 export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
-  { key: "dashboard", label: "Dashboard", description: "Panel de control", href: RUTA_DASHBOARD, icon: <Grid3x3 /> },
-  { key: "ordenar", label: "Ordenar", description: "Pide comida a la oficina", href: RUTA_ORDENAR, icon: <UtensilsCrossed /> },
+  { key: "dashboard", label: "Dashboard", description: "Resumen y pedidos en curso", href: RUTA_DASHBOARD, icon: <Grid3x3 /> },
+  { key: "ordenar", label: "Ordenar", description: "Propuestas para cada momento del día", href: RUTA_ORDENAR, icon: <UtensilsCrossed /> },
   { key: "pedidos", label: "Pedidos", description: "Historial de tus pedidos", href: RUTA_PEDIDOS, icon: <ReceiptText /> },
   {
     key: "administracion",
     label: "Administración",
-    description: "Control de usuarios",
+    description: "Usuarios, sedes y datos",
     href: RUTA_ADMINISTRACION,
     icon: <BookOpen />,
   },
@@ -47,7 +47,7 @@ export function rutaPedidoConfirmado(orderId: string): string {
   return `${RUTA_CHECKOUT}/confirmado/${encodeURIComponent(orderId)}`;
 }
 /**
- * Menú de cuenta del avatar de la top bar (T-25). Sin `href`, la opción sale deshabilitada con "Pronto": al crear
+ * Menú de cuenta del avatar de la top bar (T-25). Sin `href`, la opción sale deshabilitada con "Próximamente": al crear
  * su pantalla, basta con añadir el `href` (y la ruta a `RUTAS_CON_PAGINA` y `PAGINAS_CLIENTE`).
  */
 export const MENU_CUENTA_CLIENTE: OrAccountMenuItem[] = [

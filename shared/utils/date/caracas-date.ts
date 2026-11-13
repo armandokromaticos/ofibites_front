@@ -44,6 +44,13 @@ export function formatCaracasTime(iso: string): string {
   return formatHour12(Number(part("hour")), part("minute"));
 }
 
+/** `true` si el instante cae en el día de hoy de Caracas (p. ej. "Llega hoy a las…" del dashboard). */
+export function isCaracasToday(iso: string, now: Date = new Date()): boolean {
+  if (!isValidIso(iso)) return false;
+  const part = getCaracasParts(iso, { year: "numeric", month: "2-digit", day: "2-digit" });
+  return `${part("year")}-${part("month")}-${part("day")}` === caracasNow(now).date;
+}
+
 /**
  * Antigüedad de un aviso: "Ahora" (< 1 min), "Hace 12 min", "Hace 2 h" (< 24 h) y, después, la fecha corta en
  * hora de Caracas ("4 de Sep"). `now` se inyecta para pruebas. Con una ISO inválida devuelve "—".

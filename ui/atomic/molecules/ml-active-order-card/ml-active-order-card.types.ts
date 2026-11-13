@@ -37,6 +37,8 @@ export interface MlActiveOrderCardProps {
   title?: string;
   /** Nivel del título. Por defecto 2. */
   headingLevel?: 2 | 3;
+  /** Título del estado vacío. Por defecto "Sin pedidos en camino". */
+  emptyTitle?: string;
   /** Texto sin pedido en curso. */
   emptyMessage?: string;
   className?: string;

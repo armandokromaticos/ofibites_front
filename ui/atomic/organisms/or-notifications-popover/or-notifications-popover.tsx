@@ -125,7 +125,7 @@ export function OrNotificationsPopover({
           action={
             onMarkAllRead && unreadCount > 0 && status === "ready"
               ? {
-                  label: "Marcar como leídas",
+                  label: "Marcar todas como leídas",
                   onPress: () => {
                     focusTitleAfterMarkAll.current = true;
                     onMarkAllRead();
@@ -166,8 +166,8 @@ export function OrNotificationsPopover({
           <MlEmptyState
             size="sm"
             icon={<Bell />}
-            title="Todo al día"
-            description="Aquí te avisaremos cuando tus pedidos cambien de estado."
+            title="Sin novedades"
+            description="Aquí te avisamos cuando un pedido cambie de estado o haya algo que revisar."
           />
         )}
 

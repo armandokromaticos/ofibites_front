@@ -262,7 +262,7 @@ export function PedidoConfirmado({ orderId }: { orderId: string }) {
             aria-disabled="true"
             aria-describedby={PEDIDOS_PRONTO_ID}
             onPress={() => undefined}
-            endContent={<AtChip size="sm">Pronto</AtChip>}
+            endContent={<AtChip size="sm">Próximamente</AtChip>}
           >
             Ver mis pedidos
           </AtButton>

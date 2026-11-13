@@ -16,7 +16,7 @@ export function MlGreetingCard({
   name,
   greeting = "Hola",
   prompt = "¿Qué quieres pedir hoy?",
-  ctaLabel = "Realizar pedido",
+  ctaLabel = "Hacer pedido",
   ctaHref,
   onCtaPress,
   ctaTourId,

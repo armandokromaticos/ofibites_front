@@ -14,7 +14,7 @@ const ITEM_BASE =
 /**
  * Navegación vertical entre secciones de una página (Figma "Mi perfil" `3651:1921`): la activa con fondo
  * `brand-soft` claro, barra `primary` a la izquierda y texto semibold. Son enlaces (`aria-current="page"` en la
- * activa) para que cada sección tenga URL propia. Una sección sin `href` no es enlace: se lee "Pronto" y lleva
+ * activa) para que cada sección tenga URL propia. Una sección sin `href` no es enlace: se lee "Próximamente" y lleva
  * `aria-disabled`, sin recibir el foco (no hay nada que activar).
  */
 export function MlSectionNav({ items, activeKey, onSelect, className, ...props }: MlSectionNavProps) {
@@ -35,7 +35,7 @@ export function MlSectionNav({ items, activeKey, onSelect, className, ...props }
               <li key={item.key}>
                 <span aria-disabled="true" className={cn(ITEM_BASE, "font-medium text-muted")}>
                   <span className="truncate">{item.label}</span>{" "}
-                  <AtChip classNames={{ base: "shrink-0" }}>Pronto</AtChip>
+                  <AtChip classNames={{ base: "shrink-0" }}>Próximamente</AtChip>
                 </span>
               </li>
             );

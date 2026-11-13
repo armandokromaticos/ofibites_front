@@ -276,7 +276,7 @@ export function UiCatalog() {
 
       <Section id="account-menu" title="OrAccountMenu">
         <div className="flex flex-wrap gap-8 rounded-card bg-content1 p-6">
-          <Specimen label="Opciones con «Pronto» y cerrar sesión (2,5 s)">
+          <Specimen label="Opciones con «Próximamente» y cerrar sesión (2,5 s)">
             <AccountMenuDemo id="account-demo" />
           </Specimen>
           <Specimen label="«Mi perfil» con href">
