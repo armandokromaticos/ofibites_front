@@ -23,6 +23,7 @@ export function MlCouponField({
   isApplying = false,
   error,
   applied,
+  appliedMessage,
   onRemove,
   isRemoving = false,
   className,
@@ -37,6 +38,11 @@ export function MlCouponField({
   // Región viva escrita en el DOM desde el efecto (no es estado de React: no re-renderiza).
   const anuncioRef = useRef<HTMLParagraphElement>(null);
   const codigoAplicado = applied?.code ?? null;
+  // El anuncio lee el texto del render en que cambió el código, sin volver a anunciarlo si solo cambia el importe.
+  const appliedMessageRef = useRef(appliedMessage);
+  useEffect(() => {
+    appliedMessageRef.current = appliedMessage;
+  });
 
   useEffect(() => {
     if (!moverFoco.current) return;
@@ -44,7 +50,7 @@ export function MlCouponField({
     (codigoAplicado ? quitarRef : inputRef).current?.focus();
     if (anuncioRef.current) {
       anuncioRef.current.textContent = codigoAplicado
-        ? `Código ${codigoAplicado} aplicado.`
+        ? (appliedMessageRef.current ?? `Código ${codigoAplicado} aplicado.`)
         : "Código quitado.";
     }
   }, [codigoAplicado]);
@@ -107,6 +113,9 @@ export function MlCouponField({
               Quitar
             </AtButton>
           </div>
+          {applied.isValid && appliedMessage && (
+            <p className="text-xs leading-5 text-secondary-600">{appliedMessage}</p>
+          )}
           {!applied.isValid && (
             <p id={avisoId} className="text-xs leading-5 text-danger-700">
               Este código ya no está vigente.

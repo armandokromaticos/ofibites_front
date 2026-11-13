@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useOrder } from "@/domain/hooks/orders";
 import { isOrderStatus, ORDER_PROGRESS_STEPS, ORDER_STATUS_LABELS, orderProgressIndex } from "@/domain/models";
-import { useCheckoutDraftStore } from "@/domain/stores";
+import { useAuthStore, useCheckoutDraftStore } from "@/domain/stores";
 import { Order } from "@/domain/types";
 import {
   dateOnlyFromApi,
@@ -73,9 +73,11 @@ export function PedidoConfirmado({ orderId }: { orderId: string }) {
     state.confirmed?.orderId === orderId ? state.confirmed : null,
   );
   const addressesQuery = useCompanyAddresses();
+  // "…y enviamos el detalle a {correo}" (T-39): el correo de quien confirma, de la sesión.
+  const correo = useAuthStore((state) => state.user?.email ?? null);
   const orderLoaded = Boolean(order);
 
-  // Con el pedido en pantalla, el foco va al título "¡Pedido confirmado!".
+  // Con el pedido en pantalla, el foco va al título "¡Pedido recibido!".
   useEffect(() => {
     if (orderLoaded) document.getElementById(TITULO_ID)?.focus({ preventScroll: true });
   }, [orderLoaded]);
@@ -162,11 +164,18 @@ export function PedidoConfirmado({ orderId }: { orderId: string }) {
           tabIndex={-1}
           className="text-balance font-display text-[28px] font-bold leading-9 tracking-[-0.03em] text-foreground outline-none"
         >
-          ¡Pedido confirmado!
+          ¡Pedido recibido!
         </h2>
         <p className="max-w-[52ch] text-pretty text-sm leading-[22px] text-foreground">
-          Tu pedido <strong className="font-semibold text-secondary-600">N.º {numero}</strong> quedó
-          registrado. Te avisamos en la campana de notificaciones cada vez que cambie de estado.
+          Registramos el pedido <strong className="font-semibold text-secondary-600">N.º {numero}</strong>
+          {correo ? (
+            <>
+              {" "}
+              y enviamos el detalle a <strong className="break-all font-semibold text-secondary-600">{correo}</strong>.
+            </>
+          ) : (
+            "."
+          )}
         </p>
       </section>
 
@@ -191,15 +200,15 @@ export function PedidoConfirmado({ orderId }: { orderId: string }) {
           {progreso >= 0 && progreso < 2 && (
             <section aria-labelledby="pedido-sigue-titulo" className="flex flex-col gap-4 rounded-card bg-content1 p-5 sm:p-6">
               <h3 id="pedido-sigue-titulo" className={CLASE_TITULO_BLOQUE}>
-                Qué sigue
+                ¿Qué sigue?
               </h3>
               <ol className="flex flex-col gap-3.5">
                 {[
                   "Ofibites revisa tu pedido y lo confirma. Te avisamos por la campana de notificaciones.",
                   entrega
-                    ? `Con la confirmación, el pedido queda agendado para el ${entrega.toLowerCase().replace(" · ", " a las ")}${entrega.endsWith(".") ? "" : "."}`
-                    : "Con la confirmación, el pedido queda agendado para la fecha que elegiste.",
-                  "El día de la entrega te avisamos cuando el pedido salga en camino.",
+                    ? `Al validarse el pago, el pedido queda programado para el ${entrega.toLowerCase().replace(" · ", " a las ")}${entrega.endsWith(".") ? "" : "."}`
+                    : "Al validarse el pago, el pedido queda programado para la fecha que elegiste.",
+                  "El día de la entrega te avisamos cuando esté en camino.",
                 ].map((texto, index) => (
                   <li key={texto} className="flex items-start gap-3 text-[13px] leading-5 text-foreground">
                     <span

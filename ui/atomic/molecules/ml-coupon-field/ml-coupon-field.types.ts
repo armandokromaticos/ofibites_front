@@ -23,6 +23,8 @@ export interface MlCouponFieldProps {
   error?: string | null;
   /** Cupón aplicado, o `null` para mostrar el input. */
   applied: MlCouponFieldApplied | null;
+  /** Texto visible bajo el cupón aplicado ("Código aplicado: $12,00."); también se anuncia al aplicarlo. */
+  appliedMessage?: string;
   onRemove: () => void;
   isRemoving?: boolean;
   className?: string;

@@ -109,7 +109,9 @@ function Facturacion() {
         <h3 id="checkout-facturacion-titulo" className={CLASE_TITULO_BLOQUE}>
           Datos de facturación
         </h3>
-        <p className={CLASE_AYUDA_BLOQUE}>Tomados del registro de tu empresa.</p>
+        <p className={CLASE_AYUDA_BLOQUE}>
+          Usamos los datos registrados de la empresa. Si alguno no es correcto, escríbenos desde Soporte.
+        </p>
       </div>
       {contenido}
     </section>

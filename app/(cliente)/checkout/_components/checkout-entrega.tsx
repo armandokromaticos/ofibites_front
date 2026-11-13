@@ -361,7 +361,7 @@ function PasoEntrega() {
               />
             </Bloque>
 
-            <Bloque id="checkout-sede" titulo="¿Dónde lo recibimos?" ayuda="Tomamos las sedes guardadas en tu agenda.">
+            <Bloque id="checkout-sede" titulo="¿Dónde lo entregamos?" ayuda="Elige una de las sedes guardadas.">
               {contenidoSedes}
               {esAdminEmpresa && !agregando && !addressesQuery.isPending && !addressesForbidden && (
                 <button
@@ -460,9 +460,9 @@ function PasoEntrega() {
               </div>
               <AtTextarea
                 name="notes"
-                label="Notas para el equipo de entrega (opcional)"
+                label="Notas para la entrega (opcional)"
                 labelPlacement="outside-top"
-                placeholder="Ej.: avisar en recepción, montar en la sala de juntas del piso 8, no usar maní."
+                placeholder="Ej.: Avisar en recepción, comunicarse al llegar."
                 minRows={3}
                 maxRows={8}
                 value={draft.notes}
@@ -494,7 +494,7 @@ function PasoEntrega() {
                 aria-describedby="checkout-entrega-bloqueo"
                 onPress={() => undefined}
               >
-                Continuar a la revisión
+                Continuar
               </AtButton>
               <p id="checkout-entrega-bloqueo" className="-mt-1 text-center text-xs leading-5 text-danger-700">
                 {factura.motivo}
@@ -502,7 +502,7 @@ function PasoEntrega() {
             </>
           ) : (
             <AtButton type="submit" form={FORM_ID} size="lg" className="h-[52px] w-full text-sm">
-              Continuar a la revisión
+              Continuar
             </AtButton>
           )}
           <Link

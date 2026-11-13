@@ -14,9 +14,6 @@ import { rutaProducto } from "../../_navegacion";
 /** Espera tras el último clic del stepper antes de enviar la cantidad (varios clics = un solo `PATCH`). */
 const ESPERA_CANTIDAD_MS = 450;
 
-/** Línea que hoy no se podría añadir (producto, tamaño o extras desactivados): el carrito aún la cotiza. */
-const AVISO_NO_DISPONIBLE = "Ya no está disponible así: quítalo del carrito o elige otra opción en el catálogo.";
-
 interface LineaCarritoProps {
   line: CartLineModel;
   /** Error de una acción de la línea, en español (la página lo anuncia); `null` lo limpia. */
@@ -126,7 +123,7 @@ export function LineaCarrito({ line, onError, onStale, onRemoved, removeButtonRe
       quantity={pendingQuantity ?? line.quantity}
       onQuantityChange={cambiarCantidad}
       isUpdating={pendingQuantity !== null || update.isPending}
-      notice={line.isAvailable ? null : AVISO_NO_DISPONIBLE}
+      notice={line.isAvailable ? null : `${line.name} ya no está disponible. Quítalo del carrito para continuar.`}
       isQuantityDisabled={!line.isAvailable}
       isRemoving={remove.isPending}
       removeButtonRef={removeButtonRef}

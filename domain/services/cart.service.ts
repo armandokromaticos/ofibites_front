@@ -39,7 +39,7 @@ export const cartService = {
 
   /**
    * `POST /cart/coupon`: aplica (o sustituye) el cupón del carrito. Un 400 trae `message` en español listo para
-   * mostrar ("Ese código no existe.", "Ya usaste este código."…). Devuelve el carrito completo con `summary.discount`.
+   * mostrar ("Ese código no es válido. Revísalo e inténtalo de nuevo.", "Ese código ya venció."…). Devuelve el carrito completo con `summary.discount`.
    */
   applyCoupon: (body: ApplyCartCouponRequest): Promise<CartResponse> =>
     authFetcher<CartResponse>("/cart/coupon", { method: "POST", body: JSON.stringify(body) }),

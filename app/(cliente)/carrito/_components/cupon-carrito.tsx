@@ -4,14 +4,16 @@ import { useState } from "react";
 
 import { useApplyCoupon, useRemoveCoupon } from "@/domain/hooks/cart";
 import { CartCoupon } from "@/domain/types";
-import { getApiErrorMessage } from "@/shared/utils";
+import { formatPrice, getApiErrorMessage } from "@/shared/utils";
 import { MlCouponField } from "@/ui/atomic";
 
 /**
  * Código promocional del resumen del carrito. El back valida el código y calcula el descuento (`summary.discount`);
- * aquí solo se envía y se muestra su respuesta. Los 400 traen el motivo en español ("Ese código no existe.").
+ * aquí solo se envía y se muestra su respuesta. Los 400 traen el motivo en español ("Ese código no es válido. Revísalo e
+ * inténtalo de nuevo.", "Ese código ya venció."). Con el cupón vigente, "Código aplicado: {descuento}." con el
+ * `summary.discount` del servidor (T-39).
  */
-export function CuponCarrito({ coupon }: { coupon: CartCoupon | null }) {
+export function CuponCarrito({ coupon, discount }: { coupon: CartCoupon | null; discount: number }) {
   const [codigo, setCodigo] = useState("");
   const [error, setError] = useState<string | null>(null);
   const apply = useApplyCoupon();
@@ -40,6 +42,7 @@ export function CuponCarrito({ coupon }: { coupon: CartCoupon | null }) {
       isApplying={apply.isPending}
       error={error}
       applied={coupon}
+      appliedMessage={coupon?.isValid ? `Código aplicado: ${formatPrice(discount)}.` : undefined}
       onRemove={() => {
         setError(null);
         remove.mutate(undefined, {
