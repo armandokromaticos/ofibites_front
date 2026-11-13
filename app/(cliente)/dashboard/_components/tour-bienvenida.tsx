@@ -3,10 +3,15 @@
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
-import { useTourStore } from "@/domain/stores";
+import { useAuthStore, useTourStore } from "@/domain/stores";
 import { OrGuidedTour } from "@/ui/atomic";
 
-import { OBJETIVOS_TOUR, PASOS_TOUR_BIENVENIDA, TOUR_BIENVENIDA } from "../../_data/tour-bienvenida";
+import {
+  OBJETIVOS_TOUR,
+  PASOS_TOUR_BIENVENIDA,
+  ROLES_TOUR_BIENVENIDA,
+  TOUR_BIENVENIDA,
+} from "../../_data/tour-bienvenida";
 
 interface TourBienvenidaProps {
   /** La URL trae `?tour=1`. */
@@ -24,6 +29,8 @@ interface TourBienvenidaProps {
  * Tour de bienvenida del cliente sobre el dashboard (T-33). El estado vive en `useTourStore`: cualquiera lo
  * abre con `iniciar("bienvenida-cliente")`.
  *
+ * Solo para `COMPANY_BUYER` y `COMPANY_ADMIN` de la empresa activa (T-39); con otro rol, `?tour=1` se quita sin abrirlo.
+ *
  * Hoy solo lo abre `?tour=1` (para probarlo y relanzarlo). Al abrirlo, el parámetro se quita de la URL
  * (`replace`, sin entrada nueva en el historial): recargar no lo vuelve a abrir sin querer; para repetirlo,
  * otra vez `?tour=1`.
@@ -37,6 +44,10 @@ export function TourBienvenida({
   const isOpen = useTourStore((state) => state.activeTour === TOUR_BIENVENIDA);
   const iniciar = useTourStore((state) => state.iniciar);
   const cerrar = useTourStore((state) => state.cerrar);
+  const rolPermitido = useAuthStore((state) => {
+    const role = state.memberships.find((m) => m.companyId === state.activeCompanyId)?.role;
+    return role !== undefined && ROLES_TOUR_BIENVENIDA.includes(role);
+  });
 
   // Solo los pasos cuyo objetivo se va a pintar: "Paso N de M" cuenta los que quedan.
   const pasos = useMemo(
@@ -51,11 +62,11 @@ export function TourBienvenida({
   // aún no ha visto el tour, llamar a `iniciar(TOUR_BIENVENIDA)` y, al cerrar, marcarlo como visto en el back.
   useEffect(() => {
     if (!abrirDesdeUrl || !puedeIniciar) return;
-    iniciar(TOUR_BIENVENIDA);
+    if (rolPermitido) iniciar(TOUR_BIENVENIDA);
     const url = new URL(window.location.href);
     url.searchParams.delete("tour");
     router.replace(`${url.pathname}${url.search}${url.hash}`, { scroll: false });
-  }, [abrirDesdeUrl, puedeIniciar, iniciar, router]);
+  }, [abrirDesdeUrl, puedeIniciar, rolPermitido, iniciar, router]);
 
   // Si se sale del dashboard con este tour abierto, no queda abierto para la próxima visita (otro tour, sí).
   useEffect(
@@ -68,9 +79,9 @@ export function TourBienvenida({
   return (
     <OrGuidedTour
       steps={pasos}
-      isOpen={isOpen}
+      isOpen={isOpen && rolPermitido}
       onClose={() => cerrar()}
-      finishLabel="Ir al dashboard"
+      finishLabel="Empezar a explorar"
       returnFocusFallback="#app-main"
     />
   );
