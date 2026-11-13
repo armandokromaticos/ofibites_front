@@ -178,13 +178,13 @@ function validateField(key: ErrorKey, values: FormValues): string | undefined {
   switch (key) {
     case "legalName": {
       const value = values.legalName.trim();
-      if (!value) return "Escribe el nombre de la empresa.";
+      if (!value) return "Escribe la razón social de la empresa.";
       if (value.length > MAX_LENGTH.legalName) return `Usa como máximo ${MAX_LENGTH.legalName} caracteres.`;
       return undefined;
     }
     case "taxId": {
       const value = values.taxIdNumber.trim();
-      if (!value) return "Escribe el número de RIF.";
+      if (!value) return "Escribe el RIF de la empresa.";
       if (!RIF_PATTERN.test(value)) return "Usa solo números y guiones, por ejemplo 30123456-7.";
       const digits = digitsOf(value).length;
       if (digits < RIF_MIN_DIGITS || digits > RIF_MAX_DIGITS) {

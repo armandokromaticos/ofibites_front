@@ -33,7 +33,7 @@ export function OnboardingCliente() {
   const addressesQuery = useCompanyAddresses();
 
   const [pasoElegido, setPasoElegido] = useState<Paso | null>(null);
-  // «Finalizar y comenzar» en curso: la sesión pasa a completada (onSuccess de la mutación) antes de que se fije
+  // «Finalizar configuración» en curso: la sesión pasa a completada (onSuccess de la mutación) antes de que se fije
   // «Listo»; sin esto, ese render intermedio redirigiría a /dashboard.
   const [finalizando, setFinalizando] = useState(false);
   // Mensaje del 400 de complete al volver a un paso incompleto.

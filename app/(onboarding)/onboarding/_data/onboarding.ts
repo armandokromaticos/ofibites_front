@@ -8,26 +8,25 @@ export type Paso = 0 | 1 | 2 | 3;
 
 export const PASO_LISTO: Paso = 3;
 
-/** Textos literales del Figma (`diseno/figma/textos/onboarding.md`). */
+/** Textos de T-39 (`gestion/textos-plataforma.md`, sección 2); el título del paso 3 sigue el del Figma. */
 export const COPY_PASO: Record<Paso, { title: string; subtitle: string }> = {
   0: {
-    title: "Configura los datos de tu empresa",
-    subtitle: "Ingresa la información legal necesaria para activar tu cuenta y gestionar tu facturación.",
+    title: "Empecemos con los datos de tu empresa",
+    subtitle: "Necesitamos estos datos legales para activar la cuenta y gestionar la facturación.",
   },
   1: {
-    title: "Directorio de entrega",
+    title: "¿Dónde entregamos?",
     subtitle:
-      "Registra cada lugar donde recibes pedidos. Al ordenar solo eliges la sede y ya sabemos a dónde llevarlo.",
+      "Registra cada lugar donde recibes pedidos. Al ordenar, solo hay que elegir la sede y ya sabemos a dónde llevar el pedido.",
   },
   2: {
     title: "Agrega a tu equipo",
     subtitle:
-      "Invita a las personas que harán pedidos o administrarán la cuenta. No es necesario agregar a todos ahora.",
+      "Invita a quienes harán pedidos, pagarán facturas o administrarán la cuenta. No hace falta sumar a todo el equipo ahora.",
   },
   3: {
-    title: "¡Tu cuenta está lista!",
-    subtitle:
-      "¡Configuración completada! Te damos un recorrido rápido para que conozcas cada sección de tu cuenta.",
+    title: "¡Todo quedó configurado!",
+    subtitle: "Te daremos un recorrido rápido para que conozcas cada sección de la cuenta.",
   },
 };
 
