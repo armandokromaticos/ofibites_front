@@ -8,6 +8,8 @@ import { OrOrderSummaryProps } from "./or-order-summary.types";
  * Resumen lateral del pedido (Figma 3462:2094, 3465:2846 y 3465:3585): título, conteo, líneas con foto, cantidad y
  * subtotal, filas de importes y el total grande. Todos los importes llegan formateados: los calcula el servidor.
  * El pie (`children`) lleva las acciones de cada paso.
+ * `variant="order"` (detalle del pedido, Figma 3632:1686): sin separador bajo el título, filas en peso regular con la
+ * etiqueta en `placeholder`, separador `surface-sand` antes del total, "Total" de 14 px y el importe de 22 px.
  */
 export function OrOrderSummary({
   title = "Resumen del pedido",
@@ -20,10 +22,12 @@ export function OrOrderSummary({
   totalLabel,
   children,
   className,
+  variant = "default",
 }: OrOrderSummaryProps) {
+  const esPedido = variant === "order";
   return (
     <aside aria-labelledby={titleId} className={cn("flex flex-col rounded-card bg-content1 p-5 sm:p-6", className)}>
-      <div className="flex flex-col gap-0.5 border-b border-border-subtle pb-4">
+      <div className={cn("flex flex-col gap-0.5", esPedido ? "pb-2" : "border-b border-border-subtle pb-4")}>
         <h2 id={titleId} className="font-display text-xl font-bold leading-7 text-foreground">
           {title}
         </h2>
@@ -53,13 +57,19 @@ export function OrOrderSummary({
         </ul>
       )}
 
-      <dl className="flex flex-col gap-2 border-b border-border-subtle py-4 text-[13px] leading-5">
+      <dl
+        className={cn(
+          "flex flex-col border-b text-[13px] leading-5",
+          esPedido ? "gap-2.5 border-surface-sand pb-4 pt-2" : "gap-2 border-border-subtle py-4",
+        )}
+      >
         {rows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-4">
-            <dt className="text-foreground">{row.label}</dt>
+            <dt className={esPedido ? "text-placeholder" : "text-foreground"}>{row.label}</dt>
             <dd
               className={cn(
-                "font-semibold tabular-nums",
+                "tabular-nums",
+                esPedido ? "font-normal" : "font-semibold",
                 row.isHighlighted ? "text-secondary-600" : "text-foreground",
               )}
             >
@@ -70,8 +80,15 @@ export function OrOrderSummary({
       </dl>
 
       <dl className="flex items-baseline justify-between gap-4 pb-5 pt-4">
-        <dt className="text-[15px] font-semibold text-foreground">Total</dt>
-        <dd className="text-[26px] font-bold leading-8 tracking-[-0.01em] tabular-nums text-foreground">{totalLabel}</dd>
+        <dt className={cn("font-semibold text-foreground", esPedido ? "text-sm" : "text-[15px]")}>Total</dt>
+        <dd
+          className={cn(
+            "font-bold tracking-[-0.01em] tabular-nums text-foreground",
+            esPedido ? "text-[22px] leading-7" : "text-[26px] leading-8",
+          )}
+        >
+          {totalLabel}
+        </dd>
       </dl>
 
       {children && <div className="flex flex-col gap-3">{children}</div>}

@@ -3,9 +3,10 @@ import { cn } from "@heroui/react";
 import { MlStatusNoteProps, MlStatusNoteTone } from "./ml-status-note.types";
 
 const TONOS: Record<MlStatusNoteTone, { caja: string; punto: string; titulo: string }> = {
-  success: { caja: "bg-brand-soft/30", punto: "bg-brand", titulo: "text-brand" },
+  success: { caja: "bg-brand-tint", punto: "bg-brand", titulo: "text-brand" },
   warning: { caja: "bg-surface-sand/50", punto: "bg-strength-medium", titulo: "text-strength-medium-foreground" },
-  danger: { caja: "bg-secondary-50", punto: "bg-accent", titulo: "text-secondary-700" },
+  // `secondary-700` sobre `secondary-100` da ~7:1 (AA).
+  danger: { caja: "bg-secondary-100", punto: "bg-accent", titulo: "text-secondary-700" },
   neutral: { caja: "bg-background", punto: "bg-muted", titulo: "text-foreground" },
 };
 
