@@ -15,7 +15,7 @@ interface PasswordRule {
   id: PasswordRuleId;
   /** Texto del checklist. */
   label: string;
-  /** Lo que falta, para la frase "Completa para crear tu contraseña: …". */
+  /** Lo que falta, para la frase "Te falta …". */
   requirement: string;
   test: (password: string) => boolean;
 }

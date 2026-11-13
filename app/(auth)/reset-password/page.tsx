@@ -8,7 +8,7 @@ import { parseRecoveryLink, RecoveryLink } from "@/domain/models";
 import { getApiErrorMessage, getApiErrorMessages, isApiError } from "@/shared/utils";
 import { AtButton, AtTextLink, MlAuthHeader, OrNewPasswordForm, TmAuthLayout } from "@/ui/atomic";
 
-const GENERIC_ERROR = "No pudimos cambiar la contraseña. Inténtalo de nuevo en unos minutos.";
+const GENERIC_ERROR = "¡Algo salió mal! Inténtalo de nuevo en un momento.";
 
 type View = "form" | "invalid-link" | "done";
 
@@ -95,7 +95,7 @@ function ResetPasswordFlow() {
         <MlAuthHeader
           title="¡Contraseña actualizada!"
           titleRef={titleRef}
-          subtitle="Tu contraseña se ha cambiado correctamente. Ya puedes iniciar sesión con tus nuevas credenciales."
+          subtitle="Ya puedes entrar con tu nueva contraseña."
         />
         <AtButton size="lg" fullWidth onPress={() => router.push("/login")}>
           Iniciar sesión
@@ -109,18 +109,17 @@ function ResetPasswordFlow() {
     return (
       <div className="flex flex-col gap-10">
         <MlAuthHeader
-          title={linkExpired ? "El enlace venció" : "El enlace no es válido"}
+          title={linkExpired ? "Este enlace venció" : "El enlace no es válido"}
           titleRef={titleRef}
           subtitle={
             linkExpired
-              ? "Los enlaces de recuperación duran poco y solo se pueden usar una vez. Pide uno nuevo para " +
-                "cambiar tu contraseña."
+              ? "Los enlaces duran poco tiempo por seguridad. Pide uno nuevo y te lo enviamos al momento."
               : "No pudimos leer el enlace de recuperación. Ábrelo de nuevo desde el correo o pide uno nuevo."
           }
         />
         <div className="flex flex-col gap-[19px]">
           <AtButton size="lg" fullWidth onPress={() => router.push("/forgot-password")}>
-            Pedir un enlace nuevo
+            Pedir nuevo enlace
           </AtButton>
           <BackToLogin />
         </div>
@@ -134,9 +133,9 @@ function ResetPasswordFlow() {
   return (
     <div className="flex flex-col gap-[38px]">
       <MlAuthHeader
-        title="Crear nueva contraseña"
+        title="Crea tu nueva contraseña"
         titleRef={titleRef}
-        subtitle="Ingresa tu nueva contraseña a continuación. Asegúrate de que sea segura y fácil de recordar para ti."
+        subtitle="Elige una contraseña segura que puedas recordar."
       />
       <OrNewPasswordForm
         onSubmit={handleSubmit}
