@@ -15,6 +15,31 @@ export function MlSearchBar({
   variant = "compact",
   className,
 }: MlSearchBarProps) {
+  if (variant === "inset") {
+    return (
+      <AtInput
+        type="search"
+        aria-label={label ?? placeholder}
+        placeholder={placeholder}
+        value={value}
+        onValueChange={onValueChange}
+        isClearable
+        onClear={() => onValueChange?.("")}
+        startContent={<Search aria-hidden="true" className="size-3.5 shrink-0 text-placeholder" strokeWidth={2.25} />}
+        className={cn("w-full", className)}
+        classNames={{
+          // Sin borde en reposo, hover ni foco: el foco se ve por el anillo de AtInput.
+          inputWrapper: cn(
+            "h-10 min-h-10 gap-2.5 bg-background px-[18px] shadow-none",
+            "border-transparent data-[hover=true]:border-transparent group-data-[focus=true]:border-transparent",
+          ),
+          input: "text-sm font-normal placeholder:text-muted [&::-webkit-search-cancel-button]:hidden",
+          clearButton: "text-muted",
+        }}
+      />
+    );
+  }
+
   if (variant === "catalog") {
     return (
       <AtInput
