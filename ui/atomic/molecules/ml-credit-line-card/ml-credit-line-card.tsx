@@ -28,9 +28,9 @@ export function MlCreditLineCard({
     availableLabel !== null && {
       label: "Disponible",
       value: isBlocked ? `${availableLabel} · bloqueado` : availableLabel,
-      clase: isBlocked ? "text-secondary-700" : "text-foreground",
+      clase: isBlocked ? "text-secondary-700" : "text-brand",
     },
-    limitLabel !== null && { label: "Cupo aprobado", value: limitLabel, clase: "text-foreground" },
+    limitLabel !== null && { label: "Cupo aprobado", value: limitLabel, clase: "text-primary" },
   ].filter((fila): fila is { label: string; value: string; clase: string } => Boolean(fila));
 
   return (
@@ -48,7 +48,7 @@ export function MlCreditLineCard({
           value={porcentaje}
           size="sm"
           classNames={{
-            track: "h-1.5 bg-content1",
+            track: "h-2 bg-track",
             indicator: isBlocked ? "bg-accent" : "bg-strength-medium",
           }}
         />

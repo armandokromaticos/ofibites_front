@@ -27,11 +27,15 @@ interface ImportesPedido {
   taxRate?: number | null;
 }
 
-/** Filas del resumen (subtotal, descuento si hay, envío e IVA) con los importes del servidor. */
+/**
+ * Filas del resumen (subtotal, descuento si hay, envío e IVA) con los importes del servidor. Con
+ * `soloEnvioConCosto` (detalle del pedido, Figma 3632:1686), la fila del envío solo sale si `shipping > 0`.
+ */
 export function filasResumen(
   importes: ImportesPedido,
   etiquetaEnvio = "Envío estimado",
   etiquetaSubtotal = "Subtotal",
+  soloEnvioConCosto = false,
 ): OrOrderSummaryRow[] {
   const filas: OrOrderSummaryRow[] = [
     { label: etiquetaSubtotal, value: formatPrice(importes.subtotal) },
@@ -43,12 +47,18 @@ export function filasResumen(
       isHighlighted: true,
     });
   }
-  filas.push(
-    importes.shipping === 0
-      ? { label: etiquetaEnvio, value: "Sin costo", isHighlighted: true }
-      : { label: etiquetaEnvio, value: formatPrice(importes.shipping) },
-    { label: etiquetaIva(importes.taxRate), value: formatPrice(importes.tax) },
-  );
+  if (soloEnvioConCosto) {
+    if (importes.shipping > 0) {
+      filas.push({ label: etiquetaEnvio, value: formatPrice(importes.shipping) });
+    }
+  } else {
+    filas.push(
+      importes.shipping === 0
+        ? { label: etiquetaEnvio, value: "Sin costo", isHighlighted: true }
+        : { label: etiquetaEnvio, value: formatPrice(importes.shipping) },
+    );
+  }
+  filas.push({ label: etiquetaIva(importes.taxRate), value: formatPrice(importes.tax) });
   return filas;
 }
 

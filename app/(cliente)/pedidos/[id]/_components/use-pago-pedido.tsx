@@ -70,7 +70,17 @@ export interface AccionCabeceraPago {
 
 const AVISO_ID = "pedido-aviso-pago";
 const CLASE_ENLACE =
-  "self-center rounded-sm text-xs font-semibold text-strength-medium-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  "self-center rounded-sm text-xs font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-60";
+/** Figma: "Ver factura" y "Ver comprobante de pago" en `brand`; las acciones sobre el pago ("Enviar otro…", "Ver
+ * comprobante rechazado", "Descargar factura") en `primary`. */
+const TONO_ENLACE = { brand: "text-brand", primary: "text-primary" } as const;
+
+interface EnlacePago {
+  label: string;
+  onPress: () => void;
+  tone: keyof typeof TONO_ENLACE;
+  disabled?: boolean;
+}
 
 function enfocar(id: string) {
   requestAnimationFrame(() => document.getElementById(id)?.focus());
@@ -137,6 +147,9 @@ export function usePagoPedido(order: Order | undefined) {
       accionCabecera: null,
       metodoPago: null,
       resumen: null,
+      enlaces: null,
+      muestraRepetirEnCabecera: true,
+      muestraRepetirEnTotal: true,
       aviso: null,
       modales: null,
     } as const;
@@ -284,6 +297,7 @@ export function usePagoPedido(order: Order | undefined) {
   } else if (estado === "REJECTED" && ultimo) {
     banner = {
       tone: "danger",
+      titleColor: "foreground",
       title: "Finanzas rechazó tu comprobante de pago",
       children: [
         ultimo.rejectionReason ? `${ultimo.rejectionReason.replace(/\.$/, "")}.` : "",
@@ -426,18 +440,20 @@ export function usePagoPedido(order: Order | undefined) {
     }
   }
 
-  // Botón principal del bloque y enlaces bajo él, según el estado (Figma).
+  // Botón principal del bloque y enlaces bajo él, según el estado (Figma). "Descargar factura (PDF)" solo con el pago
+  // pendiente al contado; en los demás estados, "Ver factura".
+  const pendienteContado = estado === "PENDING" && !invoice.isCredit;
   let botonResumen: ReactNode = null;
-  const enlaces: { label: string; onPress: () => void }[] = [];
+  const enlaces: EnlacePago[] = [];
   if (estado === "PAID") {
-    if (ultimo) enlaces.push({ label: "Ver comprobante de pago", onPress: abrirComprobante });
+    if (ultimo) enlaces.push({ label: "Ver comprobante de pago", onPress: abrirComprobante, tone: "brand" });
   } else if (estado === "IN_REVIEW") {
     botonResumen = (
       <AtButton size="lg" variant="bordered" className="h-[52px] w-full border-1 border-primary text-sm text-primary" onPress={abrirComprobante}>
         Ver comprobante enviado
       </AtButton>
     );
-    if (puedePagar) enlaces.push({ label: "Enviar otro comprobante", onPress: abrirPago });
+    if (puedePagar) enlaces.push({ label: "Enviar otro comprobante", onPress: abrirPago, tone: "primary" });
   } else if (estado === "REJECTED") {
     if (pagable) {
       botonResumen = (
@@ -446,16 +462,16 @@ export function usePagoPedido(order: Order | undefined) {
         </AtButton>
       );
     }
-    if (ultimo) enlaces.push({ label: "Ver comprobante rechazado", onPress: abrirComprobante });
+    if (ultimo) enlaces.push({ label: "Ver comprobante rechazado", onPress: abrirComprobante, tone: "primary" });
   } else if (estado === "OVERDUE" && pagable) {
     botonResumen = (
       <AtButton size="lg" className="h-[52px] w-full bg-secondary-600 text-sm text-white" onPress={abrirPago}>
         Pagar factura vencida
       </AtButton>
     );
-    if (rechazadoVencida) enlaces.push({ label: "Ver comprobante rechazado", onPress: abrirComprobante });
+    if (rechazadoVencida) enlaces.push({ label: "Ver comprobante rechazado", onPress: abrirComprobante, tone: "primary" });
   } else if (estado === "OVERDUE" && rechazadoVencida) {
-    enlaces.push({ label: "Ver comprobante rechazado", onPress: abrirComprobante });
+    enlaces.push({ label: "Ver comprobante rechazado", onPress: abrirComprobante, tone: "primary" });
   } else if (estado === "PENDING" && pagable) {
     botonResumen = invoice.isCredit ? (
       <AtButton size="lg" variant="bordered" className="h-[52px] w-full border-1 border-primary text-sm text-primary" onPress={abrirPago}>
@@ -467,8 +483,18 @@ export function usePagoPedido(order: Order | undefined) {
       </AtButton>
     );
   }
-  enlaces.push({ label: "Ver factura", onPress: abrirFactura });
+  if (pendienteContado) {
+    enlaces.push({
+      label: descargarFactura.isPending ? "Descargando la factura…" : "Descargar factura (PDF)",
+      onPress: bajarFactura,
+      tone: "primary",
+      disabled: descargarFactura.isPending,
+    });
+  } else {
+    enlaces.push({ label: "Ver factura", onPress: abrirFactura, tone: "brand" });
+  }
 
+  // Orden del bloque: nota de estado → línea de crédito → botón principal → (Repetir, lo pinta el detalle) → enlaces.
   const resumen = (
     <>
       <MlStatusNote tone={nota.tone} title={nota.title}>
@@ -477,18 +503,28 @@ export function usePagoPedido(order: Order | undefined) {
       </MlStatusNote>
       {lineaCredito}
       {botonResumen}
-      <div className="flex flex-col items-center gap-2">
-        {enlaces.map((enlace) => (
-          <button key={enlace.label} type="button" className={CLASE_ENLACE} onClick={enlace.onPress}>
-            {enlace.label}
-          </button>
-        ))}
-        <button type="button" className={CLASE_ENLACE} onClick={bajarFactura} disabled={descargarFactura.isPending}>
-          {descargarFactura.isPending ? "Descargando la factura…" : "Descargar factura (PDF)"}
-        </button>
-      </div>
     </>
   );
+  const enlacesNode = (
+    <div className="flex flex-col items-center gap-2">
+      {enlaces.map((enlace) => (
+        <button
+          key={enlace.label}
+          type="button"
+          className={`${CLASE_ENLACE} ${TONO_ENLACE[enlace.tone]}`}
+          onClick={enlace.onPress}
+          disabled={enlace.disabled}
+        >
+          {enlace.label}
+        </button>
+      ))}
+    </div>
+  );
+
+  // "Repetir pedido" (Figma): no sale con el pago por confirmar ni con el comprobante rechazado; en el total tampoco
+  // con el pago pendiente al contado (solo "Pagar factura").
+  const muestraRepetirEnCabecera = estado !== "IN_REVIEW" && estado !== "REJECTED";
+  const muestraRepetirEnTotal = muestraRepetirEnCabecera && !pendienteContado;
 
   // --- Aviso tras una acción (enviar, cancelar, error de descarga) --------------------------------------------
   const textoAviso = aviso ?? (errorAccion && !modal ? { tone: "danger" as const, texto: errorAccion } : null);
@@ -707,6 +743,9 @@ export function usePagoPedido(order: Order | undefined) {
     accionCabecera,
     metodoPago,
     resumen,
+    enlaces: enlacesNode,
+    muestraRepetirEnCabecera,
+    muestraRepetirEnTotal,
     aviso: avisoNode,
     modales,
   } as const;
