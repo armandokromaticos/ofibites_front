@@ -1,11 +1,11 @@
 import { InvoicePayment, OrderInvoice } from "@/domain/types";
 import {
-  caracasNow,
   dateOnlyFromApi,
   formatCaracasDateSlash,
   formatCaracasTime,
   getApiErrorMessage,
   isApiError,
+  isCaracasToday,
 } from "@/shared/utils";
 
 import { RUTA_CARRITO } from "../../_navegacion";
@@ -38,9 +38,7 @@ export function hora(iso: string): string {
 
 /** `true` si el instante cae hoy en Caracas. */
 export function esHoy(iso: string, now: Date = new Date()): boolean {
-  const hoy = caracasNow(now).date;
-  const [dia, mes, anio] = formatCaracasDateSlash(iso).split("/");
-  return `${anio}-${mes}-${dia}` === hoy;
+  return isCaracasToday(iso, now);
 }
 
 /** "hoy a las 10:02 a. m." o "el 27/09 a las 10:02 a. m.". */

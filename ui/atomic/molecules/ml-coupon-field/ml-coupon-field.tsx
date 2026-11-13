@@ -118,7 +118,7 @@ export function MlCouponField({
           )}
           {!applied.isValid && (
             <p id={avisoId} className="text-xs leading-5 text-danger-700">
-              Este código ya no está vigente.
+              Ese código ya venció.
             </p>
           )}
         </div>

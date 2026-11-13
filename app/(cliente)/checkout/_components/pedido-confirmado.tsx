@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useOrder } from "@/domain/hooks/orders";
 import { isOrderStatus, ORDER_PROGRESS_STEPS, ORDER_STATUS_LABELS, orderProgressIndex } from "@/domain/models";
-import { useAuthStore, useCheckoutDraftStore } from "@/domain/stores";
+import { useCheckoutDraftStore } from "@/domain/stores";
 import { Order } from "@/domain/types";
 import {
   dateOnlyFromApi,
@@ -73,8 +73,6 @@ export function PedidoConfirmado({ orderId }: { orderId: string }) {
     state.confirmed?.orderId === orderId ? state.confirmed : null,
   );
   const addressesQuery = useCompanyAddresses();
-  // "…y enviamos el detalle a {correo}" (T-39): el correo de quien confirma, de la sesión.
-  const correo = useAuthStore((state) => state.user?.email ?? null);
   const orderLoaded = Boolean(order);
 
   // Con el pedido en pantalla, el foco va al título "¡Pedido recibido!".
@@ -166,16 +164,9 @@ export function PedidoConfirmado({ orderId }: { orderId: string }) {
         >
           ¡Pedido recibido!
         </h2>
+        {/* El doc de textos (T-39) añade "…y enviamos el detalle a {correo}": vuelve cuando exista el correo de pedido. */}
         <p className="max-w-[52ch] text-pretty text-sm leading-[22px] text-foreground">
-          Registramos el pedido <strong className="font-semibold text-secondary-600">N.º {numero}</strong>
-          {correo ? (
-            <>
-              {" "}
-              y enviamos el detalle a <strong className="break-all font-semibold text-secondary-600">{correo}</strong>.
-            </>
-          ) : (
-            "."
-          )}
+          Registramos el pedido <strong className="font-semibold text-secondary-600">N.º {numero}</strong>.
         </p>
       </section>
 

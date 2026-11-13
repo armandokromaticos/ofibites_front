@@ -42,7 +42,7 @@ export function CuponCarrito({ coupon, discount }: { coupon: CartCoupon | null; 
       isApplying={apply.isPending}
       error={error}
       applied={coupon}
-      appliedMessage={coupon?.isValid ? `Código aplicado: ${formatPrice(discount)}.` : undefined}
+      appliedMessage={coupon?.isValid && discount > 0 ? `Código aplicado: ${formatPrice(discount)}.` : undefined}
       onRemove={() => {
         setError(null);
         remove.mutate(undefined, {

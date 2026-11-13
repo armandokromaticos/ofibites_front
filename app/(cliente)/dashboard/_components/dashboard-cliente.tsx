@@ -106,7 +106,7 @@ function etaLabel(estimatedArrival: string | null | undefined): string {
   const hora = formatCaracasTime(estimatedArrival);
   return isCaracasToday(estimatedArrival)
     ? `Llega hoy a las ${hora}`
-    : `Llega el ${formatCaracasShortDate(estimatedArrival)} a las ${hora}`;
+    : `Llega el ${formatCaracasShortDate(estimatedArrival).toLowerCase()}. a las ${hora}`;
 }
 
 function toActiveOrderCard(order: ClientActiveOrder): MlActiveOrderCardOrder {

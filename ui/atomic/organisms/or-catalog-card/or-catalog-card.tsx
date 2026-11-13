@@ -97,7 +97,7 @@ export function OrCatalogCard({
             el disparador, saldría al pasar por cualquier parte de la card.
           */}
           <AtTooltip content={actionTooltip} placement="top" offset={10}>
-            <span className="flex size-full items-center justify-center">
+            <span className="relative z-[1] flex size-full items-center justify-center">
               <Plus aria-hidden="true" className="size-6" strokeWidth={2.25} />
             </span>
           </AtTooltip>

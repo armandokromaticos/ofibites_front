@@ -130,7 +130,7 @@ const hace = (minutos: number) => new Date(Date.now() - minutos * 60_000).toISOS
 export const SAMPLE_NOTIFICATIONS: OrNotificationsPopoverItem[] = [
   {
     id: "n1",
-    message: "Tu pedido #7728950E va en camino. Llega a las 10:30 a. m..",
+    message: "Tu pedido #7728950E va en camino. Llega a las 10:30 a. m.",
     isUnread: true,
     orderStatus: "IN_TRANSIT",
     createdAt: hace(12),
@@ -138,7 +138,7 @@ export const SAMPLE_NOTIFICATIONS: OrNotificationsPopoverItem[] = [
   },
   {
     id: "n2",
-    message: "Tu pedido #A1C3E2F4 fue confirmado para el 4 de sep a las 10:30 a. m..",
+    message: "Tu pedido #A1C3E2F4 fue confirmado para el 4 de sep a las 10:30 a. m.",
     isUnread: true,
     orderStatus: "CONFIRMED",
     createdAt: hace(120),
