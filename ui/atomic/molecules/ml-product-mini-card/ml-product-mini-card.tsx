@@ -4,6 +4,8 @@ import Link from "next/link";
 import { cn, Spinner } from "@heroui/react";
 import { Plus } from "lucide-react";
 
+import { AtTooltip } from "@/ui/atomic/atoms";
+
 import { MlProductMiniCardProps } from "./ml-product-mini-card.types";
 
 const PLUS = cn(
@@ -29,6 +31,7 @@ export function MlProductMiniCard({
   onAdd,
   isAdding = false,
   addLabel,
+  addTooltip = "Añadir al carrito",
   headingLevel = 3,
   className,
 }: MlProductMiniCardProps) {
@@ -66,21 +69,23 @@ export function MlProductMiniCard({
         <p className="truncate text-[13px] leading-5 text-subtle">{priceLabel}</p>
       </div>
       {onAdd ? (
-        <button
-          type="button"
-          aria-label={addLabel ?? `Añadir ${name} al carrito`}
-          data-mini-card-action=""
-          aria-disabled={isAdding || undefined}
-          onClick={() => !isAdding && onAdd()}
-          // Encima del enlace que cubre la card (`z-10`).
-          className={cn(PLUS, "relative z-10 hover:bg-primary hover:text-primary-foreground", isAdding && "cursor-wait")}
-        >
-          {isAdding ? (
-            <Spinner size="sm" color="current" classNames={{ wrapper: "size-3.5" }} />
-          ) : (
-            <Plus aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
-          )}
-        </button>
+        <AtTooltip content={addTooltip} placement="top" offset={8}>
+          <button
+            type="button"
+            aria-label={addLabel ?? `Añadir ${name} al carrito`}
+            data-mini-card-action=""
+            aria-disabled={isAdding || undefined}
+            onClick={() => !isAdding && onAdd()}
+            // Encima del enlace que cubre la card (`z-10`).
+            className={cn(PLUS, "relative z-10 hover:bg-primary hover:text-primary-foreground", isAdding && "cursor-wait")}
+          >
+            {isAdding ? (
+              <Spinner size="sm" color="current" classNames={{ wrapper: "size-3.5" }} />
+            ) : (
+              <Plus aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
+            )}
+          </button>
+        </AtTooltip>
       ) : (
         <Link
           href={href}

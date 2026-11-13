@@ -43,7 +43,7 @@ const MIN_BUSQUEDA = 2;
 const FILTROS: MlFilterChipsOption<FiltroLista>[] = [
   { value: "todo", label: "Todo" },
   { value: "oferta", label: "En oferta" },
-  { value: "nuevos", label: "Nuevos" },
+  { value: "nuevos", label: "Novedades" },
 ];
 
 const FILTRO_API: Record<FiltroLista, CatalogFilter | undefined> = {
