@@ -318,7 +318,7 @@ export function UiCatalog() {
             options={[
               { value: "todos", label: "Todos" },
               { value: "desayunos", label: "Desayunos" },
-              { value: "coffee", label: "Coffee break" },
+              { value: "coffee-break", label: "Coffee break" },
               { value: "bebidas", label: "Bebidas" },
             ]}
             value={filterDemo}

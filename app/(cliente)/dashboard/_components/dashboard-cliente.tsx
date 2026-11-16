@@ -1,16 +1,18 @@
 "use client";
 
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
+import { toRecommendationView } from "@/domain/adapters";
 import { useRepeatOrder } from "@/domain/hooks/cart";
 import {
   EstadoQaDashboard,
   useClientDashboard,
   useClientUser,
+  useTeamPreferences,
 } from "@/domain/hooks/dashboard";
 import {
   ClientActiveOrder,
@@ -22,11 +24,7 @@ import {
 } from "@/domain/models";
 import { useCartNoticeStore } from "@/domain/stores";
 import { duration, ease, fadeRise, listStagger } from "@/shared/motion";
-import {
-  formatCaracasShortDate,
-  formatCaracasTime,
-  isCaracasToday,
-} from "@/shared/utils";
+import { formatCaracasShortDate, formatCaracasTime, isCaracasToday } from "@/shared/utils";
 import {
   AtButton,
   AtSkeleton,
@@ -45,10 +43,7 @@ import {
 } from "@/ui/atomic";
 
 import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
-import {
-  avisoPedidoRepetido,
-  mensajeErrorRepetir,
-} from "../../_data/repetir-pedido";
+import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pedido";
 import { OBJETIVOS_TOUR } from "../../_data/tour-bienvenida";
 import {
   parseCategoriaOrdenar,
@@ -75,40 +70,18 @@ function categoryHref(id: string): string {
   return categoria ? rutaOrdenarCategoria(categoria) : RUTA_ORDENAR;
 }
 
-// Filtros de "Según tus preferencias" (entrega de diseño): Todos · Desayunos · Coffee break · Bebidas.
+// Filtros de "Según tus preferencias": "Todos" + chips fijos (Desayunos · Coffee break · Bebidas) o las secciones
+// que eligió el equipo en su solicitud de ingreso (T-45, `toRecommendationView`).
 type RecommendationFilter = "todos" | ClientRecommendationCategory;
 
-const RECOMMENDATION_FILTERS: { value: RecommendationFilter; label: string }[] =
-  [
-    { value: "todos", label: "Todos" },
-    ...(
-      Object.keys(
-        RECOMMENDATION_CATEGORY_LABELS,
-      ) as ClientRecommendationCategory[]
-    ).map((value) => ({
-      value,
-      label: RECOMMENDATION_CATEGORY_LABELS[value],
-    })),
-  ];
-
 /** Salida de la lista al cambiar de filtro: fundido corto que acelera. */
-const LIST_EXIT = {
-  opacity: 0,
-  transition: { duration: duration.fast, ease: ease.in },
-};
+const LIST_EXIT = { opacity: 0, transition: { duration: duration.fast, ease: ease.in } };
 
 // Camino principal del pedido (OrderStateMachine): Confirmado → En preparación → En camino → Entregado.
 // Antes de confirmar (creado, por aprobar, por confirmar, en ajuste) ningún paso está hecho.
-const ORDER_STEPS: OrderStatus[] = [
-  "CONFIRMED",
-  "IN_PREPARATION",
-  "IN_TRANSIT",
-  "DELIVERED",
-];
+const ORDER_STEPS: OrderStatus[] = ["CONFIRMED", "IN_PREPARATION", "IN_TRANSIT", "DELIVERED"];
 
-function toOrderSteps(
-  status: OrderStatus,
-): MlActiveOrderCardStep[] | undefined {
+function toOrderSteps(status: OrderStatus): MlActiveOrderCardStep[] | undefined {
   if (status === "REJECTED" || status === "CANCELLED") return undefined;
   const reached = ORDER_STEPS.indexOf(status);
   return ORDER_STEPS.map((step, stepIndex) => ({
@@ -166,10 +139,10 @@ function toRecentOrderItem(order: ClientRecentOrder): OrRecentOrdersItem {
 function TopSkeleton() {
   return (
     <div className="flex flex-col gap-[27px]">
-      <AtSkeleton className="rounded-card h-[307px]" />
-      <div className="gap-[27px] grid lg:grid-cols-2">
-        <AtSkeleton className="rounded-card h-[188px]" />
-        <AtSkeleton className="rounded-card h-[188px]" />
+      <AtSkeleton className="h-[307px] rounded-card" />
+      <div className="grid gap-[27px] lg:grid-cols-2">
+        <AtSkeleton className="h-[188px] rounded-card" />
+        <AtSkeleton className="h-[188px] rounded-card" />
       </div>
     </div>
   );
@@ -178,11 +151,11 @@ function TopSkeleton() {
 function RecommendationsSkeleton() {
   return (
     <div className="flex flex-col gap-6">
-      <AtSkeleton className="rounded-full w-72 max-w-full h-9" />
-      <div className="gap-[21px] grid sm:grid-cols-2 lg:grid-cols-3">
-        <AtSkeleton className="rounded-card h-[407px]" />
-        <AtSkeleton className="hidden sm:block rounded-card h-[407px]" />
-        <AtSkeleton className="hidden lg:block rounded-card h-[407px]" />
+      <AtSkeleton className="h-9 w-72 max-w-full rounded-full" />
+      <div className="grid gap-[21px] sm:grid-cols-2 lg:grid-cols-3">
+        <AtSkeleton className="h-[407px] rounded-card" />
+        <AtSkeleton className="hidden h-[407px] rounded-card sm:block" />
+        <AtSkeleton className="hidden h-[407px] rounded-card lg:block" />
       </div>
     </div>
   );
@@ -190,31 +163,29 @@ function RecommendationsSkeleton() {
 
 interface DashboardClienteProps {
   estadoQa?: EstadoQaDashboard;
+  /** `?preferencias=` (solo desarrollo): slugs de sección simulados como preferencias del equipo. */
+  preferenciasQa?: string[];
   /** `?tour=1`: abre el tour de bienvenida (pruebas; ver `TourBienvenida`). */
   abrirTour?: boolean;
 }
 
 export function DashboardCliente({
   estadoQa,
+  preferenciasQa,
   abrirTour = false,
 }: DashboardClienteProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const router = useRouter();
   const repeat = useRepeatOrder();
   const setCartNotice = useCartNoticeStore((state) => state.setNotice);
-  const [repeatingOrderId, setRepeatingOrderId] = useState<
-    string | undefined
-  >();
+  const [repeatingOrderId, setRepeatingOrderId] = useState<string | undefined>();
   // Doble clic: el segundo llega antes de que `isPending` se pinte.
   const repitiendo = useRef(false);
-  const [repeatError, setRepeatError] = useState<{
-    orderId: string;
-    message: string;
-  } | null>(null);
+  const [repeatError, setRepeatError] = useState<{ orderId: string; message: string } | null>(null);
 
-  const { data, isPending, isError, isFetching, refetch } = useClientDashboard({
-    qaState: estadoQa,
-  });
+  const { data, isPending, isError, isFetching, refetch } = useClientDashboard({ qaState: estadoQa });
+  // Opcional: mientras carga o si falla (`data` sin valor), las recomendaciones salen como sin preferencias.
+  const { data: preferences } = useTeamPreferences({ qaSectionSlugs: preferenciasQa });
 
   // "Repetir" de una orden: copia sus líneas disponibles al carrito y lleva a `/carrito` con el aviso (qué se
   // añadió y qué no). Con error no navega: el mensaje sale bajo la fila. Un segundo clic mientras repite no hace
@@ -223,9 +194,7 @@ export function DashboardCliente({
   const repetirPedido = (orderId: string) => {
     if (repitiendo.current) return;
     repitiendo.current = true;
-    const orderNumber = data?.recentOrders.find(
-      (order) => order.id === orderId,
-    )?.number;
+    const orderNumber = data?.recentOrders.find((order) => order.id === orderId)?.number;
     setRepeatError(null);
     setRepeatingOrderId(orderId);
     repeat
@@ -243,18 +212,30 @@ export function DashboardCliente({
   // Las recomendaciones entran escalonadas solo cuando sustituyen al esqueleto de carga. Con datos ya
   // en caché llegan con la página, sin una segunda entrada encima de la transición de ruta.
   const [startedLoading] = useState(isPending);
-  const [filter, setFilter] = useState<RecommendationFilter>("todos");
-  const recommendations = data?.recommendations ?? [];
+  const [selectedFilter, setFilter] = useState<RecommendationFilter>("todos");
+  const recommendationView = useMemo(
+    () => toRecommendationView(data?.recommendations ?? [], preferences),
+    [data?.recommendations, preferences],
+  );
+  const recommendationFilters: { value: RecommendationFilter; label: string }[] = [
+    { value: "todos", label: "Todos" },
+    ...recommendationView.categories.map((value) => ({
+      value,
+      label: RECOMMENDATION_CATEGORY_LABELS[value],
+    })),
+  ];
+  // Si llegan las preferencias y el chip elegido ya no está (p. ej. "Desayunos"), se vuelve a "Todos" de verdad
+  // (ajuste de estado durante el render; la guarda evita el bucle): si el chip vuelve, no se reactiva solo.
+  if (selectedFilter !== "todos" && !recommendationView.categories.includes(selectedFilter)) {
+    setFilter("todos");
+  }
+  const filter = selectedFilter;
   const visibleRecommendations =
-    filter === "todos"
-      ? recommendations
-      : recommendations.filter((product) => product.category === filter);
-  const filterLabel =
-    filter === "todos" ? "Todos" : RECOMMENDATION_CATEGORY_LABELS[filter];
-  const filterAnnouncement =
-    filter === "todos"
-      ? `Todas las recomendaciones: ${visibleRecommendations.length}`
-      : `${visibleRecommendations.length} ${visibleRecommendations.length === 1 ? "recomendación" : "recomendaciones"} de ${filterLabel}`;
+    filter === "todos" ? recommendationView.todos : (recommendationView.porCategoria[filter] ?? []);
+  const filterLabel = filter === "todos" ? "Todos" : RECOMMENDATION_CATEGORY_LABELS[filter];
+  const filterAnnouncement = filter === "todos"
+    ? `Todas las recomendaciones: ${visibleRecommendations.length}`
+    : `${visibleRecommendations.length} ${visibleRecommendations.length === 1 ? "recomendación" : "recomendaciones"} de ${filterLabel}`;
   const recommendationsMotion = listStagger(visibleRecommendations.length);
   const categoriesMotion = listStagger(CATEGORIAS_DASHBOARD.length);
 
@@ -264,7 +245,7 @@ export function DashboardCliente({
   let content: ReactNode;
   if (isError && !data) {
     content = (
-      <div className="bg-content1 mx-auto rounded-card w-full max-w-xl">
+      <div className="mx-auto w-full max-w-xl rounded-card bg-content1">
         <MlEmptyState
           tone="error"
           headingLevel={2}
@@ -310,7 +291,7 @@ export function DashboardCliente({
               size="xs"
               variant="light"
               color="default"
-              className="px-1 min-w-0 h-auto text-[13px] text-primary underline underline-offset-2 align-baseline"
+              className="h-auto min-w-0 px-1 align-baseline text-[13px] text-primary underline underline-offset-2"
               onPress={() => refetch()}
               isLoading={isFetching}
             >
@@ -322,16 +303,14 @@ export function DashboardCliente({
           xl:grid-rows-[auto_1fr]: la fila 2 (recomendaciones) es flexible, así absorbe lo que la columna derecha (filas
           1-2) mida de más. Sin ella, esa altura se repartía también a la fila 1 y dejaba un hueco bajo las promos.
         */}
-        <div className="items-start gap-[27px] xl:gap-x-[29px] grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[auto_1fr]">
+        <div className="grid grid-cols-1 items-start gap-[27px] xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[auto_1fr] xl:gap-x-[29px]">
           <div
             aria-busy={isPending || undefined}
-            className="xl:col-start-1 xl:row-start-1 min-w-0"
+            className="min-w-0 xl:col-start-1 xl:row-start-1"
           >
             {isPending ? (
               <>
-                <span className="sr-only">
-                  Cargando promociones y recomendaciones
-                </span>
+                <span className="sr-only">Cargando promociones y recomendaciones</span>
                 <TopSkeleton />
               </>
             ) : (
@@ -340,17 +319,13 @@ export function DashboardCliente({
 
                 {/* Cada categoría enlaza a Ordenar filtrado (la pantalla real llega con T-19). */}
                 <motion.div
-                  className="gap-[27px] grid lg:grid-cols-2"
+                  className="grid gap-[27px] lg:grid-cols-2"
                   variants={categoriesMotion.container}
                   initial={startedLoading ? "hidden" : false}
                   animate="visible"
                 >
                   {CATEGORIAS_DASHBOARD.map((category) => (
-                    <motion.div
-                      key={category.id}
-                      variants={categoriesMotion.item}
-                      className="flex"
-                    >
+                    <motion.div key={category.id} variants={categoriesMotion.item} className="flex">
                       <MlPromoBanner
                         variant="secondary"
                         title={category.title}
@@ -378,12 +353,12 @@ export function DashboardCliente({
             envoltorio no pinta caja (`contents`) y el saludo queda en la
             rejilla de una columna.
           */}
-          <div className="contents xl:top-0 xl:sticky xl:flex xl:flex-col xl:self-start xl:gap-[14px] xl:col-start-2 xl:row-span-2 xl:row-start-1">
+          <div className="contents xl:sticky xl:top-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px] xl:self-start">
             <section
               aria-label="Tu actividad"
               // xl: mide lo mismo que el banner principal (`min-h-[307px]` de `MlPromoBanner` main) y el pedido en curso se
               // estira: el borde inferior de ambas columnas queda alineado (feedback Gaby, D3).
-              className="flex xl:flex flex-col gap-[14px] md:gap-[27px] xl:gap-[14px] md:grid md:grid-cols-2 min-w-0 xl:min-h-[307px]"
+              className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:flex xl:min-h-[307px] xl:gap-[14px]"
             >
               <MlGreetingCard
                 name={user?.displayName ?? ""}
@@ -403,11 +378,7 @@ export function DashboardCliente({
                 <MlActiveOrderCard
                   className="flex-1"
                   isLoading={isPending}
-                  order={
-                    data?.activeOrder
-                      ? toActiveOrderCard(data.activeOrder)
-                      : null
-                  }
+                  order={data?.activeOrder ? toActiveOrderCard(data.activeOrder) : null}
                 />
               </motion.div>
             </section>
@@ -417,18 +388,18 @@ export function DashboardCliente({
           </div>
 
           {/* Sin ninguna recomendación: el estado "Para empezar" (T-39), distinto del vacío por filtro. */}
-          {!isPending && data.recommendations.length === 0 && (
+          {!isPending && recommendationView.todos.length === 0 && (
             <section
               aria-labelledby="preferencias-titulo"
-              className="flex flex-col gap-6 xl:col-start-1 xl:row-start-2 min-w-0"
+              className="flex min-w-0 flex-col gap-6 xl:col-start-1 xl:row-start-2"
             >
               <h2
                 id="preferencias-titulo"
-                className="font-display font-bold text-[28px] text-foreground leading-[37px] tracking-[-0.04em]"
+                className="font-display text-[28px] font-bold leading-[37px] tracking-[-0.04em] text-foreground"
               >
                 Según tus preferencias
               </h2>
-              <div className="bg-content1 rounded-card">
+              <div className="rounded-card bg-content1">
                 <MlEmptyState
                   size="sm"
                   headingLevel={3}
@@ -439,29 +410,26 @@ export function DashboardCliente({
             </section>
           )}
 
-          {(isPending || data.recommendations.length > 0) && (
+          {(isPending || recommendationView.todos.length > 0) && (
             <div
               aria-busy={isPending || undefined}
               data-tour={OBJETIVOS_TOUR.recomendados}
-              className="xl:col-start-1 xl:row-start-2 min-w-0"
+              className="min-w-0 xl:col-start-1 xl:row-start-2"
             >
               {isPending ? (
                 <RecommendationsSkeleton />
               ) : (
-                <section
-                  aria-labelledby="preferencias-titulo"
-                  className="flex flex-col gap-6"
-                >
-                  <div className="flex sm:flex-row flex-col sm:justify-between sm:items-end gap-3 sm:gap-4">
+                <section aria-labelledby="preferencias-titulo" className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                     <h2
                       id="preferencias-titulo"
-                      className="font-display font-bold text-[28px] text-foreground leading-[37px] tracking-[-0.04em]"
+                      className="font-display text-[28px] font-bold leading-[37px] tracking-[-0.04em] text-foreground"
                     >
                       Según tus preferencias
                     </h2>
                     <MlFilterChips
                       label="Filtrar recomendaciones"
-                      options={RECOMMENDATION_FILTERS}
+                      options={recommendationFilters}
                       value={filter}
                       onChange={setFilter}
                     />
@@ -474,11 +442,8 @@ export function DashboardCliente({
                   <AnimatePresence mode="wait" initial={startedLoading}>
                     <motion.div
                       key={filter}
-                      className="gap-[21px] grid sm:grid-cols-2 lg:grid-cols-3"
-                      variants={{
-                        ...recommendationsMotion.container,
-                        exit: LIST_EXIT,
-                      }}
+                      className="grid gap-[21px] sm:grid-cols-2 lg:grid-cols-3"
+                      variants={{ ...recommendationsMotion.container, exit: LIST_EXIT }}
                       initial="hidden"
                       animate="visible"
                       exit="exit"
@@ -486,7 +451,7 @@ export function DashboardCliente({
                       {visibleRecommendations.length === 0 ? (
                         <motion.div
                           variants={recommendationsMotion.item}
-                          className="sm:col-span-2 lg:col-span-3 bg-content1 rounded-card"
+                          className="rounded-card bg-content1 sm:col-span-2 lg:col-span-3"
                         >
                           <MlEmptyState
                             size="sm"
@@ -501,27 +466,17 @@ export function DashboardCliente({
                         visibleRecommendations.map((product) => {
                           const quantity = quantities[product.id] ?? 1;
                           return (
-                            <motion.div
-                              key={product.id}
-                              variants={recommendationsMotion.item}
-                              className="flex"
-                            >
+                            <motion.div key={product.id} variants={recommendationsMotion.item} className="flex">
                               <OrProductCard
                                 className="w-full"
                                 title={product.name}
                                 description={product.description}
-                                imageSrc={
-                                  product.imageSrc ??
-                                  IMAGEN_PRODUCTO_POR_DEFECTO
-                                }
+                                imageSrc={product.imageSrc ?? IMAGEN_PRODUCTO_POR_DEFECTO}
                                 imageAlt={product.imageAlt}
                                 imageKind={product.imageKind}
                                 quantity={quantity}
                                 onQuantityChange={(value) =>
-                                  setQuantities((prev) => ({
-                                    ...prev,
-                                    [product.id]: value,
-                                  }))
+                                  setQuantities((prev) => ({ ...prev, [product.id]: value }))
                                 }
                                 // TODO: añadir al carrito desde la card (la cantidad aún no viaja a la ficha).
                                 ctaHref={rutaProducto(product.id, product.kind)}
@@ -550,7 +505,7 @@ export function DashboardCliente({
       <TourBienvenida
         abrirDesdeUrl={abrirTour}
         puedeIniciar={!(isError && !data)}
-        sinRecomendaciones={!!data && data.recommendations.length === 0}
+        sinRecomendaciones={!!data && recommendationView.todos.length === 0}
       />
     </>
   );
