@@ -31,22 +31,22 @@ function OrderRowSkeleton() {
 }
 
 /**
- * Card "Últimas órdenes" del Dashboard (Figma 3216:28339): título + "Ver todas" y una lista
+ * Card "Últimos pedidos" del Dashboard (Figma 3216:28339): título + "Ver todos" y una lista
  * de `MlOrderRow` separadas por divisores. Incluye carga y vacío.
- * "Ver todas" va en `secondary-600` y subrayado al pasar: el `accent` a 13 px no llega a AA.
+ * "Ver todos" va en `secondary-600` y subrayado al pasar: el `accent` a 13 px no llega a AA.
  */
 export function OrRecentOrders({
   orders,
   isLoading = false,
-  title = "Últimas órdenes",
+  title = "Últimos pedidos",
   headingLevel = 2,
   viewAllHref,
   onRepeat,
   repeatingOrderId,
   repeatError,
   skeletonRows = 3,
-  emptyTitle = "Todavía no has hecho ningún pedido",
-  emptyDescription = "Arma el próximo coffee break de tu equipo en menos de dos minutos. Tus pedidos aparecerán aquí.",
+  emptyTitle = "Aún no hay pedidos",
+  emptyDescription = "Aquí aparecerán para que los repitas en un clic.",
   emptyActionLabel = "Hacer mi primer pedido",
   emptyActionHref,
   className,
@@ -74,20 +74,20 @@ export function OrRecentOrders({
         {viewAllHref && !isLoading && !isEmpty && (
           <Link
             href={viewAllHref}
-            aria-label="Ver todas las órdenes"
+            aria-label="Ver todos los pedidos"
             className={cn(
               "rounded-sm px-1 text-[13px] leading-4 text-secondary-600 underline-offset-2 hover:underline",
               "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
             )}
           >
-            Ver todas
+            Ver todos
           </Link>
         )}
       </div>
 
       {isLoading && (
         <div className="flex flex-col divide-y divide-border-subtle">
-          <span className="sr-only">Cargando tus últimas órdenes</span>
+          <span className="sr-only">Cargando tus últimos pedidos</span>
           {Array.from({ length: skeletonRows }, (_, index) => (
             <div key={index} className="py-3 first:pt-1.5 last:pb-0">
               <OrderRowSkeleton />

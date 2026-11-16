@@ -20,8 +20,7 @@ import {
 import { LoginVariant } from "./login-variant";
 
 const ERROR_ID = "login-error";
-const PASSWORD_HINT =
-  "Revisa tu contraseña: distingue mayúsculas de minúsculas.";
+const PASSWORD_HINT = "Revisa las mayúsculas y minúsculas.";
 const SIN_EMPRESA_MESSAGE =
   "Ya no tienes acceso a ninguna empresa activa. Contacta al administrador de tu empresa.";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,10 +39,7 @@ function isCredentialsError(error: unknown): boolean {
  * Red, 408 y 5xx: mensaje genérico de `getApiErrorMessage`.
  */
 function getLoginErrorMessage(error: unknown): string {
-  return getApiErrorMessage(
-    error,
-    "No pudimos iniciar sesión. Inténtalo de nuevo en unos minutos.",
-  );
+  return getApiErrorMessage(error, "¡Algo salió mal! Inténtalo de nuevo en un momento.");
 }
 
 interface FieldErrors {
@@ -53,9 +49,9 @@ interface FieldErrors {
 
 function validate(email: string, password: string): FieldErrors {
   const errors: FieldErrors = {};
-  if (!email) errors.email = "Escribe tu correo electrónico.";
+  if (!email) errors.email = "Escribe tu correo.";
   else if (!EMAIL_PATTERN.test(email))
-    errors.email = "Escribe un correo válido, por ejemplo nombre@empresa.com.";
+    errors.email = "Revisa tu correo: Parece que falta algo.";
   if (!password) errors.password = "Escribe tu contraseña.";
   return errors;
 }
@@ -131,7 +127,7 @@ export function LoginForm({ variant = "v1" }: LoginFormProps) {
     <div className="flex flex-col gap-5 w-full">
       <MlAuthHeader
         title="Iniciar sesión"
-        subtitle="Aquí empieza tu experiencia de catering"
+        subtitle="Aquí empieza la pausa que estabas esperando"
         animateTitle={isV2}
       />
 
@@ -159,7 +155,7 @@ export function LoginForm({ variant = "v1" }: LoginFormProps) {
               id={ERROR_ID}
               title={
                 credentialsInvalid
-                  ? "Correo o contraseña incorrectos."
+                  ? "Ups, el correo o la contraseña no coinciden."
                   : undefined
               }
             >
@@ -216,9 +212,9 @@ export function LoginForm({ variant = "v1" }: LoginFormProps) {
         </AtButton>
       </MlForm>
 
-      {/* Figma 3236:11719: "Olvidé la contraseña". La solicitud de acceso no está en el Figma del login. */}
+      {/* Texto de T-39 (Figma 3236:11719 decía "Olvidé la contraseña"). La solicitud de acceso no está en el login. */}
       <p className="mt-3 font-semibold text-placeholder text-base text-center">
-        <AtTextLink href="/forgot-password">Olvidé la contraseña</AtTextLink>
+        <AtTextLink href="/forgot-password">¿Olvidaste tu contraseña?</AtTextLink>
       </p>
     </div>
   );

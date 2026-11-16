@@ -99,7 +99,7 @@ function errorCarrito(error: unknown): Extract<ResultadoCompra, { tipo: "error" 
 }
 
 /**
- * Panel blanco de la ficha (Figma 3097:28706): "‹ Volver", "Detalles de la caja", nombre, descripción, selector de
+ * Panel blanco de la ficha (Figma 3097:28706): "‹ Volver al catálogo", "Ver información nutricional", nombre, descripción, selector de
  * personas (solo productos con más de un tamaño), cantidad, "Añadir al carrito" (`POST /cart/items`) y total.
  */
 export function PanelCompra({ item, imagenCaja }: PanelCompraProps) {
@@ -183,7 +183,7 @@ export function PanelCompra({ item, imagenCaja }: PanelCompraProps) {
           )}
         >
           <ChevronLeft aria-hidden="true" className="size-5" strokeWidth={2} />
-          Volver
+          Volver al catálogo
         </Link>
         {tieneDetalles && (
           <button
@@ -197,7 +197,7 @@ export function PanelCompra({ item, imagenCaja }: PanelCompraProps) {
             )}
           >
             <Image src="/images/icons/caja-detalle.svg" alt="" width={19} height={15} aria-hidden="true" />
-            Detalles de la caja
+            Ver información nutricional
           </button>
         )}
       </div>
@@ -234,7 +234,7 @@ export function PanelCompra({ item, imagenCaja }: PanelCompraProps) {
         {!isCombo && opciones.length > 1 && (
           <MlSegmentedControl
             name="personas"
-            label="Selecciona la cantidad de personas"
+            label="¿Para cuántas personas?"
             options={opciones.map((it) => ({
               value: it.sizeId,
               label: etiquetaOpcion(it),

@@ -3,7 +3,12 @@ import { ReactNode } from "react";
 export interface OrAppSidebarItem {
   key: string;
   label: string;
-  href: string;
+  /**
+   * Ruta del ítem. Sin `href`, la sección aún no existe: el ítem sale "Próximamente" (atenuado, con chip, sin
+   * navegación ni estado activo) y sigue siendo enfocable para que se anuncie. Al crear la pantalla, basta con
+   * añadir el `href`.
+   */
+  href?: string;
   /** Icono de 20 px (p. ej. de lucide-react). Es decorativo: el nombre accesible es `label`. */
   icon: ReactNode;
   /** Segunda línea en el sidebar abierto ("Panel de control"). */
@@ -22,7 +27,7 @@ export interface OrAppSidebarProps {
   /** `key` del ítem activo. Sin valor, ningún ítem se marca (variante "Sin selección"). */
   activeKey?: string;
   /**
-   * Abierto = panel de 236 px con textos que se superpone al contenido; cerrado = riel de 80 px solo
+   * Abierto = panel de 304 px con textos que se superpone al contenido; cerrado = riel de 80 px solo
    * iconos. En el flujo ocupa siempre 80 px: abrir no mueve la página.
    */
   isOpen: boolean;

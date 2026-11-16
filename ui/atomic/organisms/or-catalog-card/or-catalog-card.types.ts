@@ -10,6 +10,8 @@ export interface OrCatalogCardProps {
   href: string;
   /** Nombre accesible del enlace. Por defecto "Ver <nombre>". */
   linkLabel?: string;
+  /** Tooltip del "+" al pasar el ratón. Por defecto "Añadir al carrito" (T-39). Repite la acción visible: se oculta a lectores. */
+  actionTooltip?: string;
   /** Badge "POPULAR". */
   isFeatured?: boolean;
   /** Badge "En oferta". */

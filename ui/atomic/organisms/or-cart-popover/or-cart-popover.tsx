@@ -15,7 +15,7 @@ function unidades(count: number): string {
 }
 
 /**
- * Carrito de la top bar: botón con contador y popover "Tu pedido" (líneas con "Quitar", "Vaciar" con
+ * Carrito de la top bar: botón con contador y popover "Carrito" (líneas con "Quitar", "Vaciar" con
  * confirmación en el propio panel y "Ver carrito"). Los datos y las acciones llegan por props.
  */
 export function OrCartPopover({
@@ -107,7 +107,7 @@ export function OrCartPopover({
     >
       <div ref={panelRef} onClickCapture={closeOnLink} className="flex flex-col">
         <MlPopoverHeader
-          title="Tu pedido"
+          title="Carrito"
           titleId={titleId}
           actionRef={clearButtonRef}
           action={
@@ -158,9 +158,9 @@ export function OrCartPopover({
         {status === "ready" && lines.length === 0 && (
           <MlEmptyState
             size="sm"
-            title="Aún no agregas nada"
+            title="¡Todavía no hay nada aquí!"
             description="Explora el menú y arma tu pedido."
-            actionLabel="Explorar el menú"
+            actionLabel="Explorar menú"
             actionHref={browseHref}
             // El enlace navega, pero el popover no se cierra solo (y en /ordenar no habría cambio visible).
             onAction={() => setOpen(false)}
@@ -207,8 +207,8 @@ export function OrCartPopover({
         {showConfirm && (
           <div role="group" aria-labelledby={confirmId} className="mt-3 rounded-control bg-background p-3">
             <p id={confirmId} className="text-[13px] leading-5 text-foreground">
-              <span className="font-semibold">¿Vaciar el carrito?</span> Se quitarán todos los productos de tu
-              carrito.
+              <span className="font-semibold">¿Vaciar el carrito?</span> Se quitarán todos los productos de este
+              pedido.
             </p>
             <div className="mt-3 flex justify-end gap-2">
               <AtButton

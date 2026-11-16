@@ -6,7 +6,7 @@ import { AtProgress } from "@/ui/atomic";
 
 /**
  * Barra de envío sin costo del resumen (Figma 3339:13048). El avance es una proporción visual de la base del
- * servidor (`subtotal − discount`) sobre `freeShippingThreshold`; "Te faltan $X" es una resta solo para mostrar: el
+ * servidor (`subtotal − discount`) sobre `freeShippingThreshold`; "Agrega $X más" es una resta solo para mostrar: el
  * envío que se cobra es siempre `summary.shipping`.
  */
 export function EnvioGratis({ summary }: { summary: CartSummary }) {
@@ -31,13 +31,13 @@ export function EnvioGratis({ summary }: { summary: CartSummary }) {
       <p aria-live="polite" className="text-[13px] leading-5 text-foreground">
         {alcanzado ? (
           <>
-            <strong className="font-semibold text-secondary-600">Envío sin costo aplicado.</strong> Alcanzaste los{" "}
+            <strong className="font-semibold text-secondary-600">¡Envío sin costo!</strong> Superaste los{" "}
             {formatPrice(umbral)} en pedidos dentro de Caracas.
           </>
         ) : (
           <>
-            Te faltan <strong className="font-semibold text-secondary-600">{formatPrice(faltan)}</strong> para el envío
-            sin costo.
+            Agrega <strong className="font-semibold text-secondary-600">{formatPrice(faltan)}</strong> más y el envío
+            dentro de Caracas no tiene costo.
           </>
         )}
       </p>

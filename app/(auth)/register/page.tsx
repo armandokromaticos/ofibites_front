@@ -17,7 +17,8 @@ import {
 const LINK_CLASSES =
   "rounded-sm underline underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
-const RIF_CONFLICT_PREFIX = "Ya existe una empresa registrada con el RIF";
+/** 409 por RIF ya registrado: el texto nuevo (T-39) y el anterior, por si el back aún no se ha desplegado. */
+const RIF_CONFLICT_PREFIXES = ["Ya existe una cuenta con este RIF", "Ya existe una empresa registrada con el RIF"];
 
 /**
  * Mensajes en español para los 400 de class-validator, que llegan en inglés y empiezan por el
@@ -58,7 +59,7 @@ function toWizardError(error: unknown): OrCompanyRequestWizardSubmitError {
   const message = getApiErrorMessage(error, "No pudimos enviar la solicitud. Inténtalo de nuevo.");
   if (!isApiError(error)) return { message };
 
-  if (error.statusCode === 409 && message.startsWith(RIF_CONFLICT_PREFIX)) {
+  if (error.statusCode === 409 && RIF_CONFLICT_PREFIXES.some((prefix) => message.startsWith(prefix))) {
     return { message, field: "taxId" };
   }
   if (error.statusCode === 400) {

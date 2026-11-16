@@ -16,7 +16,7 @@ import {
 } from "@/ui/atomic";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const INVALID_EMAIL_MESSAGE = "Escribe un correo válido, por ejemplo nombre@empresa.com.";
+const INVALID_EMAIL_MESSAGE = "Revisa tu correo: Parece que falta algo.";
 /** Supabase no deja reenviar el correo de recuperación al mismo usuario antes de ~60 s. */
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -26,7 +26,7 @@ const RESEND_COOLDOWN_SECONDS = 60;
  */
 function getForgotErrorMessage(error: unknown): string {
   if (isApiError(error) && error.statusCode === 400) return INVALID_EMAIL_MESSAGE;
-  return getApiErrorMessage(error, "No pudimos enviar el enlace. Inténtalo de nuevo en unos minutos.");
+  return getApiErrorMessage(error, "¡Algo salió mal! Inténtalo de nuevo en un momento.");
 }
 
 function BackToLogin() {
@@ -58,7 +58,7 @@ interface RequestLinkProps {
   onSent: (email: string) => void;
 }
 
-/** Paso 1 (Figma 3236:12197): correo + "Enviar código". */
+/** Paso 1 (Figma 3236:12197): correo + "Enviar enlace". */
 function RequestLink({ onSent }: RequestLinkProps) {
   const { mutate: sendLink, isPending, error, reset } = useForgotPassword();
   const [email, setEmail] = useState("");
@@ -74,7 +74,7 @@ function RequestLink({ onSent }: RequestLinkProps) {
     if (isPending) return;
     const value = email.trim();
     if (!EMAIL_PATTERN.test(value)) {
-      setFieldError(value ? INVALID_EMAIL_MESSAGE : "Escribe tu correo electrónico.");
+      setFieldError(value ? INVALID_EMAIL_MESSAGE : "Escribe tu correo.");
       event.currentTarget.querySelector<HTMLInputElement>("[name=\"email\"]")?.focus();
       return;
     }
@@ -96,10 +96,7 @@ function RequestLink({ onSent }: RequestLinkProps) {
     <div className="flex flex-col gap-[59px]">
       <MlAuthHeader
         title="¿Olvidaste tu contraseña?"
-        subtitle={
-          "¡No hay problema! Introduce tu dirección de correo electrónico y te enviaremos las " +
-          "instrucciones para restablecer la contraseña a tu bandeja de entrada."
-        }
+        subtitle="¡No pasa nada! Escribe tu correo y te enviaremos un enlace para crear una nueva contraseña."
       />
 
       <div className="flex flex-col gap-[19px]">
@@ -127,7 +124,7 @@ function RequestLink({ onSent }: RequestLinkProps) {
 
           {/* Figma: deshabilitado (gris) con el campo vacío. */}
           <AtButton type="submit" size="lg" fullWidth isDisabled={!email.trim()} isLoading={isPending}>
-            Enviar código
+            Enviar enlace
           </AtButton>
         </MlForm>
 
@@ -144,7 +141,7 @@ interface CheckInboxProps {
   onResent: () => void;
 }
 
-/** Paso 2 (Figma 3236:12268): "¡Revisa tu bandeja de entrada!" con "Reenviar enlace". */
+/** Paso 2 (Figma 3236:12268): "¡Revisa tu correo!" con "reenvía el enlace" y "Listo, ¡te enviamos otro enlace!". */
 function CheckInbox({ email, cooldownUntil, onResent }: CheckInboxProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const { mutate: resend, isPending, error, reset } = useForgotPassword();
@@ -167,7 +164,7 @@ function CheckInbox({ email, cooldownUntil, onResent }: CheckInboxProps) {
       {
         onSuccess: () => {
           onResent();
-          setNotice(`Te enviamos un nuevo enlace a ${email}.`);
+          setNotice("Listo, ¡te enviamos otro enlace!");
         },
         // Con el límite de Supabase, también se espera antes de volver a intentarlo.
         onError: (resendError) => {
@@ -180,16 +177,16 @@ function CheckInbox({ email, cooldownUntil, onResent }: CheckInboxProps) {
   return (
     <div className="flex flex-col gap-[59px]">
       <MlAuthHeader
-        title="¡Revisa tu bandeja de entrada!"
+        title="¡Revisa tu correo!"
         titleRef={titleRef}
         // Figma: el título (525 px) es más ancho que la columna de 502; el texto sigue en 502.
         className="sm:-mx-8"
         subtitle={
           <span className="mx-auto block max-w-[502px]">
-            Enviamos un enlace de recuperación a{" "}
+            Si{" "}
             {/* Figma en accent; secondary-600 para llegar a AA sobre crema. */}
-            <span className="break-all text-secondary-600">{email}</span>. Sigue las instrucciones del
-            mensaje para restablecer tu contraseña.
+            <span className="break-all text-secondary-600">{email}</span> tiene cuenta, te enviaremos un enlace
+            para crear tu nueva contraseña.
           </span>
         }
       />
@@ -198,7 +195,7 @@ function CheckInbox({ email, cooldownUntil, onResent }: CheckInboxProps) {
         {error && <MlFormAlert>{getForgotErrorMessage(error)}</MlFormAlert>}
 
         <p className="text-center text-[15px] font-semibold leading-[19px] text-placeholder">
-          ¿No lo encuentras? Revisa tu carpeta de correo no deseado (spam) o{" "}
+          ¿No llegó? Mira en spam o{" "}
           <button
             type="button"
             onClick={handleResend}
@@ -209,9 +206,10 @@ function CheckInbox({ email, cooldownUntil, onResent }: CheckInboxProps) {
                 : `${AT_TEXT_LINK_CLASSES} cursor-pointer`
             }
           >
-            {isPending ? "Reenviando…" : "Reenviar enlace"}
+            {isPending ? "reenviando…" : "reenvía el enlace"}
             {isWaiting && !isPending && <> en {secondsLeft} s</>}
           </button>
+          .
         </p>
 
         {/* Siempre en el DOM: una región viva que aparece ya con texto no siempre se anuncia. */}

@@ -6,16 +6,19 @@ import Link from "next/link";
 import { cn } from "@heroui/react";
 import { Coffee } from "lucide-react";
 
-import { AtButton, AtChip } from "@/ui/atomic/atoms";
+import { AtButton, AtChip, AtTooltip } from "@/ui/atomic/atoms";
 
 import { MlOrderRowProps } from "./ml-order-row.types";
+
+/** Tooltip de "Repetir" (T-39). Añade información al nombre accesible ("Repetir pedido #…"): no es redundante. */
+const REPEAT_TOOLTIP = "Crea un pedido nuevo igual a este";
 
 function Dot() {
   return <span aria-hidden="true" className="size-0.5 shrink-0 rounded-full bg-current" />;
 }
 
 /**
- * Fila de "Últimas ordenes" (Figma 3216:28344): icono, producto · boxes, chip de estado,
+ * Fila de "Últimos pedidos" (Figma 3216:28344): icono, producto · boxes, chip de estado,
  * dirección, nº y fecha, y las acciones "Repetir" / "Ver detalle".
  * Los botones llevan el número en el nombre accesible para distinguirse entre filas.
  */
@@ -81,22 +84,32 @@ export function MlOrderRow({
       <div className="grid grid-cols-2 gap-[11px]">
         {/* Sin acción: enfocable pero inerte (aria-disabled, no `disabled`), con el motivo para lectores de pantalla. */}
         {repeatHref ? (
-          <AtButton as={Link} href={repeatHref} size="xs" fullWidth aria-label={`Repetir ${orderRef}`}>
-            Repetir
-          </AtButton>
+          <AtTooltip content={REPEAT_TOOLTIP} isRedundant={false} placement="top" offset={8}>
+            <AtButton as={Link} href={repeatHref} size="xs" fullWidth aria-label={`Repetir ${orderRef}`}>
+              Repetir
+            </AtButton>
+          </AtTooltip>
         ) : (
-          <AtButton
-            size="xs"
-            fullWidth
-            onPress={isRepeatUnavailable ? undefined : onRepeat}
-            isLoading={isRepeatLoading}
-            aria-label={`Repetir ${orderRef}`}
-            aria-disabled={isRepeatUnavailable || undefined}
-            aria-describedby={isRepeatUnavailable ? unavailableId : undefined}
-            className={cn(isRepeatUnavailable && "cursor-not-allowed opacity-disabled data-[hover=true]:opacity-disabled")}
+          <AtTooltip
+            content={REPEAT_TOOLTIP}
+            isRedundant={false}
+            placement="top"
+            offset={8}
+            isDisabled={isRepeatUnavailable}
           >
-            Repetir
-          </AtButton>
+            <AtButton
+              size="xs"
+              fullWidth
+              onPress={isRepeatUnavailable ? undefined : onRepeat}
+              isLoading={isRepeatLoading}
+              aria-label={`Repetir ${orderRef}`}
+              aria-disabled={isRepeatUnavailable || undefined}
+              aria-describedby={isRepeatUnavailable ? unavailableId : undefined}
+              className={cn(isRepeatUnavailable && "cursor-not-allowed opacity-disabled data-[hover=true]:opacity-disabled")}
+            >
+              Repetir
+            </AtButton>
+          </AtTooltip>
         )}
         {isRepeatUnavailable && (
           <span id={unavailableId} className="sr-only">

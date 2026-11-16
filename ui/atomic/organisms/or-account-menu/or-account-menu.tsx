@@ -34,7 +34,7 @@ const ITEM_SOON = cn(
  * cuenta y "Cerrar sesión".
  *
  * Es un `Dropdown` de HeroUI (react-aria `Menu`): `role="menu"`, flechas, Inicio/Fin, búsqueda por letra, Esc y
- * foco de vuelta al avatar. Un ítem sin `href` sale con `aria-disabled` y "Pronto"; se marca `isReadOnly` en vez
+ * foco de vuelta al avatar. Un ítem sin `href` sale con `aria-disabled` y "Próximamente"; se marca `isReadOnly` en vez
  * de `isDisabled` para que siga recibiendo el foco con las flechas (con `isDisabled`, react-aria lo salta y un
  * lector de pantalla nunca lo anunciaría).
  */
@@ -69,12 +69,12 @@ export function OrAccountMenu({
         aria-disabled={isSoon || undefined}
         classNames={{ base: cn(ITEM_BASE, isSoon && ITEM_SOON), title: "text-[13px] leading-5" }}
       >
-        {/* "Pronto" va dentro del título: forma parte del nombre accesible ("Mi perfil Pronto, no disponible"). */}
+        {/* "Próximamente" va dentro del título: forma parte del nombre accesible ("Mi perfil Próximamente, no disponible"). */}
         <span className="flex items-center justify-between gap-2">
           <span className="truncate">{item.label}</span>
-          {/* El espacio separa las palabras en el nombre accesible ("Mi perfil Pronto", no "Mi perfilPronto"). */}
+          {/* El espacio separa las palabras en el nombre accesible ("Mi perfil Próximamente", no "Mi perfilPróximamente"). */}
           {isSoon && " "}
-          {isSoon && <AtChip classNames={{ base: "shrink-0" }}>Pronto</AtChip>}
+          {isSoon && <AtChip classNames={{ base: "shrink-0" }}>Próximamente</AtChip>}
         </span>
       </DropdownItem>
     );

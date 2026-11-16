@@ -26,7 +26,6 @@ import {
 } from "@/ui/atomic";
 
 import { avisosFactura } from "../../_data/aviso-factura";
-import { lineaDireccion } from "../../_data/direcciones";
 import { mensajeErrorCarrito } from "../../_data/errores-carrito";
 import { IMAGEN_PRODUCTO_POR_DEFECTO } from "../../_data/imagenes";
 import { avisoPedidoRepetido, mensajeErrorRepetir } from "../../_data/repetir-pedido";
@@ -39,11 +38,14 @@ import { LineaCarrito } from "./linea-carrito";
 
 const CHECKOUT_NOTE_ID = "carrito-checkout-nota";
 
-/** Avisos bajo "Continuar al checkout" (Figma 3339:13048): lo destacado en negrita y el resto en gris. */
+/** Avisos bajo "Continuar" (Figma 3339:13048, textos de T-39): lo destacado en negrita y el resto en gris. */
 const AVISOS_CHECKOUT = [
-  { titulo: "Pago seguro.", texto: "Pago Móvil, transferencia en Bs o USD, Zelle y crédito corporativo 15/30 días." },
-  { titulo: "Validación.", texto: "Te avisamos apenas confirmamos tu comprobante." },
-  { titulo: "Factura fiscal.", texto: "A nombre de tu empresa, con RIF y orden de compra." },
+  {
+    titulo: "Formas de pago.",
+    texto: "Tarjeta, Pago Móvil, transferencia nacional o internacional, Zelle y crédito corporativo a 15 o 30 días.",
+  },
+  { titulo: "Validación.", texto: "Te avisamos cuando confirmemos el comprobante." },
+  { titulo: "Factura fiscal.", texto: "Se emite a nombre de la empresa, con RIF y orden de compra." },
 ] as const;
 
 function AvisosCheckout() {
@@ -201,7 +203,7 @@ function AgregaATuPedido({ lines }: { lines: CartLineModel[] }) {
 }
 
 /**
- * Carrito vacío (Figma 3390:2397): "Explorar el catálogo" y "Repetir mi último pedido" (`POST /cart/repeat/last`).
+ * Carrito vacío (Figma 3390:2397): "Explorar el catálogo" y "Repetir el último pedido" (`POST /cart/repeat/last`).
  * El botón sale siempre (sin descargar el historial); si no hay pedido que repetir (404), se explica y se oculta.
  */
 function CarritoVacio({ onRepetido }: { onRepetido: (aviso: string) => void }) {
@@ -236,8 +238,8 @@ function CarritoVacio({ onRepetido }: { onRepetido: (aviso: string) => void }) {
         Tu carrito está vacío
       </h3>
       <p className="max-w-[46ch] text-pretty text-[13px] leading-5 text-muted">
-        Arma el próximo coffee break de tu equipo en menos de dos minutos
-        {sinPedidos ? "." : ", o repite el último pedido tal cual lo hiciste."}
+        Arma el próximo coffee break de tu equipo en pocos minutos
+        {sinPedidos ? "." : " o repite el último pedido tal cual."}
       </p>
       <div className="mt-2 flex flex-wrap justify-center gap-2.5">
         <AtButton as={Link} href={RUTA_ORDENAR} size="md" className="h-[41px] px-6">
@@ -252,7 +254,7 @@ function CarritoVacio({ onRepetido }: { onRepetido: (aviso: string) => void }) {
             onPress={repetir}
             isLoading={repeat.isPending}
           >
-            Repetir mi último pedido
+            Repetir el último pedido
           </AtButton>
         )}
       </div>
@@ -292,7 +294,7 @@ function CarritoEsqueleto() {
 
 /**
  * Página del carrito: líneas con cantidad y "Eliminar", "Vaciar" con confirmación, resumen del servidor (subtotal,
- * envío, IVA y total de `summary`, T-26a), "Continuar al checkout" y "Agrega a tu pedido".
+ * envío, IVA y total de `summary`, T-26a), "Continuar" y "Agrega a tu pedido".
  */
 export function CarritoCliente() {
   const companyId = useAuthStore((state) => state.activeCompanyId);
@@ -321,7 +323,7 @@ export function CarritoCliente() {
   const sede = addressesQuery.data?.find((address) => address.isShipping) ?? null;
   // El checkout rechaza líneas no disponibles (400): se avisa antes de entrar.
   const hayNoDisponibles = lines.some((line) => !line.isAvailable);
-  // T-06: factura vencida o crédito excedido bloquean "Continuar al checkout" (el servidor lo rechazaría igual).
+  // T-06: factura vencida o crédito excedido bloquean "Continuar" (el servidor lo rechazaría igual).
   const puedePagar = useCanReportPayments();
   const factura = avisosFactura(cart, puedePagar, RUTA_CARRITO);
   const bloqueado = hayNoDisponibles || factura.bloquea;
@@ -437,16 +439,16 @@ export function CarritoCliente() {
 
         <OrOrderSummary
           titleId="carrito-resumen"
-          subtitle={sede ? `Sede: ${lineaDireccion(sede)}` : undefined}
+          subtitle={sede ? `Entrega en: ${[sede.label, sede.city].filter(Boolean).join(" · ")}` : undefined}
           rows={filasResumenCarrito(cart.summary, `Subtotal (${unidades(cart.totalUnits)})`, cart.coupon?.code)}
           totalLabel={formatPrice(cart.summary.total)}
           className="lg:sticky lg:top-0"
         >
           <p className="-mt-2 text-right text-[11px] leading-4 text-secondary-600">
-            Tasa BCV de referencia · el monto final en bolívares se calcula el día del pago.
+            Referencia según la tasa BCV. El monto final en bolívares se calcula el día del pago.
           </p>
           <EnvioGratis summary={cart.summary} />
-          <CuponCarrito coupon={cart.coupon} />
+          <CuponCarrito coupon={cart.coupon} discount={cart.summary.discount} />
           {bloqueado ? (
             <>
               <AtButton
@@ -456,7 +458,7 @@ export function CarritoCliente() {
                 aria-describedby={CHECKOUT_NOTE_ID}
                 onPress={() => undefined}
               >
-                Continuar al checkout
+                Continuar
               </AtButton>
               <p id={CHECKOUT_NOTE_ID} className="-mt-1 text-center text-xs leading-5 text-danger-700">
                 {hayNoDisponibles
@@ -466,7 +468,7 @@ export function CarritoCliente() {
             </>
           ) : (
             <AtButton as={Link} href={RUTA_CHECKOUT} size="md" className="h-[41px] w-full">
-              Continuar al checkout
+              Continuar
             </AtButton>
           )}
           <AvisosCheckout />
@@ -484,8 +486,8 @@ export function CarritoCliente() {
       <p className="flex items-center gap-2.5 rounded-control bg-content1 px-4 py-3 text-xs leading-5 text-muted sm:px-5">
         <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-accent" />
         <span>
-          Los pedidos se agendan hasta las{" "}
-          <strong className="font-semibold text-secondary-600">3:00 p.m. del día anterior</strong>
+          Recibimos pedidos hasta las{" "}
+          <strong className="font-semibold text-secondary-600">3:00 p. m. del día anterior</strong> a la entrega.
         </span>
       </p>
       {!isUnavailable &&

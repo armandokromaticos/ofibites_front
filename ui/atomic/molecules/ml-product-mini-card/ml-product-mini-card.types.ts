@@ -13,6 +13,8 @@ export interface MlProductMiniCardProps {
   isAdding?: boolean;
   /** Nombre accesible del "+" con `onAdd`. Por defecto "Añadir <nombre> al carrito". */
   addLabel?: string;
+  /** Tooltip del "+" con `onAdd`. Por defecto "Añadir al carrito" (T-39); no sustituye al `aria-label`. */
+  addTooltip?: string;
   /** Nivel del título. Por defecto 3. */
   headingLevel?: 2 | 3 | 4;
   className?: string;

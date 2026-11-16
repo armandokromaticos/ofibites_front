@@ -68,7 +68,7 @@ export function BannerFinal() {
           className="w-full"
           startContent={<Plus aria-hidden="true" className="size-[15px]" strokeWidth={2.5} />}
         >
-          Ordenar ahora
+          Pedir ahora
         </AtButton>
       </div>
     </section>

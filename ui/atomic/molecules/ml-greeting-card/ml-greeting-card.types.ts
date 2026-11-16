@@ -5,7 +5,7 @@ export interface MlGreetingCardProps {
   greeting?: string;
   /** Pregunta bajo el nombre. Por defecto "¿Qué quieres pedir hoy?". */
   prompt?: string;
-  /** Texto del CTA. Por defecto "Realizar pedido". */
+  /** Texto del CTA. Por defecto "Hacer pedido". */
   ctaLabel?: string;
   /** Si se pasa, el CTA es un enlace. */
   ctaHref?: string;

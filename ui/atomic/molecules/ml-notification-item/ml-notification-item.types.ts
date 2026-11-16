@@ -11,7 +11,7 @@ export interface MlNotificationItemProps {
   dateLabel: string;
   /** ISO para `<time dateTime>`. */
   dateTime: string;
-  /** Fecha completa ("4 de Sep, 10:30 am"), como `title` del `<time>`. */
+  /** Fecha completa ("4 de Sep, 10:30 a. m."), como `title` del `<time>`. */
   dateTitle?: string;
   /** Si se pasa, el aviso es un enlace (y `onPress` se llama además al pulsarlo). Sin `href` ni `onPress`, no es interactivo. */
   href?: string | null;

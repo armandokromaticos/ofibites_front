@@ -8,7 +8,7 @@ export const CATEGORIAS_DASHBOARD: ClientDashboardCategory[] = [
   {
     id: "bebidas",
     title: "Bebidas",
-    subtitle: "Bebidas naturales o de contenido saludable",
+    subtitle: "Naturales, frescas y listas para disfrutar.",
     // Fotos recortadas para el banner (Figma 3220:28597): a sangre por su lado y por abajo.
     imageSrc: "/images/banners/dashboard-bebidas.png",
     imageAlt: "Tres botellas de jugo natural",

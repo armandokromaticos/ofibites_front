@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { PedidoConfirmado } from "../../_components/pedido-confirmado";
 
 export const metadata: Metadata = {
-  title: "Pedido confirmado · Ofibites",
+  title: "Pedido recibido · Ofibites",
 };
 
 interface PedidoConfirmadoPageProps {

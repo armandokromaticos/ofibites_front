@@ -216,8 +216,8 @@ export function PasoSedes({ addresses, isRefreshing, onContinue }: PasoSedesProp
           <MlEmptyState
             headingLevel={2}
             icon={<MapPin />}
-            title="Todavía no tienes sedes"
-            description="Agrega al menos una para poder confirmar pedidos. Después puedes sumar todas las que necesites."
+            title="Todavía no hay sedes"
+            description="Agrega al menos una para poder confirmar los pedidos. Después podrás sumar todas las que necesites."
             actionLabel="Agregar sede"
             onAction={abrirCrear}
           />
@@ -274,7 +274,7 @@ export function PasoSedes({ addresses, isRefreshing, onContinue }: PasoSedesProp
           onPress={continuar}
           aria-describedby={errorContinuar ? errorContinuarId : undefined}
         >
-          Continuar paso 3
+          Continuar al paso 3
         </AtButton>
         {errorContinuar && (
           <p

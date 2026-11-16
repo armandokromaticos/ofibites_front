@@ -21,7 +21,7 @@ import {
 
 import { OrNewPasswordFormProps } from "./or-new-password-form.types";
 
-const MISMATCH_MESSAGE = "Las contraseñas no coinciden. Vuelve a escribirla.";
+const MISMATCH_MESSAGE = "Las contraseñas no coinciden. Inténtalo de nuevo.";
 const MATCH_MESSAGE = "Las contraseñas coinciden.";
 
 // "Las contraseñas coinciden." (Figma 3339:3005): mismo formato que el error de AtInput, en `brand`.
@@ -36,7 +36,7 @@ const MATCH_DESCRIPTION_CLASSES = [
  * Las reglas salen de `@/shared/utils` (las mismas que valida el back). Sirve también para el
  * cambio de contraseña obligatorio del primer login.
  *
- * - "Completa para crear tu contraseña: …" y el borde de error aparecen al salir del campo con
+ * - "Te falta …" y el borde de error aparecen al salir del campo con
  *   reglas pendientes, no mientras se escribe.
  * - "No coinciden" aparece al salir de la confirmación o cuando ya es tan larga como la contraseña.
  * - Diferencia con el Figma: los campos son de tipo contraseña con botón para mostrarla (en el
@@ -100,7 +100,7 @@ export function OrNewPasswordForm({
             errorMessage={
               lengthError ??
               (showPasswordError
-                ? `Completa para crear tu contraseña: ${describeMissingPasswordRules(password)}.`
+                ? `Te falta ${describeMissingPasswordRules(password)}.`
                 : undefined)
             }
             classNames={{ inputWrapper: "pr-2" }}
@@ -117,10 +117,10 @@ export function OrNewPasswordForm({
           <MlPasswordChecklist rules={rules} showStatus={password !== ""} />
 
           <AtInput
-            aria-label="Confirmar nueva contraseña"
+            aria-label="Confirma tu nueva contraseña"
             name="confirmation"
             type={isConfirmationVisible ? "text" : "password"}
-            placeholder="Confirmar nueva contraseña"
+            placeholder="Confirma tu nueva contraseña"
             autoComplete="new-password"
             aria-required="true"
             value={confirmation}

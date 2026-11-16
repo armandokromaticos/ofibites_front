@@ -24,7 +24,8 @@ export function MlActiveOrderCard({
   isLoading = false,
   title = "Pedido en curso",
   headingLevel = 2,
-  emptyMessage = "No tienes pedidos en curso. Cuando confirmes uno, aquí verás su estado y a qué hora llega.",
+  emptyTitle = "Sin pedidos en camino",
+  emptyMessage = "Cuando hagas un pedido, podrás seguirlo desde aquí.",
   className,
 }: MlActiveOrderCardProps) {
   const Heading = `h${headingLevel}` as const;
@@ -106,10 +107,13 @@ export function MlActiveOrderCard({
     );
   } else {
     body = (
-      <p className="flex items-start gap-2.5 pb-[5px] text-[13px] leading-5 text-muted">
+      <div className="flex items-start gap-2.5 pb-[5px] text-[13px] leading-5 text-muted">
         <PackageOpen aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand" />
-        {emptyMessage}
-      </p>
+        <p className="flex flex-col">
+          <span className="font-semibold text-foreground">{emptyTitle}</span>
+          <span>{emptyMessage}</span>
+        </p>
+      </div>
     );
   }
 

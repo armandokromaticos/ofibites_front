@@ -50,10 +50,11 @@ const OPCIONES_ROL = COMPANY_ROLE_OPTIONS.map((role) => ({
 /** Mismas reglas que «Añadir usuario» de Administración. */
 function validar(valores: OrMemberFormValues): OrMemberFormErrors {
   const errores: OrMemberFormErrors = {};
-  if (!valores.firstName.trim()) errores.firstName = "Escribe el nombre.";
-  if (!valores.lastName.trim()) errores.lastName = "Escribe el apellido.";
+  // T-39 pide "Escribe el nombre y apellido." para un solo campo; aquí son dos y llevan el mismo texto.
+  if (!valores.firstName.trim()) errores.firstName = "Escribe el nombre y apellido.";
+  if (!valores.lastName.trim()) errores.lastName = "Escribe el nombre y apellido.";
   if (!valores.email.trim()) errores.email = "Escribe el correo.";
-  else if (!EMAIL_RE.test(valores.email.trim())) errores.email = "Escribe un correo válido.";
+  else if (!EMAIL_RE.test(valores.email.trim())) errores.email = "Revisa el correo: Parece que falta algo.";
   if (!valores.role) errores.role = "Selecciona un rol.";
   return errores;
 }
@@ -85,7 +86,7 @@ interface PasoEquipoProps {
 /**
  * Paso 3 (Figma `3394:2380`, `3394:2455` invitar, `3394:2598` con equipo): opcional. La lista siempre trae al
  * usuario actual («Tú · Administrador»). Invitar usa `POST .../members/invite` (T-29) con `OrMemberForm` sin
- * departamento ni sede («Sede asignada» se omite: decisión 2026-11-03). «Finalizar y comenzar» llama a
+ * departamento ni sede («Sede asignada» se omite: decisión 2026-11-03). «Finalizar configuración» llama a
  * `onboarding/complete`; su 400 (falta dirección fiscal o sede) se muestra tal cual.
  */
 export function PasoEquipo({
@@ -171,7 +172,7 @@ export function PasoEquipo({
       })
       .then(() => {
         setIsModalOpen(false);
-        setAviso(`Invitamos a ${name}. Le llegará un correo a ${email} para entrar.`);
+        setAviso(`¡Listo! Enviamos la invitación a ${email}.`);
       })
       .catch((error: unknown) => setFormError(mensajeErrorInvitar(error)));
   };
@@ -261,14 +262,14 @@ export function PasoEquipo({
           Agregar integrante
         </AtButton>
         <p className="text-[13px] leading-[18px] text-muted">
-          Puedes invitar a más personas cuando quieras desde la sección Usuarios.
+          Puedes invitar a más personas cuando quieras desde la sección de Usuarios.
         </p>
       </section>
 
       <div className="flex flex-col gap-3">
         {errorFinalizar && <MlFormAlert title="No pudimos terminar la configuración.">{errorFinalizar}</MlFormAlert>}
         <AtButton size="lg" fullWidth onPress={finalizar} isLoading={complete.isPending}>
-          Finalizar y comenzar
+          Finalizar configuración
         </AtButton>
       </div>
 
@@ -291,7 +292,7 @@ export function PasoEquipo({
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1 px-5 pb-0 pt-6 sm:px-7 sm:pt-7">
             <h2 id={modalTituloId} className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
-              Invitar integrante
+              Invitar a una persona al equipo
             </h2>
             <p className="text-xs font-normal leading-4 text-muted">
               Le enviaremos un correo para que entre con sus propias credenciales. Tendrá acceso a todas
@@ -314,7 +315,7 @@ export function PasoEquipo({
               onSubmit={invitar}
               onCancel={cerrarModal}
               isSubmitting={invite.isPending}
-              submitLabel="Agregar integrante"
+              submitLabel="Enviar invitación"
               cancelLabel="Continuar más tarde"
               className="rounded-none bg-transparent px-5 pb-6 pt-4 sm:px-7 sm:pb-7"
             />

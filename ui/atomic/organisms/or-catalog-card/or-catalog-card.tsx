@@ -4,6 +4,8 @@ import Link from "next/link";
 import { cn } from "@heroui/react";
 import { Plus } from "lucide-react";
 
+import { AtTooltip } from "@/ui/atomic/atoms";
+
 import { OrCatalogCardProps } from "./or-catalog-card.types";
 
 /**
@@ -20,6 +22,7 @@ export function OrCatalogCard({
   priceLabel,
   href,
   linkLabel,
+  actionTooltip = "Añadir al carrito",
   isFeatured = false,
   isOnSale = false,
   headingLevel = 3,
@@ -89,7 +92,15 @@ export function OrCatalogCard({
             "after:absolute after:inset-0 after:rounded-card after:content-['']",
           )}
         >
-          <Plus aria-hidden="true" className="size-6" strokeWidth={2.25} />
+          {/*
+            El tooltip cuelga del icono (no del enlace): el enlace se estira a toda la card con `after:` y, si fuera
+            el disparador, saldría al pasar por cualquier parte de la card.
+          */}
+          <AtTooltip content={actionTooltip} placement="top" offset={10}>
+            <span className="relative z-[1] flex size-full items-center justify-center">
+              <Plus aria-hidden="true" className="size-6" strokeWidth={2.25} />
+            </span>
+          </AtTooltip>
         </Link>
       </div>
     </article>

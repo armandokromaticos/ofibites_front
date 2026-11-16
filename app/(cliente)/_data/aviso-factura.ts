@@ -40,11 +40,12 @@ export function avisosFactura(
     const factura = alerta.invoice;
     const enRevision = factura.paymentStatus === "IN_REVIEW";
     const cual = `#${factura.invoiceNumber}, ${formatPrice(factura.balance)}`;
+    const cualVencida = `#${factura.invoiceNumber} · ${formatPrice(factura.balance)}`;
     const pagar =
       puedePagar && !enRevision
         ? [
             {
-              label: alerta.level === "OVERDUE" ? "Pagar factura ahora" : "Pagar factura",
+              label: "Pagar factura",
               href: rutaPagarFactura(factura.orderId, volver),
               variant: alerta.level === "OVERDUE" ? ("accent" as const) : ("bordered" as const),
               ariaLabel: `Pagar la factura ${factura.invoiceNumber}`,
@@ -66,11 +67,11 @@ export function avisosFactura(
         tone: "danger",
         title:
           alerta.count > 1
-            ? `Tienes ${alerta.count} facturas vencidas (la más antigua: ${cual}).`
-            : `Tienes una factura vencida (${cual}).`,
+            ? `Tienes ${alerta.count} facturas vencidas (la más antigua: ${cualVencida}).`
+            : `Tienes una factura vencida (${cualVencida}).`,
         children: [
-          "No podemos programar pedidos nuevos hasta regularizarla.",
-          puedePagar && !enRevision ? "Paga ahora y vuelves directo a este carrito: no pierdes nada de lo que armaste." : null,
+          "Para programar pedidos nuevos primero hay que regularizarla.",
+          puedePagar && !enRevision ? "Págala y vuelve directo al carrito: Lo que armaste seguirá aquí." : null,
           quien,
         ]
           .filter(Boolean)

@@ -1,5 +1,5 @@
 // Datos de ejemplo para el catálogo (T-02)
-import { BookOpen, FileText, Grid3x3, Truck, UtensilsCrossed } from "lucide-react";
+import { BookOpen, FileText, Grid3x3, Headphones, Receipt, Truck, UtensilsCrossed } from "lucide-react";
 
 import {
   OrAccountMenuItem,
@@ -39,6 +39,9 @@ export const SAMPLE_NAV_ITEMS: OrAppSidebarItem[] = [
     href: "/dev/ui#administracion",
     icon: <BookOpen />,
   },
+  // Sin `href`: "Próximamente".
+  { key: "facturas", label: "Facturas", description: "Facturas y pagos", icon: <Receipt /> },
+  { key: "soporte", label: "Soporte", description: "Consultas y reclamos", icon: <Headphones /> },
 ];
 
 export const SAMPLE_USER: OrAppSidebarUser = {
@@ -84,7 +87,7 @@ export const SAMPLE_PROMO_SLIDES = [
 export const SAMPLE_ACTIVE_ORDER = {
   productName: "Morning bites",
   quantityLabel: "10 boxes",
-  etaLabel: "Llega a las 10:30 am",
+  etaLabel: "Llega a las 10:30 a. m.",
   statusLabel: "En camino",
   statusIcon: <Truck aria-hidden="true" className="size-3" />,
   progress: 54,
@@ -130,7 +133,7 @@ const hace = (minutos: number) => new Date(Date.now() - minutos * 60_000).toISOS
 export const SAMPLE_NOTIFICATIONS: OrNotificationsPopoverItem[] = [
   {
     id: "n1",
-    message: "Tu pedido #7728950E va en camino. Llega a las 10:30 am.",
+    message: "Tu pedido #7728950E va en camino. Llega a las 10:30 a. m.",
     isUnread: true,
     orderStatus: "IN_TRANSIT",
     createdAt: hace(12),
@@ -138,7 +141,7 @@ export const SAMPLE_NOTIFICATIONS: OrNotificationsPopoverItem[] = [
   },
   {
     id: "n2",
-    message: "Tu pedido #A1C3E2F4 fue confirmado para el 4 de sep a las 10:30 am.",
+    message: "Tu pedido #A1C3E2F4 fue confirmado para el 4 de sep a las 10:30 a. m.",
     isUnread: true,
     orderStatus: "CONFIRMED",
     createdAt: hace(120),

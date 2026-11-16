@@ -1,12 +1,12 @@
 import { InvoicePayment, OrderInvoice } from "@/domain/types";
 import {
-  caracasNow,
   dateOnlyFromApi,
   formatCaracasDateSlash,
   formatCaracasTime,
   formatWallTime,
   getApiErrorMessage,
   isApiError,
+  isCaracasToday,
   isWallTime,
 } from "@/shared/utils";
 
@@ -33,9 +33,9 @@ export function diaMes(iso: string): string {
   return formatCaracasDateSlash(iso).slice(0, 5);
 }
 
-/** "9:40 a. m." de un instante, en hora de Caracas (el Figma escribe "a. m." / "p. m."). */
+/** "9:40 a. m." de un instante, en hora de Caracas (formato RAE de `formatCaracasTime`). */
 export function hora(iso: string): string {
-  return formatCaracasTime(iso).replace(/\s?am$/, " a. m.").replace(/\s?pm$/, " p. m.");
+  return formatCaracasTime(iso);
 }
 
 /** "12:30 p. m." de una hora de pared ("HH:mm", `deliveryTime`), sin convertir zona; `null` si no es válida. */
@@ -46,9 +46,7 @@ export function horaPared(value: string | null | undefined): string | null {
 
 /** `true` si el instante cae hoy en Caracas. */
 export function esHoy(iso: string, now: Date = new Date()): boolean {
-  const hoy = caracasNow(now).date;
-  const [dia, mes, anio] = formatCaracasDateSlash(iso).split("/");
-  return `${anio}-${mes}-${dia}` === hoy;
+  return isCaracasToday(iso, now);
 }
 
 /** "hoy a las 10:02 a. m." o "el 27/09 a las 10:02 a. m.". */

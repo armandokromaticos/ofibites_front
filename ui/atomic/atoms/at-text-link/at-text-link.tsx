@@ -5,7 +5,7 @@ import { cn } from "@heroui/react";
 import { AtTextLinkProps } from "./at-text-link.types";
 
 /**
- * Estilo de los enlaces de texto de las pantallas de acceso ("Olvidé la contraseña", "Volver al
+ * Estilo de los enlaces de texto de las pantallas de acceso ("¿Olvidaste tu contraseña?", "Volver al
  * inicio de sesión"): subrayado, hereda color y tamaño del contenedor y foco visible.
  */
 export const AT_TEXT_LINK_CLASSES =

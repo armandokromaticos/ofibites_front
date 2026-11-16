@@ -38,7 +38,7 @@ export function PasoEmpresa({ company, onContinue }: PasoEmpresaProps) {
     if (update.isPending || esDobleClic()) return;
     const valor = direccion.trim();
     if (!valor) {
-      setError("Escribe la dirección fiscal de tu empresa.");
+      setError("Escribe la dirección fiscal.");
       event.currentTarget.querySelector<HTMLInputElement>("[name=\"fiscalAddress\"]")?.focus();
       return;
     }
@@ -96,12 +96,12 @@ export function PasoEmpresa({ company, onContinue }: PasoEmpresaProps) {
           classNames={CLASES_LABEL}
         />
         <p id={ayudaId} className="-mt-1.5 px-[18px] text-[13px] leading-[18px] text-muted">
-          Usa la dirección fiscal principal (la que aparece en tu RIF).
+          Usa la dirección fiscal principal, la que aparece en el RIF.
         </p>
       </div>
 
       <AtButton type="submit" size="lg" fullWidth isLoading={update.isPending}>
-        Continuar paso 2
+        Continuar al paso 2
       </AtButton>
     </MlForm>
   );

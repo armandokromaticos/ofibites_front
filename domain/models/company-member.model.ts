@@ -74,7 +74,7 @@ function daysBetweenCaracas(a: Date, b: Date): number {
 }
 
 /**
- * "Última conexión" del Figma: "Hace 2 horas", "Ayer, 4:12 p.m.", "Hace 3 días", "Hace 1 semana", "Hace 2
+ * "Última conexión" del Figma: "Hace 2 horas", "Ayer, 4:12 p. m.", "Hace 3 días", "Hace 1 semana", "Hace 2
  * meses" o "Sin ingresar" (`lastSeenAt` nulo: invitado pendiente). `now` se inyecta para pruebas.
  */
 export function formatMemberLastSeen(lastSeenAt: string | null, now: Date = new Date()): string {

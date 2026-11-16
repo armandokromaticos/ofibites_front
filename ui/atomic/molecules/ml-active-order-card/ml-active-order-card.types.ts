@@ -12,7 +12,7 @@ export interface MlActiveOrderCardOrder {
   productName: string;
   /** "10 boxes". */
   quantityLabel: string;
-  /** "Llega a las 10:30 am". */
+  /** "Llega a las 10:30 a. m.". */
   etaLabel: string;
   /** Texto del estado ("En camino"). */
   statusLabel: string;
@@ -37,6 +37,8 @@ export interface MlActiveOrderCardProps {
   title?: string;
   /** Nivel del título. Por defecto 2. */
   headingLevel?: 2 | 3;
+  /** Título del estado vacío. Por defecto "Sin pedidos en camino". */
+  emptyTitle?: string;
   /** Texto sin pedido en curso. */
   emptyMessage?: string;
   className?: string;

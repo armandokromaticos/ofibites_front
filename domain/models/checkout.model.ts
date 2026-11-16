@@ -34,8 +34,8 @@ export const CHECKOUT_SUGGESTED_TIMES = ["08:00", "09:00", "10:30", "12:00"] as 
 /** Hora de corte del día anterior, en hora de Caracas (15:00). */
 const CUTOFF_MINUTES = 15 * 60;
 
-/** Texto del aviso de corte (decisión del usuario 2026-10-16). */
-export const CHECKOUT_CUTOFF_NOTICE = "Los pedidos se agendan hasta las 3:00 p.m. del día anterior.";
+/** Texto del aviso de corte (decisión del usuario 2026-10-16; texto de T-39). */
+export const CHECKOUT_CUTOFF_NOTICE = "Recibimos pedidos hasta las 3:00 p. m. del día anterior a la entrega.";
 
 /**
  * Primera fecha de entrega que se puede pedir ahora mismo (regla de T-26a, que el back también valida): mañana en
@@ -80,21 +80,21 @@ export function validateCheckoutDraft(
   const errors: CheckoutDraftErrors = {};
   const first = firstDeliveryDate(now);
 
-  if (!draft.deliveryDate) errors.deliveryDate = "Elige la fecha de entrega.";
+  if (!draft.deliveryDate) errors.deliveryDate = "Elige una fecha de entrega.";
   else if (!isDateOnly(draft.deliveryDate)) errors.deliveryDate = "Escribe una fecha válida.";
   else if (draft.deliveryDate < first) {
-    errors.deliveryDate = "Esa fecha ya no llega al corte de las 3:00 p.m. del día anterior. Elige otra.";
+    errors.deliveryDate = "Para esa fecha ya pasó la hora límite (3:00 p. m. del día anterior). Elige otra.";
   } else if (draft.deliveryDate > lastDeliveryDate(now)) {
     errors.deliveryDate = `Solo agendamos pedidos hasta ${CHECKOUT_MAX_DAYS_AHEAD} días por adelantado. Elige una fecha anterior.`;
   }
 
-  if (!draft.deliveryTime) errors.deliveryTime = "Elige la hora de entrega.";
+  if (!draft.deliveryTime) errors.deliveryTime = "Elige una hora de entrega.";
   else if (!isWallTime(draft.deliveryTime)) errors.deliveryTime = "Escribe una hora válida.";
 
-  if (!draft.deliveryAddressId) errors.deliveryAddressId = "Elige dónde recibimos el pedido.";
+  if (!draft.deliveryAddressId) errors.deliveryAddressId = "Elige dónde entregamos.";
 
   const name = draft.receiverName.trim();
-  if (!name) errors.receiverName = "Escribe quién recibe el pedido.";
+  if (!name) errors.receiverName = "Escribe el nombre de quien recibe.";
   else if (name.length < CHECKOUT_LIMITS.receiverName.min) errors.receiverName = "El nombre es demasiado corto.";
   else if (name.length > CHECKOUT_LIMITS.receiverName.max) {
     errors.receiverName = `Máximo ${CHECKOUT_LIMITS.receiverName.max} caracteres.`;
@@ -102,15 +102,16 @@ export function validateCheckoutDraft(
 
   const phone = draft.receiverPhone.trim();
   if (!phone) errors.receiverPhone = "Escribe un teléfono de contacto.";
-  else if (!PHONE_PATTERN.test(phone)) errors.receiverPhone = "Usa solo números, espacios, + y -.";
+  // T-39: un solo texto para cualquier teléfono mal escrito (caracteres, dígitos o longitud).
+  else if (!PHONE_PATTERN.test(phone)) errors.receiverPhone = "Revisa el teléfono de contacto.";
   else if (phone.replace(/\D/g, "").length < CHECKOUT_LIMITS.receiverPhone.min) {
-    errors.receiverPhone = "El teléfono debe tener al menos 7 dígitos.";
+    errors.receiverPhone = "Revisa el teléfono de contacto.";
   }
   else if (
     phone.length < CHECKOUT_LIMITS.receiverPhone.min ||
     phone.length > CHECKOUT_LIMITS.receiverPhone.max
   ) {
-    errors.receiverPhone = "El teléfono debe tener entre 7 y 20 caracteres.";
+    errors.receiverPhone = "Revisa el teléfono de contacto.";
   }
 
   if (draft.addressDetail.trim().length > CHECKOUT_LIMITS.addressDetail) {

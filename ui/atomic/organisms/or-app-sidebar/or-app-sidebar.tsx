@@ -1,6 +1,13 @@
 "use client";
 
-import { CSSProperties, ReactNode, RefObject, useEffect, useRef, ViewTransition } from "react";
+import {
+  CSSProperties,
+  ReactNode,
+  RefObject,
+  useEffect,
+  useRef,
+  ViewTransition,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,9 +16,13 @@ import { cn } from "@heroui/react";
 import { LogOut } from "lucide-react";
 
 import { VIEW_TRANSITION_CLASS, VIEW_TRANSITION_NAME } from "@/shared/motion";
-import { AtAvatar, AtButton, AtMenuIcon, AtTooltip } from "@/ui/atomic/atoms";
+import { AtAvatar, AtButton, AtChip, AtMenuIcon, AtTooltip } from "@/ui/atomic/atoms";
 
-import { OrAppSidebarDrawerCloseReason, OrAppSidebarItem, OrAppSidebarProps } from "./or-app-sidebar.types";
+import {
+  OrAppSidebarDrawerCloseReason,
+  OrAppSidebarItem,
+  OrAppSidebarProps,
+} from "./or-app-sidebar.types";
 
 const FOCUS_RING =
   "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
@@ -23,33 +34,43 @@ const ICON_LIFT = cn(
 );
 
 /*
- * Panel superpuesto: en el flujo el sidebar ocupa siempre el riel de 80 px; el panel de 236 px va encima
- * del contenido y se descubre con `clip-path` (no `width`), así la página no se reflowea al abrir.
- * Abrir: 320 ms ease-out. Cerrar: 200 ms ease-in. Con movimiento reducido el recorte cambia al instante y
- * las etiquetas solo se funden.
+ * Panel superpuesto (Figma "Sidebar" 2308:24770): en el flujo el sidebar ocupa siempre el riel de 80 px; el
+ * panel de 304 px va encima del contenido y se descubre con `clip-path` (no `width`), así la página no se
+ * reflowea al abrir. Abrir: 320 ms ease-out. Cerrar: 200 ms ease-in. Con movimiento reducido el recorte
+ * cambia al instante y las etiquetas solo se funden.
  *
- * Cada ítem ocupa todo el ancho del panel y lleva su propio recorte, sincronizado con el del panel:
- * cerrado se ve el cuadrado de 60 px (icono centrado en el riel), abierto la fila completa. Así el icono no
- * se mueve nunca. Los -4 px del recorte dejan ver el anillo de foco.
+ * Cada ítem mide 216 px (la tarjeta del activo del Figma) a 10 px del borde y lleva su propio recorte,
+ * sincronizado con el del panel: cerrado se ve el cuadrado de 60 px (x 10-70, centrado en el riel), abierto
+ * la tarjeta completa. El icono (caja de 36 px a 12 px del borde del ítem, x 22-58) no se mueve nunca.
  */
 function panelTransition(isOpen: boolean) {
   return cn(
     "transition-[clip-path,box-shadow] motion-reduce:transition-none",
-    isOpen ? "duration-(--duration-base) ease-out" : "duration-(--duration-fast) ease-in",
+    isOpen
+      ? "duration-(--duration-base) ease-out"
+      : "duration-(--duration-fast) ease-in",
   );
 }
 
 function itemClip(isOpen: boolean) {
-  // Cerrado: el recorte es el cuadrado de 48 × 48 centrado en el riel (216 − 6 − 162) con su radio de 12 px
-  // (`rounded-control`), así las cuatro esquinas del fondo del activo son iguales, como en el Figma. Solo con
-  // foco de teclado se abren 4 px por cada lado para no cortar el anillo.
+  // Cerrado: el recorte es el cuadrado de 60 × 60 (216 − 156) centrado en vertical (el ítem mide 60 o 76 según
+  // las líneas de la descripción) con su radio de 12 px (`rounded-control`), como el activo del Figma cerrado.
+  // Abierto y con foco de teclado se abren 4 px por cada lado para no cortar el anillo.
   return cn(
     panelTransition(isOpen),
     isOpen
       ? "[clip-path:inset(-4px_-4px_-4px_-4px_round_16px)]"
-      : "[clip-path:inset(0px_162px_0px_6px_round_12px)] focus-visible:[clip-path:inset(-4px_158px_-4px_2px_round_16px)]",
+      : "[clip-path:inset(calc(50%_-_30px)_156px_calc(50%_-_30px)_0px_round_12px)] focus-visible:[clip-path:inset(calc(50%_-_34px)_152px_calc(50%_-_34px)_-4px_round_16px)]",
   );
 }
+
+/** Tarjeta del ítem (Figma: activo de 216 × 76, padding 12, radio 12); el alto lo dan icono y texto. */
+const ITEM_BOX =
+  "group flex items-center gap-3 p-3 rounded-control w-[216px] min-h-[60px] text-left transition-colors";
+
+/** Caja del icono: 36 × 36, radio 8, icono de 20 px. */
+const ICON_BOX =
+  "flex justify-center items-center rounded-lg size-9 [&_svg]:size-5 shrink-0";
 
 /** Texto que entra con el panel: fundido + 6 px desde la izquierda, escalonado; al cerrar se va al instante. */
 function revealClass(isOpen: boolean) {
@@ -62,13 +83,18 @@ function revealClass(isOpen: boolean) {
 }
 
 /** Retardo de entrada del texto del ítem `index`: 30 ms por ítem, con tope. Al cerrar, ninguno. */
-function revealDelay(isOpen: boolean, index: number): CSSProperties | undefined {
-  return isOpen ? { transitionDelay: `${60 + Math.min(index, 5) * 30}ms` } : undefined;
+function revealDelay(
+  isOpen: boolean,
+  index: number,
+): CSSProperties | undefined {
+  return isOpen
+    ? { transitionDelay: `${60 + Math.min(index, 5) * 30}ms` }
+    : undefined;
 }
 
 /**
- * El ítem mide 216 px (panel de 236 menos 2 × 10 de padding) pero cerrado solo se ven 60: el tooltip
- * se coloca desde el borde visible (14 px), no desde el borde real del enlace.
+ * El ítem mide 216 px pero cerrado solo se ven 60: el tooltip se coloca desde el borde visible (14 px), no
+ * desde el borde real del enlace.
  */
 const TOOLTIP_OFFSET = 14 - (216 - 60);
 
@@ -81,7 +107,15 @@ interface SidebarLinkProps {
   onNavigate?: () => void;
 }
 
-function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkProps) {
+function SidebarLink({
+  item,
+  index,
+  isActive,
+  isOpen,
+  onNavigate,
+}: SidebarLinkProps) {
+  if (!item.href) return <SidebarSoonItem item={item} index={index} isOpen={isOpen} />;
+
   // Cerrado, el nombre lo da el aria-label y el tooltip lo muestra (hover y foco de teclado).
   return (
     <AtTooltip content={item.label} isDisabled={isOpen} offset={TOOLTIP_OFFSET}>
@@ -91,7 +125,7 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
         aria-label={isOpen ? undefined : item.label}
         onClick={onNavigate}
         className={cn(
-          "group flex h-12 w-full items-center gap-3 rounded-control px-3.5 transition-colors",
+          ITEM_BOX,
           isActive ? "bg-nav-active shadow-xs" : "hover:bg-background",
           itemClip(isOpen),
           FOCUS_RING,
@@ -100,22 +134,29 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg [&_svg]:size-[18px]",
-            isActive ? "bg-nav-active-icon-bg text-white" : cn("bg-nav-icon-bg text-primary", ICON_LIFT),
+            ICON_BOX,
+            isActive
+              ? "bg-nav-active-icon-bg text-white"
+              : cn("bg-nav-icon-bg text-primary", ICON_LIFT),
           )}
         >
           {item.icon}
         </span>
-        {/* Siempre montada; cerrada, fuera del árbol accesible (el nombre lo da el aria-label del enlace). */}
+        {/*
+         * Siempre montada; cerrada, fuera del árbol accesible (el nombre lo da el aria-label del enlace).
+         * 128 px de ancho, como en el Figma: la descripción corta en dos líneas ("Resumen y pedidos / en curso").
+         */}
         <span
           aria-hidden={isOpen ? undefined : true}
           style={revealDelay(isOpen, index)}
-          className={cn("flex min-w-0 flex-col", revealClass(isOpen))}
+          className={cn("flex flex-col w-32 min-w-0", revealClass(isOpen))}
         >
           <span
             className={cn(
-              "truncate text-sm leading-5",
-              isActive ? "font-extrabold text-foreground" : "font-semibold text-muted",
+              "text-sm truncate leading-5",
+              isActive
+                ? "font-extrabold text-foreground"
+                : "font-semibold text-muted",
             )}
           >
             {item.label}
@@ -123,7 +164,7 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
           {item.description && (
             <span
               className={cn(
-                "truncate text-xs leading-4",
+                "text-xs leading-4",
                 isActive ? "text-foreground" : "text-muted",
               )}
             >
@@ -136,6 +177,48 @@ function SidebarLink({ item, index, isActive, isOpen, onNavigate }: SidebarLinkP
   );
 }
 
+interface SidebarSoonItemProps {
+  item: OrAppSidebarItem;
+  index: number;
+  isOpen: boolean;
+}
+
+/**
+ * Ítem sin `href` (sección del Figma aún sin pantalla): mismo aspecto que un inactivo, con el icono atenuado, sin
+ * hover y con el chip "Próximamente" bajo la descripción (junto al título no cabe en los 128 px). Es un enlace
+ * deshabilitado (`role="link"` + `aria-disabled`, sin `href` ni acción): enfocable para que el tooltip y el nombre
+ * se anuncien, como las opciones "Próximamente" del menú de cuenta. Pulsarlo no navega ni cierra el drawer, y
+ * nunca se marca activo.
+ */
+function SidebarSoonItem({ item, index, isOpen }: SidebarSoonItemProps) {
+  return (
+    <AtTooltip content={`${item.label} · Próximamente`} isDisabled={isOpen} offset={TOOLTIP_OFFSET}>
+      <span
+        role="link"
+        tabIndex={0}
+        aria-disabled="true"
+        aria-label={isOpen ? undefined : `${item.label}, Próximamente`}
+        className={cn(ITEM_BOX, "cursor-default", itemClip(isOpen), FOCUS_RING)}
+      >
+        <span aria-hidden="true" className={cn(ICON_BOX, "bg-nav-icon-bg text-primary opacity-50")}>
+          {item.icon}
+        </span>
+        {/* Abierto, el nombre sale del contenido ("Facturas Facturas y pagos Próximamente"). */}
+        <span
+          aria-hidden={isOpen ? undefined : true}
+          style={revealDelay(isOpen, index)}
+          className={cn("flex flex-col items-start w-32 min-w-0", revealClass(isOpen))}
+        >
+          <span className="w-full font-semibold text-muted text-sm truncate leading-5">{item.label}</span>
+          {/* Los espacios separan las palabras en el nombre accesible. */}{" "}
+          {item.description && <span className="text-subtle text-xs leading-4">{item.description}</span>}{" "}
+          <AtChip classNames={{ base: "mt-1 shrink-0" }}>Próximamente</AtChip>
+        </span>
+      </span>
+    </AtTooltip>
+  );
+}
+
 interface LogoutButtonProps {
   index: number;
   isOpen: boolean;
@@ -143,8 +226,13 @@ interface LogoutButtonProps {
   onLogout: () => void;
 }
 
-/** Mismo aspecto que un ítem inactivo del menú, pero más bajo: es una acción, no una sección. */
-function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonProps) {
+/** Mismo aspecto que un ítem inactivo del menú, con una sola línea (60 px de alto): es una acción, no una sección. */
+function LogoutButton({
+  index,
+  isOpen,
+  isLoggingOut,
+  onLogout,
+}: LogoutButtonProps) {
   const label = isLoggingOut ? "Cerrando sesión…" : "Cerrar sesión";
 
   return (
@@ -156,7 +244,8 @@ function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonPro
         aria-disabled={isLoggingOut || undefined}
         aria-label={isOpen ? undefined : label}
         className={cn(
-          "group flex h-12 w-full items-center gap-3 rounded-control px-3.5 text-muted transition-colors hover:bg-background",
+          ITEM_BOX,
+          "hover:bg-background text-muted",
           itemClip(isOpen),
           isLoggingOut && "cursor-wait opacity-70",
           FOCUS_RING,
@@ -165,7 +254,8 @@ function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonPro
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg bg-nav-icon-bg text-primary [&_svg]:size-[18px]",
+            ICON_BOX,
+            "bg-nav-icon-bg text-primary",
             !isLoggingOut && ICON_LIFT,
           )}
         >
@@ -174,7 +264,10 @@ function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonPro
         <span
           aria-hidden={isOpen ? undefined : true}
           style={revealDelay(isOpen, index)}
-          className={cn("truncate text-sm font-semibold leading-5", revealClass(isOpen))}
+          className={cn(
+            "font-semibold text-sm truncate leading-5",
+            revealClass(isOpen),
+          )}
         >
           {label}
         </span>
@@ -183,14 +276,16 @@ function LogoutButton({ index, isOpen, isLoggingOut, onLogout }: LogoutButtonPro
   );
 }
 
-
-const FOCUSABLE = "a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])";
+const FOCUSABLE =
+  "a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])";
 
 /** Por debajo de 768 px no hay riel: el panel sale como drawer desde la top bar. */
 const DRAWER_QUERY = "(max-width: 767.98px)";
 
-interface SidebarPanelProps
-  extends Pick<OrAppSidebarProps, "items" | "activeKey" | "user" | "onLogout" | "isLoggingOut" | "homeHref"> {
+interface SidebarPanelProps extends Pick<
+  OrAppSidebarProps,
+  "items" | "activeKey" | "user" | "onLogout" | "isLoggingOut" | "homeHref"
+> {
   isOpen: boolean;
   navId: string;
   logoTransitionName: string | null;
@@ -215,7 +310,7 @@ function SidebarPanel({
 }: SidebarPanelProps) {
   // Isotipo y logotipo montados y superpuestos: se cruzan con un fundido al ritmo del panel.
   const logo = (
-    <span className="relative block h-[33px] w-[110px]">
+    <span className="block relative w-[114px] h-[33px]">
       <Image
         src="/images/brand/logo-mark.png"
         alt=""
@@ -223,17 +318,18 @@ function SidebarPanel({
         height={33}
         preload
         className={cn(
-          "absolute left-0 top-0 transition-[opacity,rotate,scale] motion-reduce:transition-none",
+          "top-0 left-0 absolute transition-[opacity,rotate,scale] motion-reduce:transition-none",
           isOpen
             ? "opacity-0 duration-(--duration-fast) ease-in"
             : cn(
-              "opacity-100 duration-500 ease-spring",
-              // Cerrado, el isotipo gira -8° y crece un poco al pasar.
-              "motion-safe:group-hover:-rotate-8 motion-safe:group-hover:scale-108",
-              "motion-safe:group-focus-visible:-rotate-8 motion-safe:group-focus-visible:scale-108",
-            ),
+                "opacity-100 duration-500 ease-spring",
+                // Cerrado, el isotipo gira -8° y crece un poco al pasar.
+                "motion-safe:group-hover:-rotate-8 motion-safe:group-hover:scale-108",
+                "motion-safe:group-focus-visible:-rotate-8 motion-safe:group-focus-visible:scale-108",
+              ),
         )}
       />
+      {/* Logotipo 4 px a la derecha del isotipo: x 31 abierto, como en el Figma (el isotipo, centrado en el riel). */}
       <Image
         src="/images/brand/logo-ofibites.svg"
         alt=""
@@ -241,7 +337,7 @@ function SidebarPanel({
         height={32}
         preload
         className={cn(
-          "absolute left-0 top-0.5 transition-opacity motion-reduce:transition-none",
+          "top-0.5 left-1 absolute transition-opacity motion-reduce:transition-none",
           isOpen
             ? "opacity-100 delay-75 duration-(--duration-base) ease-out"
             : "opacity-0 duration-(--duration-instant) ease-in",
@@ -252,22 +348,30 @@ function SidebarPanel({
 
   return (
     <>
-      <div className="flex w-full flex-col gap-7">
-        <div className="flex flex-col items-start gap-5">
+      {/*
+       * Figma: 40 px entre la cabecera y el primer ítem visible. Aquí, 22 px hasta la caja del ítem (que lleva
+       * 12 px de padding) desde el botón de menú (que deja 6 px bajo su icono): 6 + 22 + 12 = 40.
+       */}
+      <div className="flex flex-col gap-[22px] w-full shrink-0">
+        {/* Logo (33 px) y botón de menú de 32 px: 14 + 6 de su padding = los 20 px del Figma hasta el icono. */}
+        <div className="flex flex-col items-start gap-3.5">
           <Link
             href={homeHref}
             aria-label="Ofibites, ir al inicio"
             onClick={onNavigate}
             className={cn(
-              "group ml-[27px] block rounded-sm",
+              "group block ml-[27px] rounded-sm",
               // Cerrado, el área del enlace es la del isotipo (no sale del riel).
-              isOpen ? "w-[110px]" : "w-[25px]",
+              isOpen ? "w-[114px]" : "w-[25px]",
               FOCUS_RING,
             )}
           >
             {/* Mismo nombre que el logo de las pantallas de acceso: tras el login, viaja hasta aquí. */}
             {logoTransitionName ? (
-              <ViewTransition name={logoTransitionName} share={VIEW_TRANSITION_CLASS.shared}>
+              <ViewTransition
+                name={logoTransitionName}
+                share={VIEW_TRANSITION_CLASS.shared}
+              >
                 {logo}
               </ViewTransition>
             ) : (
@@ -277,9 +381,13 @@ function SidebarPanel({
           {menuButton}
         </div>
 
-        <nav id={navId} aria-label="Principal" className="w-full px-2.5">
-          {/* T-35 (feedback Gaby): ítems de 48 px con 6 px entre ellos (antes 60 + 20) para que quepan más opciones. */}
-          <ul className="flex flex-col gap-1.5">
+        <nav id={navId} aria-label="Principal" className="px-2.5 w-full">
+          {/*
+           * Figma: ~21 px entre ítems. Con la caja de 12 px de padding (para el hover y el activo), 4 px entre
+           * cajas dan 28 px entre textos y 16 px entre la tarjeta activa y el texto vecino. Sustituye a los ítems
+           * compactos de 48 px de T-35; si no caben, el panel hace scroll.
+           */}
+          <ul className="flex flex-col gap-1">
             {items.map((item, index) => (
               <li key={item.key}>
                 <SidebarLink
@@ -295,9 +403,9 @@ function SidebarPanel({
         </nav>
       </div>
 
-      <div className="flex w-full shrink-0 flex-col">
+      <div className="flex flex-col w-full shrink-0">
         {onLogout && (
-          <div className="w-full px-2.5 pb-3">
+          <div className="px-2.5 pt-4 pb-3 w-full">
             <LogoutButton
               index={items.length}
               isOpen={isOpen}
@@ -308,16 +416,26 @@ function SidebarPanel({
         )}
 
         {user && (
-          <div className="flex h-[84px] w-full shrink-0 items-center gap-[15px] border-t border-border-subtle px-5 py-4">
+          <div className="flex items-center gap-[15px] px-5 py-4 border-border-subtle border-t w-full h-[84px] shrink-0">
             {/* Abierto, el nombre se lee al lado: el avatar no lo repite. */}
-            <AtAvatar src={user.avatarSrc} name={user.name} isDecorative={isOpen} />
+            <AtAvatar
+              src={user.avatarSrc}
+              name={user.name}
+              isDecorative={isOpen}
+            />
             <div
               aria-hidden={isOpen ? undefined : true}
               style={revealDelay(isOpen, items.length + 1)}
-              className={cn("flex min-w-0 flex-col", revealClass(isOpen))}
+              className={cn("flex flex-col min-w-0", revealClass(isOpen))}
             >
-              <span className="truncate text-base font-semibold text-foreground">{user.name}</span>
-              {user.role && <span className="truncate text-sm text-foreground">{user.role}</span>}
+              <span className="font-semibold text-foreground text-base truncate">
+                {user.name}
+              </span>
+              {user.role && (
+                <span className="text-foreground text-sm truncate">
+                  {user.role}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -332,7 +450,9 @@ function SidebarPanel({
  */
 function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
   if (event.key !== "Tab" || !container) return;
-  const focusables = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE));
+  const focusables = Array.from(
+    container.querySelectorAll<HTMLElement>(FOCUSABLE),
+  );
   const first = focusables[0];
   const last = focusables[focusables.length - 1];
   if (!first || !last) return;
@@ -340,7 +460,10 @@ function trapTab(event: KeyboardEvent, container: HTMLElement | null) {
   if (event.shiftKey && (active === first || !container.contains(active))) {
     event.preventDefault();
     last.focus();
-  } else if (!event.shiftKey && (active === last || !container.contains(active))) {
+  } else if (
+    !event.shiftKey &&
+    (active === last || !container.contains(active))
+  ) {
     event.preventDefault();
     first.focus();
   }
@@ -440,29 +563,47 @@ export function OrAppSidebar({
     };
   }, [isOpen]);
 
-  useDrawerEffects(isDrawerOpen, closeDrawerRef, drawerRef, drawerCloseButtonRef);
+  useDrawerEffects(
+    isDrawerOpen,
+    closeDrawerRef,
+    drawerRef,
+    drawerCloseButtonRef,
+  );
 
-  const panelProps = { items, activeKey, user, onLogout, isLoggingOut, homeHref };
+  const panelProps = {
+    items,
+    activeKey,
+    user,
+    onLogout,
+    isLoggingOut,
+    homeHref,
+  };
 
   return (
-    // Desde tablet, riel en el flujo de 80 px y panel de 236 px encima del contenido. En móvil no hay
+    // Desde tablet, riel en el flujo de 80 px y panel de 304 px encima del contenido. En móvil no hay
     // riel (ancho 0): el mismo panel sale como drawer desde la top bar (`drawer`).
-    <div data-tour={tourId} className={cn("relative z-30 h-full shrink-0 md:w-20", className)}>
-      {/* Borde del riel cerrado; abierto, el borde es el del panel (a 236 px). */}
+    <div
+      data-tour={tourId}
+      className={cn("z-30 relative md:w-20 h-full shrink-0", className)}
+    >
+      {/* Borde del riel cerrado; abierto, el borde es el del panel (a 304 px). */}
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute inset-y-0 left-[79px] z-10 hidden w-px bg-border-subtle md:block",
+          "hidden md:block left-[79px] z-10 absolute inset-y-0 bg-border-subtle w-px pointer-events-none",
           isOpen ? "opacity-0" : "opacity-100",
         )}
       />
       <aside
         ref={panelRef}
         className={cn(
-          "absolute inset-y-0 left-0 hidden w-[236px] flex-col justify-between border-r border-border-subtle bg-content1 pt-8 md:flex",
+          // 304 px; cerrado se recortan 224 y queda el riel de 80. Si la ventana es baja, el panel hace scroll.
+          "hidden left-0 absolute inset-y-0 md:flex flex-col justify-between overflow-y-auto overscroll-contain bg-content1 pt-8 border-border-subtle border-r w-[304px]",
           panelTransition(isOpen),
           // Abierto, el recorte deja 48 px a la derecha para la sombra.
-          isOpen ? "shadow-panel [clip-path:inset(0_-48px_0_0)]" : "[clip-path:inset(0_156px_0_0)]",
+          isOpen
+            ? "shadow-panel [clip-path:inset(0_-48px_0_0)]"
+            : "[clip-path:inset(0_224px_0_0)]",
         )}
       >
         <SidebarPanel
@@ -498,7 +639,7 @@ export function OrAppSidebar({
         <div
           inert={!isDrawerOpen}
           className={cn(
-            "fixed inset-0 z-50 md:hidden",
+            "md:hidden z-50 fixed inset-0",
             isDrawerOpen
               ? "visible"
               : "pointer-events-none invisible transition-[visibility] duration-(--duration-fast)",
@@ -508,7 +649,11 @@ export function OrAppSidebar({
           <div
             aria-hidden="true"
             onClick={() => closeDrawerRef.current("scrim")}
-            style={isDrawerOpen ? { viewTransitionName: VIEW_TRANSITION_NAME.appDrawerScrim } : {}}
+            style={
+              isDrawerOpen
+                ? { viewTransitionName: VIEW_TRANSITION_NAME.appDrawerScrim }
+                : {}
+            }
             className={cn(
               "absolute inset-0 bg-primary/25 backdrop-blur-[2px] transition-opacity",
               isDrawerOpen
@@ -523,9 +668,13 @@ export function OrAppSidebar({
             aria-modal="true"
             aria-label="Menú principal"
             // Nombre propio solo abierto: en una navegación queda por encima de la página que entra.
-            style={isDrawerOpen ? { viewTransitionName: VIEW_TRANSITION_NAME.appDrawer } : undefined}
+            style={
+              isDrawerOpen
+                ? { viewTransitionName: VIEW_TRANSITION_NAME.appDrawer }
+                : undefined
+            }
             className={cn(
-              "absolute inset-y-0 left-0 flex w-[236px] max-w-[85vw] flex-col justify-between gap-6",
+              "left-0 absolute inset-y-0 flex flex-col justify-between gap-6 w-[304px] max-w-[85vw]",
               "overflow-y-auto overscroll-contain border-r border-border-subtle bg-content1 pt-8 shadow-panel",
               "motion-safe:transition-[translate] motion-reduce:transition-opacity",
               isDrawerOpen
