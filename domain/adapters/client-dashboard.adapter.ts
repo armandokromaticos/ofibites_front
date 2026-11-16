@@ -84,7 +84,7 @@ export function toPromotions(banners: Banner[]): ClientDashboardPromotion[] {
       ...(banner.subtitle?.trim() && { subtitle: banner.subtitle.trim() }),
       imageSrc: banner.imageUrl,
       imageAlt: banner.altText,
-      ...(banner.linkUrl && { ctaHref: banner.linkUrl, ctaLabel: "Ordenar ahora" }),
+      ...(banner.linkUrl && { ctaHref: banner.linkUrl, ctaLabel: "Pedir ahora" }),
     }));
 }
 

@@ -18,8 +18,8 @@ export const CATEGORIAS_DASHBOARD: ClientDashboardCategory[] = [
   },
   {
     id: "desayunos",
-    title: "Desayunos",
-    subtitle: "Ideal para reuniones de 4 a 15 personas",
+    title: "Working Lunch",
+    subtitle: "Almuerzos que sí dan ganas de repetir",
     imageSrc: "/images/banners/dashboard-bolleria.png",
     imageAlt: "Caja abierta con seis hojaldres rellenos",
     imagePosition: "end",

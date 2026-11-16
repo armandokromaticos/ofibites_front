@@ -8,11 +8,14 @@ export type Paso = 0 | 1 | 2 | 3;
 
 export const PASO_LISTO: Paso = 3;
 
-/** Textos de T-39 (`gestion/textos-plataforma.md`, sección 2); el título del paso 3 sigue el del Figma. */
+/**
+ * Textos de T-39 (`gestion/textos-plataforma.md`, sección 2); el título del paso 3 sigue el del Figma. Un salto de
+ * línea en `subtitle` es el del doc de textos y solo se aplica desde `sm` (en móvil el texto fluye).
+ */
 export const COPY_PASO: Record<Paso, { title: string; subtitle: string }> = {
   0: {
     title: "Empecemos con los datos de tu empresa",
-    subtitle: "Necesitamos estos datos legales para activar la cuenta y gestionar la facturación.",
+    subtitle: "Necesitamos estos datos legales para\nactivar la cuenta y gestionar la facturación.",
   },
   1: {
     title: "¿Dónde entregamos?",

@@ -96,7 +96,13 @@ function RequestLink({ onSent }: RequestLinkProps) {
     <div className="flex flex-col gap-[59px]">
       <MlAuthHeader
         title="¿Olvidaste tu contraseña?"
-        subtitle="¡No pasa nada! Escribe tu correo y te enviaremos un enlace para crear una nueva contraseña."
+        subtitle={
+          <>
+            {/* Salto como en el doc de textos (p. 4); en móvil el texto fluye. */}
+            ¡No pasa nada! Escribe tu correo y te enviaremos un
+            <br className="hidden sm:inline" /> enlace para crear una nueva contraseña.
+          </>
+        }
       />
 
       <div className="flex flex-col gap-[19px]">

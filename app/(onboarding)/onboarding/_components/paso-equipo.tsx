@@ -6,7 +6,11 @@ import { ModalBody, ModalContent, ModalHeader } from "@heroui/react";
 import { CloudOff, Plus } from "lucide-react";
 
 import { useCompleteOnboarding } from "@/domain/hooks/companies";
-import { useCompanyMembers, useInviteCompanyMember } from "@/domain/hooks/company-members";
+import {
+  useCompanyMembers,
+  useInviteCompanyMember,
+} from "@/domain/hooks/company-members";
+import { useDepartments } from "@/domain/hooks/departments";
 import { COMPANY_ROLE_LABELS, COMPANY_ROLE_OPTIONS } from "@/domain/models";
 import { CompanyMember, CompanyRole } from "@/domain/types";
 import { enfocarPrimerCampoInvalido, isApiError } from "@/shared/utils";
@@ -24,7 +28,12 @@ import {
   OrMemberFormValues,
 } from "@/ui/atomic";
 
-import { integrantesLabel, mensajeErrorFinalizar, mensajeErrorInvitar, ROL_CORTO } from "../_data/onboarding";
+import {
+  integrantesLabel,
+  mensajeErrorFinalizar,
+  mensajeErrorInvitar,
+  ROL_CORTO,
+} from "../_data/onboarding";
 
 import { useGuardaDobleClic } from "./use-guarda-doble-clic";
 
@@ -51,10 +60,13 @@ const OPCIONES_ROL = COMPANY_ROLE_OPTIONS.map((role) => ({
 function validar(valores: OrMemberFormValues): OrMemberFormErrors {
   const errores: OrMemberFormErrors = {};
   // T-39 pide "Escribe el nombre y apellido." para un solo campo; aquí son dos y llevan el mismo texto.
-  if (!valores.firstName.trim()) errores.firstName = "Escribe el nombre y apellido.";
-  if (!valores.lastName.trim()) errores.lastName = "Escribe el nombre y apellido.";
+  if (!valores.firstName.trim())
+    errores.firstName = "Escribe el nombre y apellido.";
+  if (!valores.lastName.trim())
+    errores.lastName = "Escribe el nombre y apellido.";
   if (!valores.email.trim()) errores.email = "Escribe el correo.";
-  else if (!EMAIL_RE.test(valores.email.trim())) errores.email = "Revisa el correo: Parece que falta algo.";
+  else if (!EMAIL_RE.test(valores.email.trim()))
+    errores.email = "Revisa el correo: Parece que falta algo.";
   if (!valores.role) errores.role = "Selecciona un rol.";
   return errores;
 }
@@ -102,6 +114,7 @@ export function PasoEquipo({
   const membersQuery = useCompanyMembers();
   const invite = useInviteCompanyMember();
   const complete = useCompleteOnboarding();
+  const departmentsQuery = useDepartments();
   const esDobleClic = useGuardaDobleClic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -131,7 +144,9 @@ export function PasoEquipo({
         isCurrentUser: true,
       });
     }
-    return lista.sort((a, b) => Number(b.isCurrentUser) - Number(a.isCurrentUser));
+    return lista.sort(
+      (a, b) => Number(b.isCurrentUser) - Number(a.isCurrentUser),
+    );
   }, [membersQuery.data, currentUserId, currentUserName, currentUserPosition]);
 
   const abrirModal = () => {
@@ -145,9 +160,13 @@ export function PasoEquipo({
     if (!invite.isPending) setIsModalOpen(false);
   };
 
-  const cambiar = <F extends OrMemberFormField>(field: F, value: OrMemberFormValues[F]) => {
+  const cambiar = <F extends OrMemberFormField>(
+    field: F,
+    value: OrMemberFormValues[F],
+  ) => {
     setValores((actual) => ({ ...actual, [field]: value }));
-    if (errores[field]) setErrores((actual) => ({ ...actual, [field]: undefined }));
+    if (errores[field])
+      setErrores((actual) => ({ ...actual, [field]: undefined }));
   };
 
   const invitar = () => {
@@ -160,7 +179,8 @@ export function PasoEquipo({
     }
 
     setFormError(null);
-    const name = `${valores.firstName.trim()} ${valores.lastName.trim()}`.trim();
+    const name =
+      `${valores.firstName.trim()} ${valores.lastName.trim()}`.trim();
     const email = valores.email.trim();
     invite
       .mutateAsync({
@@ -169,6 +189,7 @@ export function PasoEquipo({
         role: valores.role as CompanyRole,
         ...(valores.phone.trim() && { phone: valores.phone.trim() }),
         ...(valores.position.trim() && { position: valores.position.trim() }),
+        ...(valores.departmentId && { departmentId: valores.departmentId }),
       })
       .then(() => {
         setIsModalOpen(false);
@@ -197,13 +218,20 @@ export function PasoEquipo({
   const modalTituloId = `${id}-modal-titulo`;
 
   return (
-    <div className="flex w-full flex-col gap-[25px]">
-      <section aria-labelledby={tituloId} aria-busy={membersQuery.isPending || undefined} className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 id={tituloId} className="font-display text-[21px] font-bold leading-7 text-foreground">
+    <div className="flex flex-col gap-[25px] w-full">
+      <section
+        aria-labelledby={tituloId}
+        aria-busy={membersQuery.isPending || undefined}
+        className="flex flex-col gap-4"
+      >
+        <div className="flex justify-between items-center gap-3">
+          <h2
+            id={tituloId}
+            className="font-display font-bold text-[21px] text-foreground leading-7"
+          >
             Tu equipo
           </h2>
-          <span className="rounded-full bg-secondary-600 px-2.5 py-0.5 text-xs font-semibold leading-4 text-primary-foreground">
+          <span className="bg-secondary-600 px-2.5 py-0.5 rounded-full font-semibold text-primary-foreground text-xs leading-4">
             {integrantesLabel(integrantes.length)}
           </span>
         </div>
@@ -212,28 +240,36 @@ export function PasoEquipo({
           {integrantes.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded-card border border-border-subtle bg-content1 px-4 py-3"
+              className="flex items-center gap-3 bg-content1 px-4 py-3 border border-border-subtle rounded-card"
             >
               <AtAvatar name={item.name} isDecorative />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold leading-6 text-foreground">
+              <div className="flex flex-col flex-1 min-w-0">
+                <p className="flex flex-wrap items-center gap-2 font-semibold text-[17px] text-foreground leading-6">
                   <span className="min-w-0 break-words">{item.name}</span>
-                  {item.isCurrentUser && <AtChip className="h-5 bg-background text-[11px] text-muted">Tú</AtChip>}
+                  {item.isCurrentUser && (
+                    <AtChip className="bg-background h-5 text-[11px] text-muted">
+                      Tú
+                    </AtChip>
+                  )}
                 </p>
-                {item.position && <p className="text-[15px] leading-5 text-subtle">{item.position}</p>}
+                {item.position && (
+                  <p className="text-[15px] text-subtle leading-5">
+                    {item.position}
+                  </p>
+                )}
               </div>
               <AtChip className="shrink-0">{ROL_CORTO[item.role]}</AtChip>
             </li>
           ))}
           {membersQuery.isPending && (
             <li aria-hidden="true">
-              <AtSkeleton className="h-[66px] rounded-card" />
+              <AtSkeleton className="rounded-card h-[66px]" />
             </li>
           )}
         </ul>
 
         {membersQuery.isError && (
-          <div className="rounded-card bg-content1">
+          <div className="bg-content1 rounded-card">
             <MlEmptyState
               tone="error"
               size="sm"
@@ -248,27 +284,40 @@ export function PasoEquipo({
           </div>
         )}
 
-        <p role="status" className="text-[13px] font-semibold leading-[18px] text-brand empty:hidden">
+        <p
+          role="status"
+          className="empty:hidden font-semibold text-[13px] text-brand leading-[18px]"
+        >
           {aviso}
         </p>
 
         <AtButton
           size="sm"
           variant="bordered"
-          className="self-start border-primary px-4 text-[13px] text-primary"
+          className="self-start px-4 border-primary text-[13px] text-primary"
           onPress={abrirModal}
           startContent={<Plus aria-hidden="true" className="size-4" />}
         >
           Agregar integrante
         </AtButton>
-        <p className="text-[13px] leading-[18px] text-muted">
-          Puedes invitar a más personas cuando quieras desde la sección de Usuarios.
+        <p className="text-[13px] text-muted leading-[18px]">
+          Puedes invitar a más personas cuando quieras desde la sección de
+          Usuarios.
         </p>
       </section>
 
       <div className="flex flex-col gap-3">
-        {errorFinalizar && <MlFormAlert title="No pudimos terminar la configuración.">{errorFinalizar}</MlFormAlert>}
-        <AtButton size="lg" fullWidth onPress={finalizar} isLoading={complete.isPending}>
+        {errorFinalizar && (
+          <MlFormAlert title="No pudimos terminar la configuración.">
+            {errorFinalizar}
+          </MlFormAlert>
+        )}
+        <AtButton
+          size="lg"
+          fullWidth
+          onPress={finalizar}
+          isLoading={complete.isPending}
+        >
           Finalizar configuración
         </AtButton>
       </div>
@@ -290,13 +339,16 @@ export function PasoEquipo({
         }}
       >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1 px-5 pb-0 pt-6 sm:px-7 sm:pt-7">
-            <h2 id={modalTituloId} className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
+          <ModalHeader className="flex flex-col gap-1 px-5 sm:px-7 pt-6 sm:pt-7 pb-0">
+            <h2
+              id={modalTituloId}
+              className="font-display font-bold text-[28px] text-foreground leading-9 tracking-[-0.04em]"
+            >
               Invitar a una persona al equipo
             </h2>
-            <p className="text-xs font-normal leading-4 text-muted">
-              Le enviaremos un correo para que entre con sus propias credenciales. Tendrá acceso a todas
-              las sedes.
+            <p className="font-normal text-muted text-xs leading-4">
+              Le enviaremos un correo para que entre con sus propias
+              credenciales. Tendrá acceso a todas las sedes.
             </p>
           </ModalHeader>
           <ModalBody className="p-0">
@@ -306,10 +358,13 @@ export function PasoEquipo({
               values={valores}
               errors={errores}
               onChange={cambiar}
-              departmentOptions={[]}
+              departmentOptions={(departmentsQuery.data ?? []).map((d) => ({
+                id: d.id,
+                name: d.name,
+              }))}
+              isLoadingDepartments={departmentsQuery.isLoading}
               branchOptions={[]}
               roleOptions={OPCIONES_ROL}
-              hideDepartment
               hideBranch
               formError={formError}
               onSubmit={invitar}
@@ -317,7 +372,7 @@ export function PasoEquipo({
               isSubmitting={invite.isPending}
               submitLabel="Enviar invitación"
               cancelLabel="Continuar más tarde"
-              className="rounded-none bg-transparent px-5 pb-6 pt-4 sm:px-7 sm:pb-7"
+              className="bg-transparent px-5 sm:px-7 pt-4 pb-6 sm:pb-7 rounded-none"
             />
           </ModalBody>
         </ModalContent>

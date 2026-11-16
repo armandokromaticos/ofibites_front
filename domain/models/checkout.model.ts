@@ -28,9 +28,6 @@ export const EMPTY_CHECKOUT_DRAFT: CheckoutDraft = {
   notes: "",
 };
 
-/** Atajos de hora del Figma (3462:2094). "Otra hora" abre el campo libre. */
-export const CHECKOUT_SUGGESTED_TIMES = ["08:00", "09:00", "10:30", "12:00"] as const;
-
 /** Hora de corte del día anterior, en hora de Caracas (15:00). */
 const CUTOFF_MINUTES = 15 * 60;
 
