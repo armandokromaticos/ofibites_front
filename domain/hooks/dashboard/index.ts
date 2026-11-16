@@ -5,3 +5,4 @@ export * from "./useClientIndicators";
 export * from "./useClientUser";
 export * from "./useConsumptionBreakdown";
 export * from "./useExportConsumption";
+export * from "./useTeamPreferences";

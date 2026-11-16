@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import {
-  RECOMMENDATION_CATEGORY_SECTIONS,
+  RECOMMENDATION_SECTIONS,
   toAddressNames,
   toCatalogNames,
   toClientDashboardUser,
@@ -60,12 +60,14 @@ async function soloConImagenRecorte(
 /**
  * Compone el Dashboard con los endpoints existentes (no hay uno propio), todo en paralelo:
  * - promociones: `GET /banners?section=home-carousel&active=true` (público).
- * - recomendaciones: `GET /catalog?section=` de desayunos, coffee-break y bebidas, solo los de imagen recortada.
+ * - recomendaciones: `GET /catalog?section=` de cada sección de `RECOMMENDATION_SECTIONS` (desayunos,
+ *   coffee-break, bebidas, working-lunch, snacks y postres), solo los de imagen recortada. Qué se pinta lo decide
+ *   la pantalla con las preferencias del equipo (`useTeamPreferences` + `toRecommendationView`).
  * - pedidos: `GET /orders` (con `X-Company-Id`), nombrados con el catálogo y las direcciones de la empresa.
  * Sin empresa activa, sin pedidos. El usuario sale de la sesión.
  */
 async function getClientDashboard(companyId: string | null): Promise<ClientDashboard> {
-  const categorias = Object.keys(RECOMMENDATION_CATEGORY_SECTIONS) as ClientRecommendationCategory[];
+  const categorias = RECOMMENDATION_SECTIONS;
   const [banners, catalogo, porSeccion, orders, addresses] = await Promise.all([
     // Si falla, el Dashboard sale sin promociones.
     bannerService.list({ section: SECCION_BANNERS, active: true }).catch(() => []),
@@ -74,7 +76,7 @@ async function getClientDashboard(companyId: string | null): Promise<ClientDashb
       .get({ pageSize: CATALOG_PAGE_SIZE })
       .then((respuesta) => respuesta.items.data)
       .catch(() => []),
-    Promise.all(categorias.map((c) => itemsDeSeccion(RECOMMENDATION_CATEGORY_SECTIONS[c]))),
+    Promise.all(categorias.map((c) => itemsDeSeccion(c))),
     companyId ? orderService.list() : Promise.resolve([]),
     // Un rol sin permiso (403) deja los pedidos sin dirección.
     companyId ? companyAddressService.list(companyId).catch(() => []) : Promise.resolve([]),

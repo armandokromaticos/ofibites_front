@@ -8,6 +8,7 @@ import { OrderStatus } from "./order-status.model";
 export interface ClientDashboard {
   user: ClientDashboardUser;
   promotions: ClientDashboardPromotion[];
+  /** Todos los ítems recomendables (sin tope); lo que se pinta sale de `toRecommendationView` (T-45). */
   recommendations: ClientDashboardRecommendation[];
   /** `null` si no hay ningún pedido en curso. */
   activeOrder: ClientActiveOrder | null;
@@ -53,17 +54,40 @@ export interface ClientDashboardCategory {
 }
 
 /**
- * Categoría de una recomendación (filtros "Según tus preferencias"). El catálogo no la da por ítem: sale de la
- * sección en la que aparece (`desayunos`, `coffee-break`, `bebidas`); ver DECISIONES 2026-10-15.
+ * Categoría de una recomendación (filtros "Según tus preferencias") = slug de la sección del catálogo de la que
+ * sale. El catálogo no la da por ítem: un ítem tiene todas las secciones en las que aparece (DECISIONES 2026-10-15
+ * y 2026-11-16, T-45).
  */
-export type ClientRecommendationCategory = "desayunos" | "coffee" | "bebidas";
+export const RECOMMENDATION_CATEGORIES = [
+  "desayunos",
+  "coffee-break",
+  "working-lunch",
+  "snacks",
+  "postres",
+  "bebidas",
+] as const;
+export type ClientRecommendationCategory = (typeof RECOMMENDATION_CATEGORIES)[number];
 
 /** Nombre visible de cada categoría (chips de filtro y anuncios). */
 export const RECOMMENDATION_CATEGORY_LABELS: Record<ClientRecommendationCategory, string> = {
   desayunos: "Desayunos",
-  coffee: "Coffee break",
+  "coffee-break": "Coffee break",
+  "working-lunch": "Working lunch",
+  snacks: "Snacks",
+  postres: "Postres",
   bebidas: "Bebidas",
 };
+
+/** Chips fijos de la entrega de diseño (sin preferencias del equipo): Todos · Desayunos · Coffee break · Bebidas. */
+export const DEFAULT_RECOMMENDATION_CATEGORIES: readonly ClientRecommendationCategory[] = [
+  "desayunos",
+  "coffee-break",
+  "bebidas",
+];
+
+export function isRecommendationCategory(value: string): value is ClientRecommendationCategory {
+  return (RECOMMENDATION_CATEGORIES as readonly string[]).includes(value);
+}
 
 export interface ClientDashboardRecommendation {
   id: string;
@@ -71,7 +95,10 @@ export interface ClientDashboardRecommendation {
   kind: "product" | "combo";
   name: string;
   description: string;
-  category: ClientRecommendationCategory;
+  /** Secciones del catálogo en las que aparece (al menos una); el chip filtra por pertenencia. */
+  categories: ClientRecommendationCategory[];
+  /** Destacado por el admin ("POPULAR"): va primero en cada lista. */
+  isFeatured: boolean;
   /** Solo UI: tipo de foto (recorte, caja sobre fondo de marca o foto a sangre). Por defecto recorte. */
   imageKind?: "cutout" | "plate" | "photo";
   /** `null` si el ítem no tiene foto: la pantalla pone la de por defecto. */

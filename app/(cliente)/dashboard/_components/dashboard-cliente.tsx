@@ -1,13 +1,19 @@
 "use client";
 
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { CloudOff, Truck } from "lucide-react";
 
+import { toRecommendationView } from "@/domain/adapters";
 import { useRepeatOrder } from "@/domain/hooks/cart";
-import { EstadoQaDashboard, useClientDashboard, useClientUser } from "@/domain/hooks/dashboard";
+import {
+  EstadoQaDashboard,
+  useClientDashboard,
+  useClientUser,
+  useTeamPreferences,
+} from "@/domain/hooks/dashboard";
 import {
   ClientActiveOrder,
   ClientRecentOrder,
@@ -64,16 +70,9 @@ function categoryHref(id: string): string {
   return categoria ? rutaOrdenarCategoria(categoria) : RUTA_ORDENAR;
 }
 
-// Filtros de "Según tus preferencias" (entrega de diseño): Todos · Desayunos · Coffee break · Bebidas.
+// Filtros de "Según tus preferencias": "Todos" + chips fijos (Desayunos · Coffee break · Bebidas) o las secciones
+// que eligió el equipo en su solicitud de ingreso (T-45, `toRecommendationView`).
 type RecommendationFilter = "todos" | ClientRecommendationCategory;
-
-const RECOMMENDATION_FILTERS: { value: RecommendationFilter; label: string }[] = [
-  { value: "todos", label: "Todos" },
-  ...(Object.keys(RECOMMENDATION_CATEGORY_LABELS) as ClientRecommendationCategory[]).map((value) => ({
-    value,
-    label: RECOMMENDATION_CATEGORY_LABELS[value],
-  })),
-];
 
 /** Salida de la lista al cambiar de filtro: fundido corto que acelera. */
 const LIST_EXIT = { opacity: 0, transition: { duration: duration.fast, ease: ease.in } };
@@ -157,11 +156,17 @@ function RecommendationsSkeleton() {
 
 interface DashboardClienteProps {
   estadoQa?: EstadoQaDashboard;
+  /** `?preferencias=` (solo desarrollo): slugs de sección simulados como preferencias del equipo. */
+  preferenciasQa?: string[];
   /** `?tour=1`: abre el tour de bienvenida (pruebas; ver `TourBienvenida`). */
   abrirTour?: boolean;
 }
 
-export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClienteProps) {
+export function DashboardCliente({
+  estadoQa,
+  preferenciasQa,
+  abrirTour = false,
+}: DashboardClienteProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const router = useRouter();
   const repeat = useRepeatOrder();
@@ -172,6 +177,8 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
   const [repeatError, setRepeatError] = useState<{ orderId: string; message: string } | null>(null);
 
   const { data, isPending, isError, isFetching, refetch } = useClientDashboard({ qaState: estadoQa });
+  // Opcional: mientras carga o si falla (`data` sin valor), las recomendaciones salen como sin preferencias.
+  const { data: preferences } = useTeamPreferences({ qaSectionSlugs: preferenciasQa });
 
   // "Repetir" de una orden: copia sus líneas disponibles al carrito y lleva a `/carrito` con el aviso (qué se
   // añadió y qué no). Con error no navega: el mensaje sale bajo la fila. Un segundo clic mientras repite no hace
@@ -198,10 +205,26 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
   // Las recomendaciones entran escalonadas solo cuando sustituyen al esqueleto de carga. Con datos ya
   // en caché llegan con la página, sin una segunda entrada encima de la transición de ruta.
   const [startedLoading] = useState(isPending);
-  const [filter, setFilter] = useState<RecommendationFilter>("todos");
-  const recommendations = data?.recommendations ?? [];
+  const [selectedFilter, setFilter] = useState<RecommendationFilter>("todos");
+  const recommendationView = useMemo(
+    () => toRecommendationView(data?.recommendations ?? [], preferences),
+    [data?.recommendations, preferences],
+  );
+  const recommendationFilters: { value: RecommendationFilter; label: string }[] = [
+    { value: "todos", label: "Todos" },
+    ...recommendationView.categories.map((value) => ({
+      value,
+      label: RECOMMENDATION_CATEGORY_LABELS[value],
+    })),
+  ];
+  // Si llegan las preferencias y el chip elegido ya no está (p. ej. "Desayunos"), se vuelve a "Todos" de verdad
+  // (ajuste de estado durante el render; la guarda evita el bucle): si el chip vuelve, no se reactiva solo.
+  if (selectedFilter !== "todos" && !recommendationView.categories.includes(selectedFilter)) {
+    setFilter("todos");
+  }
+  const filter = selectedFilter;
   const visibleRecommendations =
-    filter === "todos" ? recommendations : recommendations.filter((product) => product.category === filter);
+    filter === "todos" ? recommendationView.todos : (recommendationView.porCategoria[filter] ?? []);
   const filterLabel = filter === "todos" ? "Todos" : RECOMMENDATION_CATEGORY_LABELS[filter];
   const filterAnnouncement = filter === "todos"
     ? `Todas las recomendaciones: ${visibleRecommendations.length}`
@@ -357,7 +380,7 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
             {ultimasOrdenes("hidden min-w-0 xl:flex")}
           </div>
 
-          {(isPending || data.recommendations.length > 0) && (
+          {(isPending || recommendationView.todos.length > 0) && (
             <div
               aria-busy={isPending || undefined}
               data-tour={OBJETIVOS_TOUR.recomendados}
@@ -376,7 +399,7 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
                     </h2>
                     <MlFilterChips
                       label="Filtrar recomendaciones"
-                      options={RECOMMENDATION_FILTERS}
+                      options={recommendationFilters}
                       value={filter}
                       onChange={setFilter}
                     />
@@ -452,7 +475,7 @@ export function DashboardCliente({ estadoQa, abrirTour = false }: DashboardClien
       <TourBienvenida
         abrirDesdeUrl={abrirTour}
         puedeIniciar={!(isError && !data)}
-        sinRecomendaciones={!!data && data.recommendations.length === 0}
+        sinRecomendaciones={!!data && recommendationView.todos.length === 0}
       />
     </>
   );
