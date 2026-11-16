@@ -1,3 +1,5 @@
+import { OrderFrequency, PeoplePerOrderRange, RegistrationSolution } from "./company-request.types";
+
 /**
  * "Indicadores" de Mi perfil (T-32a/b, Figma overview `3706:2856`, departamento `3707:3278`, usuario
  * `3707:3675`). Tipos alineados con el contrato **IMPLEMENTADO** en `gestion/CONTRATOS-API.md` ("Mi perfil —
@@ -93,3 +95,21 @@ export type ConsumptionBreakdownResponse =
   | { dimension: "branch"; rows: BranchBreakdownRow[]; totals: BranchBreakdownTotals }
   | { dimension: "department"; rows: DepartmentBreakdownRow[]; totals: DepartmentBreakdownTotals }
   | { dimension: "user"; rows: UserBreakdownRow[] };
+
+/** Origen de las preferencias del equipo: la solicitud de ingreso aprobada o ninguna (alta a mano). */
+export type TeamPreferencesSource = "registration" | "none";
+
+/**
+ * `GET /dashboard/client/preferences` (contrato "T-45: preferencias del equipo", IMPLEMENTADO en
+ * `gestion/CONTRATOS-API.md`): respuestas de "¿Qué necesita tu equipo?" de la solicitud de ingreso de la empresa
+ * del header. Sin solicitud, `source: "none"` con todo vacío (200, nunca 404).
+ */
+export interface TeamPreferencesResponse {
+  source: TeamPreferencesSource;
+  /** Sin duplicados, en el orden de la solicitud. */
+  solutions: RegistrationSolution[];
+  /** Slugs de `Section` en el mismo orden que `solutions`; solo los que tienen sección activa en el catálogo. */
+  sectionSlugs: string[];
+  peoplePerOrder: PeoplePerOrderRange | null;
+  orderFrequency: OrderFrequency | null;
+}
