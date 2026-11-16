@@ -90,7 +90,7 @@ export function OrPaymentProofModal({
           {error && <MlFormAlert className="bg-danger-50">{error}</MlFormAlert>}
           <div className="grid gap-5 sm:grid-cols-[250px_minmax(0,1fr)]">
             <div className="flex flex-col gap-3">
-              <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-2xl border border-border-subtle bg-background px-4 py-5 text-center">
+              <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-2xl border border-surface-sand bg-background px-4 py-5 text-center">
                 <Miniatura file={file} />
                 <p className="w-full truncate text-[11px] leading-4 text-muted" title={file.name}>
                   {file.name}
@@ -119,7 +119,7 @@ export function OrPaymentProofModal({
                 </AtButton>
               </div>
             </div>
-            <dl className="flex flex-col divide-y divide-border-subtle self-start text-xs leading-5">
+            <dl className="flex flex-col divide-y divide-surface-sand self-start text-xs leading-5">
               {rows.map((row) => (
                 <div key={row.label} className="flex items-baseline justify-between gap-4 px-1 py-3 sm:px-4">
                   <dt className="shrink-0 text-muted">{row.label}</dt>

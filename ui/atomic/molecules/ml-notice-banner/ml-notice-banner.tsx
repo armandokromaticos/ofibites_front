@@ -19,7 +19,7 @@ interface EstiloTono {
 
 const TONOS: Record<MlNoticeBannerTone, EstiloTono> = {
   success: {
-    caja: "border-brand bg-brand-soft/20",
+    caja: "border-brand bg-brand-tint",
     icono: "bg-brand text-white",
     titulo: "text-foreground",
     defecto: <Check strokeWidth={3} />,
@@ -37,7 +37,7 @@ const TONOS: Record<MlNoticeBannerTone, EstiloTono> = {
     defecto: <AlertCircle strokeWidth={2.5} />,
   },
   credit: {
-    caja: "border-strength-medium bg-surface-sand/45",
+    caja: "border-brand bg-surface-sand/45",
     icono: "bg-transparent text-strength-medium-foreground",
     titulo: "text-foreground",
     defecto: <CircleDollarSign strokeWidth={2} />,
@@ -86,6 +86,7 @@ export function MlNoticeBanner({
   children,
   icon,
   actions = [],
+  titleColor = "tone",
   role,
   id,
   containerRef,
@@ -112,7 +113,7 @@ export function MlNoticeBanner({
           {icon ?? estilo.defecto}
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <p className={cn("text-sm font-semibold leading-5", estilo.titulo)}>{title}</p>
+          <p className={cn("text-sm font-semibold leading-5", titleColor === "foreground" ? "text-foreground" : estilo.titulo)}>{title}</p>
           {children && <div className="text-xs leading-[18px] text-foreground">{children}</div>}
         </div>
       </div>

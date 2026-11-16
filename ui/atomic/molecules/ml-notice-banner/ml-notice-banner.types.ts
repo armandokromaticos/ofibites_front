@@ -27,6 +27,11 @@ export interface MlNoticeBannerProps {
   icon?: ReactNode;
   /** Hasta dos acciones a la derecha (abajo en móvil). */
   actions?: MlNoticeBannerAction[];
+  /**
+   * `tone` (por defecto): el color de título del tono (naranja oscuro en `danger`). `foreground`: título en negro,
+   * p. ej. "Finanzas rechazó tu comprobante" (Figma 3628:1608), donde el naranja queda para la factura vencida.
+   */
+  titleColor?: "tone" | "foreground";
   /** `alert` para un bloqueo que aparece por una acción; por defecto no se anuncia (es estado de la página). */
   role?: "alert" | "status";
   id?: string;

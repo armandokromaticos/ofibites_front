@@ -40,4 +40,9 @@ export interface OrOrderSummaryProps {
   /** Acciones y avisos al pie (botón principal, "Volver", nota). */
   children?: ReactNode;
   className?: string;
+  /**
+   * `default`: carrito y checkout. `order`: total del detalle del pedido (Figma 3632:1686), sin separador bajo el
+   * título, filas en peso regular con etiqueta `placeholder` y separador `surface-sand` antes del total.
+   */
+  variant?: "default" | "order";
 }

@@ -33,19 +33,15 @@ export const ORDER_STATUS_GROUP_FILTERS: readonly OrderStatusGroup[] = [
 ];
 
 /**
- * Pasos del "Seguimiento" del detalle del pedido (Figma 3568:1611), en el mismo orden que los grupos de
- * filtro. Sin historial de transiciones en el back (solo se guarda el estado actual): el paso resaltado es
- * el del grupo actual, y los anteriores se muestran como cumplidos sin fecha (ver DECISIONES T-28b).
- * `cancelled`/`rejected` no tienen paso: el detalle muestra un aviso en su lugar.
+ * Pasos del "Seguimiento" del detalle del pedido (Figma 3632:1686 y 3567:1374): Recibido, Programado y Entregado.
+ * Sin historial de transiciones en el back (solo se guarda el estado actual): el paso del grupo actual va "en curso"
+ * (salvo Entregado, que deja los tres cumplidos) y los anteriores, cumplidos sin fecha (ver DECISIONES T-28b).
+ * `in_transit` no tiene paso propio: cuenta como Programado en curso. `cancelled` no tiene paso: el detalle muestra
+ * un aviso en su lugar.
  */
-export const ORDER_STATUS_GROUP_STEPS: readonly OrderStatusGroup[] = [
-  "received",
-  "scheduled",
-  "in_transit",
-  "delivered",
-];
+export const ORDER_STATUS_GROUP_STEPS: readonly OrderStatusGroup[] = ["received", "scheduled", "delivered"];
 
-/** Índice del grupo en los pasos del seguimiento, o `-1` si es `cancelled` (sin paso). */
+/** Índice del paso del seguimiento del grupo (`in_transit` → Programado), o `-1` si es `cancelled` (sin paso). */
 export function orderStatusGroupStepIndex(group: OrderStatusGroup): number {
-  return ORDER_STATUS_GROUP_STEPS.indexOf(group);
+  return ORDER_STATUS_GROUP_STEPS.indexOf(group === "in_transit" ? "scheduled" : group);
 }
