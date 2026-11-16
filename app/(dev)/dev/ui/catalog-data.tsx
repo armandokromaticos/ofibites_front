@@ -1,5 +1,5 @@
 // Datos de ejemplo para el catálogo (T-02)
-import { BookOpen, FileText, Grid3x3, Truck, UtensilsCrossed } from "lucide-react";
+import { BookOpen, FileText, Grid3x3, Headphones, Receipt, Truck, UtensilsCrossed } from "lucide-react";
 
 import {
   OrAccountMenuItem,
@@ -39,6 +39,9 @@ export const SAMPLE_NAV_ITEMS: OrAppSidebarItem[] = [
     href: "/dev/ui#administracion",
     icon: <BookOpen />,
   },
+  // Sin `href`: "Próximamente".
+  { key: "facturas", label: "Facturas", description: "Facturas y pagos", icon: <Receipt /> },
+  { key: "soporte", label: "Soporte", description: "Consultas y reclamos", icon: <Headphones /> },
 ];
 
 export const SAMPLE_USER: OrAppSidebarUser = {

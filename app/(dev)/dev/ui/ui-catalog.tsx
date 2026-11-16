@@ -100,7 +100,7 @@ const PASSWORD_SAMPLES = ["", "ofibites", "Ofibites2026", "Ofibit3#", "Ofibites2
 const ACTIVE_VARIANTS: { label: string; key?: string }[] = [
   { label: "Dashboard", key: "dashboard" },
   { label: "Ordenar", key: "ordenar" },
-  { label: "Pedidos", key: "pedidos" },
+  { label: "Data y consumo", key: "pedidos" },
   { label: "Administración", key: "administracion" },
   { label: "Sin selección" },
 ];
@@ -536,9 +536,9 @@ export function UiCatalog() {
 
       <Section id="sidebar" title="OrAppSidebar">
         <div className="flex flex-wrap items-start gap-6">
-          <Specimen label="Abierto (236 px)">
-            {/* El panel abierto se superpone: el ejemplo reserva sus 236 px para no tapar al vecino. */}
-            <div className="h-[666px] w-[236px]">
+          <Specimen label="Abierto (304 px)">
+            {/* El panel abierto se superpone: el ejemplo reserva sus 304 px para no tapar al vecino. */}
+            <div className="h-[666px] w-[304px]">
               <OrAppSidebar
                 items={SAMPLE_NAV_ITEMS}
                 activeKey="ordenar"

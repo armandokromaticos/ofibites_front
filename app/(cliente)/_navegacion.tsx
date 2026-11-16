@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { BookOpen, Grid3x3, ReceiptText, ShoppingCart, UtensilsCrossed } from "lucide-react";
+import { BookOpen, Grid3x3, Headphones, Receipt, ReceiptText, ShoppingCart, UtensilsCrossed } from "lucide-react";
 
 import { OrAccountMenuItem, OrAppSidebarItem } from "@/ui/atomic";
 
@@ -15,7 +15,7 @@ export const RUTA_PERFIL = "/perfil";
 export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
   { key: "dashboard", label: "Dashboard", description: "Resumen y pedidos en curso", href: RUTA_DASHBOARD, icon: <Grid3x3 /> },
   { key: "ordenar", label: "Ordenar", description: "Propuestas para cada momento del día", href: RUTA_ORDENAR, icon: <UtensilsCrossed /> },
-  { key: "pedidos", label: "Pedidos", description: "Historial de tus pedidos", href: RUTA_PEDIDOS, icon: <ReceiptText /> },
+  { key: "pedidos", label: "Data y consumo", description: "Reportes por sede y departamento", href: RUTA_PEDIDOS, icon: <ReceiptText /> },
   {
     key: "administracion",
     label: "Administración",
@@ -23,6 +23,9 @@ export const NAV_ITEMS_CLIENTE: OrAppSidebarItem[] = [
     href: RUTA_ADMINISTRACION,
     icon: <BookOpen />,
   },
+  // Figma: aún sin pantalla. Sin `href`, el sidebar los muestra "Próximamente" (sin navegación) para todos los roles.
+  { key: "facturas", label: "Facturas", description: "Facturas y pagos", icon: <Receipt /> },
+  { key: "soporte", label: "Soporte", description: "Consultas y reclamos", icon: <Headphones /> },
 ];
 
 /**
@@ -148,10 +151,13 @@ export interface PaginaCliente {
  * su `href` salvo que tenga entrada propia (gana la más larga).
  */
 export const PAGINAS_CLIENTE: PaginaCliente[] = [
-  // "Pedidos" y "Administración" ya salen de NAV_ITEMS_CLIENTE (sidebar); sus h1 propios ("Pedidos
+  // "Data y consumo" (/pedidos) y "Administración" ya salen de NAV_ITEMS_CLIENTE (sidebar); sus h1 propios ("Pedidos
   // realizados", "Añadir usuario"...) y las rutas hijas (`/pedidos/<id>`, `/administracion/<id>`) heredan
   // este título: mismo patrón que `/checkout/confirmado/<id>` con "Checkout".
-  ...NAV_ITEMS_CLIENTE.map(({ href, label, icon, key }) => ({ href, label, icon, navKey: key })),
+  // Los ítems "Próximamente" (sin `href`) no tienen página: no entran.
+  ...NAV_ITEMS_CLIENTE.flatMap(({ href, label, icon, key }) =>
+    href ? [{ href, label, icon, navKey: key }] : [],
+  ),
   { href: RUTA_CARRITO, label: "Carrito", icon: <ShoppingCart /> },
   // Figma 3462:2094: título "Checkout" con el icono de Ordenar, que sigue activo en el sidebar.
   { href: RUTA_CHECKOUT, label: "Checkout", icon: <UtensilsCrossed />, navKey: "ordenar" },
