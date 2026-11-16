@@ -5,6 +5,7 @@ import {
   ConsumptionBreakdownDimension,
   DepartmentBreakdownRow,
   DepartmentBreakdownTotals,
+  TeamPreferencesResponse,
   UserBreakdownRow,
 } from "@/domain/types";
 import { API_BASE_URL } from "@/shared/constants";
@@ -56,6 +57,13 @@ export const dashboardService = {
   /** `GET /dashboard/client?month=AAAA-MM`. */
   getClientIndicators: (month: string): Promise<ClientDashboardIndicatorsResponse> =>
     authFetcher<ClientDashboardIndicatorsResponse>(withMonth(RUTA, month)),
+
+  /**
+   * `GET /dashboard/client/preferences` (T-45, IMPLEMENTADO): preferencias del equipo según su solicitud de ingreso.
+   * Personaliza "Según tus preferencias" del Dashboard; si falla, el Dashboard sigue como sin preferencias.
+   */
+  getTeamPreferences: (): Promise<TeamPreferencesResponse> =>
+    authFetcher<TeamPreferencesResponse>(`${RUTA}/preferences`),
 
   /** `GET /dashboard/client/breakdown/branches?month=AAAA-MM`. */
   getBranchBreakdown: (

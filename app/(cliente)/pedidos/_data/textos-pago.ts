@@ -3,9 +3,11 @@ import {
   dateOnlyFromApi,
   formatCaracasDateSlash,
   formatCaracasTime,
+  formatWallTime,
   getApiErrorMessage,
   isApiError,
   isCaracasToday,
+  isWallTime,
 } from "@/shared/utils";
 
 import { RUTA_CARRITO } from "../../_navegacion";
@@ -34,6 +36,12 @@ export function diaMes(iso: string): string {
 /** "9:40 a. m." de un instante, en hora de Caracas (formato RAE de `formatCaracasTime`). */
 export function hora(iso: string): string {
   return formatCaracasTime(iso);
+}
+
+/** "12:30 p. m." de una hora de pared ("HH:mm", `deliveryTime`), sin convertir zona; `null` si no es válida. */
+export function horaPared(value: string | null | undefined): string | null {
+  if (!value || !isWallTime(value)) return null;
+  return formatWallTime(value).replace(/\s?a\.m\.$/, " a. m.").replace(/\s?p\.m\.$/, " p. m.");
 }
 
 /** `true` si el instante cae hoy en Caracas. */

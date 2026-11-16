@@ -32,3 +32,14 @@ export function conEstadoQaDashboard(
     return { ...dashboard, activeOrder: null, recentOrders: [] };
   };
 }
+
+/**
+ * `?preferencias=coffee-break,bebidas` (solo en desarrollo): simula las preferencias del equipo (T-45) con esos
+ * slugs de sección, en ese orden; `?preferencias=ninguna` simula `source: "none"`. Sin el parámetro, las reales.
+ */
+export function parsePreferenciasQa(value: unknown): string[] | undefined {
+  if (typeof value !== "string") return undefined;
+  if (value === "ninguna") return [];
+  const slugs = value.split(",").map((slug) => slug.trim()).filter(Boolean);
+  return slugs.length > 0 ? slugs : undefined;
+}

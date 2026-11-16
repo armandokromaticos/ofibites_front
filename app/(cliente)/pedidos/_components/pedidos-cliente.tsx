@@ -30,9 +30,8 @@ import { construirFilaPedido, FilaPedido, filtrarPedidos, ordenarPedidos } from 
 import { RangoFechaPedidos, useFiltrosPedidos } from "./use-filtros-pedidos";
 import { useRepetirPedido } from "./use-repetir-pedido";
 
-// 10 por página: el Figma muestra 6, pero no fija el tamaño del lote (a diferencia de Ordenar, que sigue el
-// `pageSize` del contrato); todo se pagina en cliente sobre el resultado completo de `GET /orders`.
-const PAGE_SIZE = 10;
+// 6 por página, como el Figma (3562:1180). Todo se pagina en cliente sobre el resultado completo de `GET /orders`.
+const PAGE_SIZE = 6;
 
 const ACCION_REPETIR = "repetir";
 const ACCION_PAGAR = "pagar-factura";

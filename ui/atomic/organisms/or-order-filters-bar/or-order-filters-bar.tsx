@@ -90,14 +90,12 @@ export function OrOrderFiltersBar({
   return (
     <div className={cn("flex flex-col gap-3 xl:flex-row xl:items-center", className)}>
       <MlSearchBar
-        variant="catalog"
+        variant="inset"
         label="Buscar pedido por número, usuario o producto"
         placeholder="Buscar pedido por número, usuario o producto"
         value={search}
         onValueChange={onSearchChange}
-        // Dentro de la card blanca de la tabla: buscador crema de 40 px y sin borde (Figma 3562:1382); el foco
-        // sigue con su anillo.
-        className="xl:min-w-[260px] xl:flex-1 [&_[data-slot=input-wrapper]]:h-10 [&_[data-slot=input-wrapper]]:min-h-10 [&_[data-slot=input-wrapper]]:bg-background [&_[data-slot=input-wrapper]]:border-transparent"
+        className="xl:min-w-[260px] xl:flex-1"
       />
       <div className="flex flex-wrap items-center gap-3 xl:flex-nowrap">
         <FilterSelect
