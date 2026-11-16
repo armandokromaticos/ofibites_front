@@ -64,13 +64,18 @@ function RowMenu({
           aria-label={`Más acciones para ${row.name}`}
           disabled={isBusy}
           className={cn(
-            "flex size-8 items-center justify-center rounded-full text-foreground",
-            "transition-colors duration-(--duration-fast) hover:bg-background aria-expanded:bg-background",
+            // Igual que la tabla de pedidos (Figma 3562:1421): píldora crema de 32 px con "···" en `primary`.
+            "flex size-8 items-center justify-center rounded-full bg-background text-primary",
+            "transition-colors duration-(--duration-fast) hover:bg-surface-sand aria-expanded:bg-surface-sand",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
             isBusy && "opacity-50",
           )}
         >
-          <MoreHorizontal aria-hidden="true" className="size-4" />
+          {isBusy ? (
+            <Spinner size="sm" color="current" />
+          ) : (
+            <MoreHorizontal aria-hidden="true" className="size-4" strokeWidth={2.5} />
+          )}
         </button>
       </DropdownTrigger>
       <DropdownMenu
@@ -125,7 +130,22 @@ function RowMenu({
 /**
  * Tabla de "Administración de usuarios" (Figma `3463:2171`): usuario (avatar + nombre), correo, rol,
  * departamento, estado y última conexión, con el menú "···" de acciones por fila.
+ *
+ * Misma card que `OrOrderTable`: blanca de radio 15, `topContent` (filtros) arriba, cabecera crema de 38 px, filas
+ * de 60 px separadas por líneas `surface-sand` y `bottomContent` (paginación) al pie, fuera del scroll horizontal.
  */
+const CLASSNAMES = {
+  base: "gap-0 overflow-hidden rounded-[15px] bg-content1",
+  wrapper: "rounded-none bg-transparent p-0 shadow-none",
+  th: cn(
+    "h-[38px] bg-background px-5 text-[10px] font-semibold uppercase text-muted first:rounded-none last:rounded-none",
+    "border-y border-surface-sand",
+  ),
+  td: "h-[60px] whitespace-nowrap px-5 text-[13px] text-foreground",
+  tr: "border-b border-surface-sand last:border-b-0",
+  emptyWrapper: "h-auto",
+};
+
 export function OrMemberTable({
   rows,
   isLoading = false,
@@ -133,10 +153,23 @@ export function OrMemberTable({
   onResetPassword,
   onToggleActive,
   busyMemberId,
+  emptyContent = "No encontramos usuarios.",
+  topContent,
+  bottomContent,
   className,
 }: OrMemberTableProps) {
   return (
-    <Table aria-label="Usuarios de la empresa" shadow="none" radius="lg" className={className}>
+    <Table
+      aria-label="Usuarios de la empresa"
+      shadow="none"
+      radius="none"
+      topContent={topContent}
+      topContentPlacement="outside"
+      bottomContent={bottomContent}
+      bottomContentPlacement="outside"
+      classNames={CLASSNAMES}
+      className={className}
+    >
       <TableHeader>
         <TableColumn>USUARIO</TableColumn>
         <TableColumn>CORREO</TableColumn>
@@ -144,9 +177,11 @@ export function OrMemberTable({
         <TableColumn>DEPARTAMENTO</TableColumn>
         <TableColumn>ESTADO</TableColumn>
         <TableColumn>ÚLTIMA CONEXIÓN</TableColumn>
-        <TableColumn width={56}> </TableColumn>
+        <TableColumn width={56}>
+          <span className="sr-only">Acciones</span>
+        </TableColumn>
       </TableHeader>
-      <TableBody isLoading={isLoading} loadingContent={<Spinner label="Cargando usuarios" />} emptyContent="No encontramos usuarios.">
+      <TableBody isLoading={isLoading} loadingContent={<Spinner label="Cargando usuarios" />} emptyContent={emptyContent}>
         {rows.map((row) => (
           <TableRow key={row.id}>
             <TableCell>

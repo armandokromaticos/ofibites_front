@@ -23,7 +23,10 @@ import {
 } from "@/domain/types";
 
 /** Sección del catálogo de la que sale cada categoría de recomendación (slugs de `Section`). */
-export const RECOMMENDATION_CATEGORY_SECTIONS: Record<ClientRecommendationCategory, string> = {
+export const RECOMMENDATION_CATEGORY_SECTIONS: Record<
+  ClientRecommendationCategory,
+  string
+> = {
   desayunos: "desayunos",
   coffee: "coffee-break",
   bebidas: "bebidas",
@@ -44,7 +47,9 @@ const COMPANY_ROLE_LABELS: Record<CompanyRole, string> = {
 
 /** Saludo, nombre corto del sidebar, datos del menú de cuenta, rol en la empresa activa y foto (T-30d). */
 export function toClientDashboardUser(
-  user: (Pick<User, "name" | "email"> & Partial<Pick<User, "avatarUrl">>) | null,
+  user:
+    | (Pick<User, "name" | "email"> & Partial<Pick<User, "avatarUrl">>)
+    | null,
   memberships: Membership[],
   activeCompanyId: string | null,
 ): ClientDashboardUser {
@@ -54,7 +59,10 @@ export function toClientDashboardUser(
     // Dos primeras palabras ("María Gabriela" o "Juan Pérez"): el saludo no cabe con el nombre completo.
     displayName: palabras.slice(0, 2).join(" "),
     // "María G.": primer nombre e inicial de la siguiente palabra.
-    shortName: palabras.length > 1 ? `${palabras[0]} ${palabras[1].charAt(0).toUpperCase()}.` : (palabras[0] ?? ""),
+    shortName:
+      palabras.length > 1
+        ? `${palabras[0]} ${palabras[1].charAt(0).toUpperCase()}.`
+        : (palabras[0] ?? ""),
     role: membership ? COMPANY_ROLE_LABELS[membership.role] : "Cliente",
     fullName: (user?.name ?? "").trim(),
     email: user?.email ?? "",
@@ -70,7 +78,9 @@ export function toClientDashboardUser(
 /** Banners con imagen, por `order`. El subtítulo, solo si trae texto. */
 export function toPromotions(banners: Banner[]): ClientDashboardPromotion[] {
   return banners
-    .filter((banner): banner is Banner & { imageUrl: string } => Boolean(banner.imageUrl))
+    .filter((banner): banner is Banner & { imageUrl: string } =>
+      Boolean(banner.imageUrl),
+    )
     .sort((a, b) => a.order - b.order)
     .map((banner) => ({
       id: banner.id,
@@ -78,7 +88,10 @@ export function toPromotions(banners: Banner[]): ClientDashboardPromotion[] {
       ...(banner.subtitle?.trim() && { subtitle: banner.subtitle.trim() }),
       imageSrc: banner.imageUrl,
       imageAlt: banner.altText,
-      ...(banner.linkUrl && { ctaHref: banner.linkUrl, ctaLabel: "Ordenar ahora" }),
+      ...(banner.linkUrl && {
+        ctaHref: banner.linkUrl,
+        ctaLabel: "Pedir ahora",
+      }),
     }));
 }
 
@@ -95,8 +108,13 @@ const itemKey = (kind: CatalogItemKind, id: string) => `${kind}:${id}`;
 export function toRecommendations(
   porCategoria: Record<ClientRecommendationCategory, CatalogItem[]>,
 ): ClientDashboardRecommendation[] {
-  const candidatos = new Map<string, ClientDashboardRecommendation & { isFeatured: boolean }>();
-  const categorias = Object.keys(RECOMMENDATION_CATEGORY_SECTIONS) as ClientRecommendationCategory[];
+  const candidatos = new Map<
+    string,
+    ClientDashboardRecommendation & { isFeatured: boolean }
+  >();
+  const categorias = Object.keys(
+    RECOMMENDATION_CATEGORY_SECTIONS,
+  ) as ClientRecommendationCategory[];
   for (const category of categorias) {
     for (const item of porCategoria[category]) {
       const key = itemKey(item.kind, item.id);
@@ -114,7 +132,10 @@ export function toRecommendations(
     }
   }
   const todos = [...candidatos.values()];
-  return [...todos.filter((item) => item.isFeatured), ...todos.filter((item) => !item.isFeatured)]
+  return [
+    ...todos.filter((item) => item.isFeatured),
+    ...todos.filter((item) => !item.isFeatured),
+  ]
     .slice(0, MAX_RECOMMENDATIONS)
     .map(({ isFeatured: _isFeatured, ...item }) => item);
 }
@@ -123,15 +144,22 @@ export function toRecommendations(
 // Pedidos (`GET /orders` + catálogo para los nombres + direcciones de la empresa)
 
 /** Mapa `kind:id` → nombre con todos los ítems de catálogo recibidos (para nombrar los pedidos). */
-export function toCatalogNames(...listas: CatalogItem[][]): Map<string, string> {
+export function toCatalogNames(
+  ...listas: CatalogItem[][]
+): Map<string, string> {
   const nombres = new Map<string, string>();
-  for (const item of listas.flat()) nombres.set(itemKey(item.kind, item.id), item.name);
+  for (const item of listas.flat())
+    nombres.set(itemKey(item.kind, item.id), item.name);
   return nombres;
 }
 
 /** Mapa id → nombre corto (`label`, o `line1`) de las direcciones de la empresa. */
-export function toAddressNames(addresses: CompanyAddress[]): Map<string, string> {
-  return new Map(addresses.map((address) => [address.id, address.label || address.line1]));
+export function toAddressNames(
+  addresses: CompanyAddress[],
+): Map<string, string> {
+  return new Map(
+    addresses.map((address) => [address.id, address.label || address.line1]),
+  );
 }
 
 const TERMINAL_STATUSES: OrderStatus[] = ["DELIVERED", "REJECTED", "CANCELLED"];
@@ -179,11 +207,13 @@ export function toEstimatedArrival(
 ): string | null {
   const fecha = deliveryDate?.slice(0, 10);
   const fechaValida = fecha !== undefined && /^\d{4}-\d{2}-\d{2}$/.test(fecha);
-  if (!fechaValida || !deliveryTime || !/^\d{2}:\d{2}$/.test(deliveryTime)) return null;
+  if (!fechaValida || !deliveryTime || !/^\d{2}:\d{2}$/.test(deliveryTime))
+    return null;
   return `${fecha}T${deliveryTime}:00-04:00`;
 }
 
-const porCreacionDesc = (a: Order, b: Order) => Date.parse(b.createdAt) - Date.parse(a.createdAt);
+const porCreacionDesc = (a: Order, b: Order) =>
+  Date.parse(b.createdAt) - Date.parse(a.createdAt);
 
 /**
  * Pedido en curso (el no terminal más reciente, con prioridad para "En camino") y las 4 últimas órdenes
@@ -195,32 +225,43 @@ export function toDashboardOrders(
   direcciones: Map<string, string>,
 ): Pick<ClientDashboard, "activeOrder" | "recentOrders"> {
   const conocidas = orders
-    .filter((order): order is Order & { status: OrderStatus } => isOrderStatus(order.status))
+    .filter((order): order is Order & { status: OrderStatus } =>
+      isOrderStatus(order.status),
+    )
     .sort(porCreacionDesc);
-  const boxes = (order: Order) => (order.items ?? []).reduce((total, item) => total + item.quantity, 0);
+  const boxes = (order: Order) =>
+    (order.items ?? []).reduce((total, item) => total + item.quantity, 0);
 
-  const enCurso = conocidas.filter((order) => !TERMINAL_STATUSES.includes(order.status));
-  const activa = enCurso.find((order) => order.status === "IN_TRANSIT") ?? enCurso[0];
+  const enCurso = conocidas.filter(
+    (order) => !TERMINAL_STATUSES.includes(order.status),
+  );
+  const activa =
+    enCurso.find((order) => order.status === "IN_TRANSIT") ?? enCurso[0];
   const activeOrder: ClientActiveOrder | null = activa
     ? {
-      id: activa.id,
-      productName: orderProductName(activa, nombres),
-      boxes: boxes(activa),
-      status: activa.status,
-      estimatedArrival: toEstimatedArrival(activa.deliveryDate, activa.deliveryTime),
-      progress: ORDER_PROGRESS[activa.status],
-    }
+        id: activa.id,
+        productName: orderProductName(activa, nombres),
+        boxes: boxes(activa),
+        status: activa.status,
+        estimatedArrival: toEstimatedArrival(
+          activa.deliveryDate,
+          activa.deliveryTime,
+        ),
+        progress: ORDER_PROGRESS[activa.status],
+      }
     : null;
 
-  const recentOrders: ClientRecentOrder[] = conocidas.slice(0, MAX_RECENT_ORDERS).map((order) => ({
-    id: order.id,
-    number: order.orderNumber ?? order.id.slice(-8).toUpperCase(),
-    productName: orderProductName(order, nombres),
-    boxes: boxes(order),
-    status: order.status,
-    address: direcciones.get(order.deliveryAddressId) ?? SIN_DIRECCION,
-    createdAt: order.createdAt,
-  }));
+  const recentOrders: ClientRecentOrder[] = conocidas
+    .slice(0, MAX_RECENT_ORDERS)
+    .map((order) => ({
+      id: order.id,
+      number: order.orderNumber ?? order.id.slice(-8).toUpperCase(),
+      productName: orderProductName(order, nombres),
+      boxes: boxes(order),
+      status: order.status,
+      address: direcciones.get(order.deliveryAddressId) ?? SIN_DIRECCION,
+      createdAt: order.createdAt,
+    }));
 
   return { activeOrder, recentOrders };
 }

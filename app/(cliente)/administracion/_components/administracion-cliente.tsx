@@ -3,7 +3,7 @@
 import { ReactNode, useMemo, useState } from "react";
 import Link from "next/link";
 
-import { CloudOff, Plus, UserRoundX, UsersRound } from "lucide-react";
+import { CloudOff, Plus, UsersRound } from "lucide-react";
 
 import {
   useCompanyMembers,
@@ -40,14 +40,14 @@ const SORT_OPTIONS = [
 
 function Esqueleto() {
   return (
-    // Misma disposición que el contenido real: tarjeta blanca con `OrMemberFiltersBar` (buscador y filtros en
-    // una fila desde sm), la tabla y el pie con el contador y la paginación.
-    <div className="flex flex-col gap-5 rounded-card bg-content1 p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-3">
-        <AtSkeleton className="h-12 w-full rounded-full sm:flex-1" />
+    // Misma disposición que el contenido real: card blanca con `OrMemberFiltersBar` (buscador y filtros en una
+    // fila desde sm), la tabla y el pie con el contador y la paginación.
+    <div className="flex flex-col gap-[18px] rounded-[15px] bg-content1 px-5 py-[18px]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <AtSkeleton className="h-10 w-full rounded-full sm:flex-1" />
         <div className="flex flex-wrap gap-3">
           {[0, 1].map((index) => (
-            <AtSkeleton key={index} className="h-10 w-[220px] shrink-0 rounded-full" />
+            <AtSkeleton key={index} className="h-10 w-[180px] shrink-0 rounded-full" />
           ))}
         </div>
       </div>
@@ -221,47 +221,61 @@ export function AdministracionCliente() {
       </div>
     );
   } else {
+    // Como "Pedidos realizados": filtros, tabla y paginación en una sola card. Sin resultados, la tabla conserva la
+    // cabecera y el vacío va dentro, con el tomate y "Limpiar filtros" como botón secundario.
     content = (
-      <div className="flex flex-col gap-5 rounded-card bg-content1 p-6">
-        <OrMemberFiltersBar
-          search={filtros.q}
-          onSearchChange={(q) => actualizar({ q, pagina: 1 })}
-          statusOptions={statusOptions}
-          statusValue={filtros.estado ?? "all"}
-          onStatusChange={(value) => actualizar({ estado: value === "all" ? undefined : (value as FilaMiembro["status"]), pagina: 1 })}
-          sortOptions={SORT_OPTIONS}
-          sortValue={filtros.orden}
-          onSortChange={(value) => actualizar({ orden: value as typeof filtros.orden })}
-        />
-
-        {filasFiltradas.length === 0 ? (
+      <OrMemberTable
+        rows={filasPagina}
+        onResendInvite={handleResendInvite}
+        onResetPassword={handleResetPassword}
+        onToggleActive={handleToggleActive}
+        busyMemberId={busyId}
+        topContent={
+          <div className="px-5 py-[18px]">
+            <OrMemberFiltersBar
+              search={filtros.q}
+              onSearchChange={(q) => actualizar({ q, pagina: 1 })}
+              statusOptions={statusOptions}
+              statusValue={filtros.estado ?? "all"}
+              onStatusChange={(value) =>
+                actualizar({ estado: value === "all" ? undefined : (value as FilaMiembro["status"]), pagina: 1 })
+              }
+              sortOptions={SORT_OPTIONS}
+              sortValue={filtros.orden}
+              onSortChange={(value) => actualizar({ orden: value as typeof filtros.orden })}
+            />
+          </div>
+        }
+        bottomContent={
+          filasFiltradas.length > 0 && (
+            <div className="flex flex-col items-center gap-3 border-t border-surface-sand px-5 py-4 sm:flex-row sm:justify-between">
+              <p className="text-xs text-placeholder">
+                Mostrando {filasPagina.length} de {filasFiltradas.length} usuarios
+              </p>
+              <MlPagination
+                page={pagina}
+                totalPages={totalPages}
+                onChange={(p) => actualizar({ pagina: p })}
+                label="Páginas de usuarios"
+                surface="card"
+              />
+            </div>
+          )
+        }
+        emptyContent={
           <MlEmptyState
-            headingLevel={3}
-            size="sm"
-            icon={<UserRoundX />}
+            headingLevel={2}
+            illustrationSrc="/images/empty/tomate.png"
+            titleTone="brand"
             title="No encontramos usuarios con esos filtros"
             description="Prueba con otro texto o quita alguno de los filtros que tienes activos."
             actionLabel={hayFiltrosActivos ? "Limpiar filtros" : undefined}
+            actionVariant="bordered"
             onAction={hayFiltrosActivos ? limpiarFiltros : undefined}
+            className="py-12"
           />
-        ) : (
-          <>
-            <OrMemberTable
-              rows={filasPagina}
-              onResendInvite={handleResendInvite}
-              onResetPassword={handleResetPassword}
-              onToggleActive={handleToggleActive}
-              busyMemberId={busyId}
-            />
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-              <p className="text-xs text-muted">
-                Mostrando {filasPagina.length} de {filasFiltradas.length} usuarios
-              </p>
-              <MlPagination page={pagina} totalPages={totalPages} onChange={(p) => actualizar({ pagina: p })} label="Páginas de usuarios" />
-            </div>
-          </>
-        )}
-      </div>
+        }
+      />
     );
   }
 
@@ -272,7 +286,7 @@ export function AdministracionCliente() {
           <h1 className="font-display text-[28px] font-bold leading-9 tracking-[-0.04em] text-foreground">
             Administración de usuarios
           </h1>
-          <p className="max-w-[52ch] text-sm leading-[22px] text-muted">
+          <p className="text-sm leading-[17px] text-brand">
             Define quién puede pedir, aprobar y pagar en nombre de tu empresa.
           </p>
         </div>

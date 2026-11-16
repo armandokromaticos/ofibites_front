@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { CloudOff } from "lucide-react";
@@ -125,7 +125,20 @@ export function OnboardingCliente() {
       <MlStepIndicator steps={[...PASOS]} currentStep={paso === PASO_LISTO ? PASOS.length : paso} label="Configuración de tu empresa" />
 
       <div className="flex flex-col gap-[25px]">
-        <MlAuthHeader title={copy.title} subtitle={copy.subtitle} titleRef={titleRef} className="[&>p]:text-balance" />
+        <MlAuthHeader
+          title={copy.title}
+          subtitle={copy.subtitle.split("\n").map((linea, i) => (
+            <Fragment key={i}>
+              {i > 0 && <br className="hidden sm:inline" />}
+              {i > 0 && " "}
+              {linea}
+            </Fragment>
+          ))}
+          titleRef={titleRef}
+          // Título a 36 px como el Figma del onboarding (3247:12716) y en una línea desde `lg`: "Empecemos con los
+          // datos de tu empresa" mide ~618 px y cabe en la columna de 657 px.
+          className="[&>p]:text-balance sm:[&>h1]:text-[36px] sm:[&>h1]:leading-[44px] lg:[&>h1]:whitespace-nowrap"
+        />
 
         <div className="mx-auto flex w-full max-w-[578px] flex-col gap-[25px]">
           {avisoPaso && <MlFormAlert title="Antes de terminar, completa este paso.">{avisoPaso}</MlFormAlert>}
