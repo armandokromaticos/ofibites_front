@@ -11,7 +11,6 @@ import { useCanReportPayments } from "@/domain/hooks/invoices";
 import {
   CHECKOUT_CUTOFF_NOTICE,
   CHECKOUT_LIMITS,
-  CHECKOUT_SUGGESTED_TIMES,
   CheckoutDraft,
   CheckoutDraftErrors,
   CheckoutDraftField,
@@ -27,7 +26,6 @@ import {
   AtInput,
   AtSkeleton,
   AtTextarea,
-  MlFilterChips,
   MlNoticeBanner,
   MlRadioCardGroup,
   OrOrderSummary,
@@ -45,7 +43,6 @@ import { NuevaDireccion } from "./nueva-direccion";
 import { useCarritoCheckout } from "./use-carrito-checkout";
 
 const FORM_ID = "checkout-entrega";
-const OTRA_HORA = "otra";
 
 /** Orden de los campos en pantalla: el primero con error recibe el foco. */
 const ORDEN_CAMPOS: CheckoutDraftField[] = [
@@ -57,11 +54,6 @@ const ORDEN_CAMPOS: CheckoutDraftField[] = [
   "receiverName",
   "receiverPhone",
   "notes",
-];
-
-const OPCIONES_HORA = [
-  ...CHECKOUT_SUGGESTED_TIMES.map((value) => ({ value, label: formatWallTime(value) })),
-  { value: OTRA_HORA, label: "Otra hora" },
 ];
 
 /** Bloque blanco de un paso con su título (h3) y ayuda. */
@@ -130,12 +122,8 @@ function PasoEntrega() {
     };
   });
   const [errors, setErrors] = useState<CheckoutDraftErrors>({});
-  const [otraHora, setOtraHora] = useState(
-    () => draft.deliveryTime !== "" && !CHECKOUT_SUGGESTED_TIMES.some((hora) => hora === draft.deliveryTime),
-  );
   const [agregando, setAgregando] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
-  const horaRef = useRef<HTMLInputElement>(null);
   const agregarRef = useRef<HTMLButtonElement>(null);
   // Tras guardar una sede nueva, foco a su tarjeta (ya elegida) cuando aparezca en la lista.
   const enfocarSede = useRef<string | null>(null);
@@ -199,16 +187,6 @@ function PasoEntrega() {
     router.push(RUTA_CHECKOUT_REVISION);
   };
 
-  const elegirHora = (valor: string) => {
-    if (valor === OTRA_HORA) {
-      setOtraHora(true);
-      horaRef.current?.focus();
-      return;
-    }
-    setOtraHora(false);
-    actualizar("deliveryTime", valor);
-  };
-
   const cabecera = <CabeceraCheckout paso={1} nombrePaso="Entrega" />;
 
   if (estado !== "listo" || !cart || !summary) {
@@ -223,12 +201,6 @@ function PasoEntrega() {
       </div>
     );
   }
-
-  // Chip activo: la hora sugerida elegida, "Otra hora" con una hora libre (o al pulsarlo), o ninguno.
-  const esSugerida = CHECKOUT_SUGGESTED_TIMES.some((hora) => hora === draft.deliveryTime);
-  let chipHora = "";
-  if (otraHora || (draft.deliveryTime && !esSugerida)) chipHora = OTRA_HORA;
-  else if (esSugerida) chipHora = draft.deliveryTime;
 
   const fechaLarga = isDateOnly(draft.deliveryDate) ? formatDateOnlyLong(draft.deliveryDate) : null;
   const addressesForbidden = isApiError(addressesQuery.error) && addressesQuery.error.statusCode === 403;
@@ -335,16 +307,12 @@ function PasoEntrega() {
                   classNames={CLASES_CAMPO}
                 />
                 <AtInput
-                  ref={horaRef}
                   type="time"
                   name="deliveryTime"
                   label="Hora de entrega"
                   labelPlacement="outside-top"
                   value={draft.deliveryTime}
-                  onValueChange={(valor) => {
-                    setOtraHora(valor !== "" && !CHECKOUT_SUGGESTED_TIMES.some((hora) => hora === valor));
-                    actualizar("deliveryTime", valor);
-                  }}
+                  onValueChange={(valor) => actualizar("deliveryTime", valor)}
                   description={draft.deliveryTime ? `Hora de Caracas: ${formatWallTime(draft.deliveryTime)}` : "Hora de Caracas"}
                   isInvalid={Boolean(errors.deliveryTime)}
                   errorMessage={errors.deliveryTime}
@@ -353,12 +321,6 @@ function PasoEntrega() {
                   classNames={CLASES_CAMPO}
                 />
               </div>
-              <MlFilterChips
-                label="Horas sugeridas"
-                options={OPCIONES_HORA}
-                value={chipHora}
-                onChange={elegirHora}
-              />
             </Bloque>
 
             <Bloque id="checkout-sede" titulo="¿Dónde lo entregamos?" ayuda="Elige una de las sedes guardadas.">
