@@ -136,6 +136,14 @@
   animation: ofi-page-in var(--duration-base) var(--ease-out) both;
 }
 
+/*
+ * Un tooltip abierto (p. ej. el del ítem del menú recién pulsado) quedaba en la captura de la raíz, por debajo
+ * de la página que entra: durante la transición no se pinta (`AtTooltip` lleva `ofi-tooltip`).
+ */
+:root:active-view-transition .ofi-tooltip {
+  visibility: hidden;
+}
+
 ::view-transition-group(.ofi-shared) {
   animation-duration: var(--duration-base);
   animation-timing-function: var(--ease-out);

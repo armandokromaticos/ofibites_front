@@ -38,6 +38,9 @@ export function AtTooltip({
       motionProps={TOOLTIP_MOTION}
       classNames={{
         ...classNames,
+        // `ofi-tooltip`: se oculta durante las transiciones de página (globals.css), donde quedaba atrapado en
+        // la captura de la raíz, por debajo de la página que entra.
+        base: cn("ofi-tooltip", classNames?.base),
         content: cn(
           "rounded-lg bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-none",
           classNames?.content,
