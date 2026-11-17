@@ -14,8 +14,9 @@ const PREV_KEYS = new Set(["ArrowUp", "ArrowLeft"]);
 const NEXT_KEYS = new Set(["ArrowDown", "ArrowRight"]);
 
 /**
- * Galería de la ficha (Figma 3097:28706): miniaturas (92 × 102, radio 6) y foto grande (radio 22). En `lg` las
- * miniaturas van en columna a la izquierda y se desplazan dentro del alto de la foto; por debajo, en una fila
+ * Galería de la ficha (Figma 3097:28706): miniaturas (92 × 102, radio 6) y foto grande (radio 22). En `lg` la foto
+ * llena el alto que le da el contenedor (en la ficha, el del panel de compra; mínimo 400 px) y las miniaturas van
+ * en columna a la izquierda y se desplazan dentro de ese alto; por debajo, en una fila
  * deslizable bajo la foto. Cada miniatura es un botón con `aria-pressed`; las flechas pasan a la anterior o la
  * siguiente (y la eligen), Inicio y Fin a los extremos. La foto nueva entra con un fundido (200 ms).
  */
@@ -54,7 +55,7 @@ export function MlProductGallery({
         className,
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-surface-sand sm:aspect-[16/11] lg:order-2 lg:aspect-[474/544]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-surface-sand sm:aspect-[16/11] lg:order-2 lg:aspect-auto lg:h-full lg:min-h-[400px]">
         <AnimatePresence initial={false}>
           <motion.div
             key={fotos[actual]}
