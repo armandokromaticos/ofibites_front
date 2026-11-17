@@ -67,6 +67,11 @@ export function rutaPedido(id: string): string {
   return `${RUTA_PEDIDOS}/${encodeURIComponent(id)}`;
 }
 
+/** Editor "Repetir pedido" (Figma 3730:3130, T-38d): `/pedidos/<id>/repetir`. Sustituye al modal de confirmación. */
+export function rutaRepetirPedido(id: string): string {
+  return `${rutaPedido(id)}/repetir`;
+}
+
 /**
  * Detalle del pedido con "Registrar el pago" abierto (T-06d): `?pagar=1`. `volver` (solo rutas propias, p. ej.
  * `/carrito` desde el aviso de factura vencida) añade "Volver al carrito" tras enviar el comprobante.

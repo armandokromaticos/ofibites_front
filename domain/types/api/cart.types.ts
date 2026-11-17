@@ -121,3 +121,84 @@ export interface RepeatCartResponse {
   added: number;
   skipped: RepeatCartSkippedLine[];
 }
+
+/** Línea elegida en el editor "Repetir pedido" (T-38): línea del pedido original y cantidad final (entero 1–999). */
+export interface RepeatOrderItemInput {
+  orderItemId: string;
+  quantity: number;
+}
+
+/**
+ * Body opcional de `POST /cart/repeat/:orderId` y de `POST /cart/repeat/:orderId/preview` (T-38). Sin body (o sin
+ * `items`): todas las líneas con su cantidad original. Con `items` (1–100): solo esas líneas, con esas cantidades.
+ */
+export interface RepeatOrderRequest {
+  items?: RepeatOrderItemInput[];
+}
+
+/** Motivo estable de una línea no disponible (misma regla que `skipped` de `POST /cart/repeat`). */
+export type RepeatUnavailableCode = "UNAVAILABLE" | "CONFIGURATION" | "NOT_FOUND";
+
+/** Línea de la vista previa de repetir (T-38). */
+export interface RepeatPreviewLine {
+  orderItemId: string;
+  productId: string;
+  productSizeId: string | null;
+  comboId: string | null;
+  kind: "box" | "complement";
+  name: string;
+  image: string | null;
+  sizeLabel: string | null;
+  sizeDescription: string | null;
+  description: string | null;
+  servings: number | null;
+  /** `false` si el body trae `items` y no incluye esta línea (el usuario la quitó). */
+  included: boolean;
+  /** Cantidad del pedido original. */
+  orderQuantity: number;
+  /** La del body o, si no viene, la del pedido (0 si `included` es `false`). */
+  quantity: number;
+  /** Precio unitario congelado en el pedido: "subió de $ 22,00". */
+  orderUnitPrice: number;
+  /** Precio de hoy con los mismos modificadores; `null` si no está disponible. */
+  currentUnitPrice: number | null;
+  priceChanged: boolean;
+  /** `currentUnitPrice × quantity`; `null` si no está disponible o no está incluida. */
+  subtotal: number | null;
+  isAvailable: boolean;
+  unavailableCode: RepeatUnavailableCode | null;
+  /** En español, mismos textos que `skipped`. */
+  unavailableReason: string | null;
+}
+
+/** Pedido de origen de la vista previa (T-38, con los campos que pidió la revisión T-38b). */
+export interface RepeatPreviewOrder {
+  id: string;
+  orderNumber: string | null;
+  createdAt: string;
+  /** Fecha pura (`@db.Date`). */
+  deliveryDate: string | null;
+  deliveryTime: string | null;
+  deliveryAddressId: string;
+  receiverName: string | null;
+  receiverPhone: string | null;
+  /** Comensales del pedido original. */
+  diners: number | null;
+  /** Total congelado del pedido original ("Mismo monto que el pedido del 26/09"). `null` para `OPERATOR`. */
+  total: number | null;
+  addressDetail: string | null;
+  addressReference: string | null;
+}
+
+/** `POST /cart/repeat/:orderId/preview` (T-38): no escribe nada; precios de hoy calculados por el servidor. */
+export interface RepeatPreviewResponse {
+  order: RepeatPreviewOrder;
+  /** Todas las líneas del pedido, en su orden. */
+  lines: RepeatPreviewLine[];
+  /** Comensales de lo elegido (cajas incluidas y disponibles). */
+  diners: number | null;
+  /** Resumen de las líneas incluidas y disponibles (sin cupón ni lo que ya haya en el carrito). */
+  summary: CartSummary;
+  /** Líneas incluidas y disponibles cuyo precio cambió. 0 → "Ningún precio cambió". */
+  priceChangedCount: number;
+}
