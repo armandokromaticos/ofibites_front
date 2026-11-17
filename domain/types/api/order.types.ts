@@ -19,6 +19,44 @@ export interface OrderItemModifier {
   id: string;
   modifierId: string;
   priceAdjustment: number | null;
+  /** Nombre del extra en el idioma pedido (T-38). */
+  name: string;
+}
+
+/**
+ * Tipo de línea (T-38): `box` si el tamaño elegido tiene `servings` (cuenta comensales); si no, `complement` (también
+ * los combos y las líneas sin tamaño).
+ */
+export type OrderLineKind = "box" | "complement";
+
+/** Valores de `OrderStatus` del back (Prisma), para el historial. `Order.status` sigue tipado como `string` en el DTO (el modelo de UI es `OrderStatus` de `domain/models`). */
+export type OrderStatusValue =
+  | "CREATED"
+  | "PENDING_APPROVAL"
+  | "PENDING_CONFIRMATION"
+  | "IN_ADJUSTMENT"
+  | "CONFIRMED"
+  | "IN_PREPARATION"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "REJECTED"
+  | "CANCELLED";
+
+/** Entrada del historial de estados (T-38, solo en `GET /orders/:id`), en orden cronológico ascendente. */
+export interface OrderStatusHistoryEntry {
+  /** `toStatus` de la transición. */
+  status: OrderStatusValue;
+  statusGroup: OrderStatusGroup;
+  /** Instante ISO: se muestra en hora de Caracas. */
+  at: string;
+  /** `true` = fecha reconstruida en el backfill (no registrada en el momento): se muestra solo la fecha. */
+  estimated: boolean;
+}
+
+/** Referencia con nombre (`user` y `department` del pedido, T-38). */
+export interface OrderNamedRef {
+  id: string;
+  name: string;
 }
 
 export interface OrderItem {
@@ -31,6 +69,20 @@ export interface OrderItem {
   unitPrice: number | null;
   subtotal: number | null;
   modifiers?: OrderItemModifier[];
+  /** T-38: "box" si el tamaño tiene `servings`; si no, "complement". Leído del catálogo actual. */
+  kind: OrderLineKind;
+  /** T-38: nombre del combo o del producto (aunque esté inactivo). */
+  name: string;
+  /** T-38: imagen del combo o del producto. */
+  image: string | null;
+  /** T-38: nombre del tamaño ("caja individual", "bandeja de 10"); `null` sin tamaño. */
+  sizeLabel: string | null;
+  /** T-38: descripción del tamaño ("Bandeja para compartir · 10 piezas"); `null` si no tiene. */
+  sizeDescription: string | null;
+  /** T-38: descripción larga del producto o combo (el front la recorta a una línea). */
+  description: string | null;
+  /** T-38: personas del tamaño elegido; `null` sin tamaño o sin `servings`. */
+  servings: number | null;
 }
 
 export interface Order {
@@ -76,6 +128,16 @@ export interface Order {
    * sin backfill o para `OPERATOR`. Opcional por si una respuesta antigua no lo trae.
    */
   invoice?: OrderInvoice | null;
+  /** T-38: tasa de IVA congelada (0.16 → "IVA (16%)"); 0 en pedidos anteriores al checkout; `null` para `OPERATOR`. */
+  taxRate: number | null;
+  /** T-38: comensales calculados (Σ servings × quantity de las líneas `box`); `null` sin cajas. */
+  diners: number | null;
+  /** T-38: quien hizo el pedido (`Order.user` o, si no hay, `createdBy`). */
+  user: OrderNamedRef | null;
+  /** T-38: departamento del pedido. */
+  department: OrderNamedRef | null;
+  /** T-38: solo en `GET /orders/:id` (`undefined` en el resto), cronológico ascendente. */
+  statusHistory?: OrderStatusHistoryEntry[];
 }
 
 /**

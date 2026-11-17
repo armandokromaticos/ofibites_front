@@ -28,7 +28,7 @@ interface ImportesPedido {
 }
 
 /**
- * Filas del resumen (subtotal, descuento si hay, envío e IVA) con los importes del servidor. Con
+ * Filas del resumen (subtotal, descuento si hay, envío e IVA salvo tasa 0) con los importes del servidor. Con
  * `soloEnvioConCosto` (detalle del pedido, Figma 3632:1686), la fila del envío solo sale si `shipping > 0`.
  */
 export function filasResumen(
@@ -58,7 +58,12 @@ export function filasResumen(
         : { label: etiquetaEnvio, value: formatPrice(importes.shipping) },
     );
   }
-  filas.push({ label: etiquetaIva(importes.taxRate), value: formatPrice(importes.tax) });
+  // T-38: un pedido anterior al checkout no llevaba IVA (tasa 0): la fila "IVA (0%) · $ 0,00" sería ruido. Ojo: la
+  // regla vale para todos los que llaman a esta función (también el carrito y el checkout): si algún día el servidor
+  // manda tasa 0 en un carrito, ahí también desaparecerá la fila.
+  if (!(importes.taxRate === 0 && importes.tax === 0)) {
+    filas.push({ label: etiquetaIva(importes.taxRate), value: formatPrice(importes.tax) });
+  }
   return filas;
 }
 

@@ -1,26 +1,26 @@
 import { ORDER_STATUS_GROUP_LABELS, paymentStatusListView } from "@/domain/models";
-import { Department, Order, OrderInvoice, User } from "@/domain/types";
+import { Order, OrderInvoice } from "@/domain/types";
 import { formatCaracasDateSlash, formatPrice } from "@/shared/utils";
 import { OrOrderTableRow } from "@/ui/atomic";
 
-import { rutaPedido } from "../../_navegacion";
-import { nombreUsuarioPedido } from "../_data/nombre-usuario";
+import { rutaPedido, rutaRepetirPedido } from "../../_navegacion";
+import { sePuedeRepetir } from "../_data/repetir";
 
 import { FiltrosPedidos } from "./use-filtros-pedidos";
-import { PedidoARepetir, pedidoARepetir, sePuedeRepetir } from "./use-repetir-pedido";
 
 /** Fila de la tabla con los campos crudos que necesitan los filtros (no solo lo que se pinta). */
 export interface FilaPedido extends OrOrderTableRow {
   branchId: string | null;
   /**
-   * `Order.userId` (quién hizo el pedido) si existe, si no `createdById`: es el campo que filtra el
-   * back con `?userId=` (T-28a, confirmado en CONTRATOS-API) — `userId` puede ser `null` en pedidos
-   * viejos o creados por otro rol, y entonces se usa quien lo creó como mejor aproximación.
+   * Quien hizo el pedido: `Order.user.id` (T-38: `userId` o, si no hay, `createdById`, resuelto por el back). Es el
+   * valor del filtro "Usuario".
    */
   filterUserId: string;
   createdAt: string;
-  /** Datos para "Repetir pedido" o `null` si el pedido no tiene líneas (mismo criterio que el detalle). */
-  repetir: PedidoARepetir | null;
+  /** Ruta del editor "Repetir pedido" o `null` si el pedido no tiene líneas (mismo criterio que el detalle). */
+  repetirHref: string | null;
+  /** Nombres de los productos (T-38: `items[].name`), para buscar "por producto". */
+  productos: string[];
   /** Factura del pedido (T-06) para "Pagar factura" y "Descargar factura"; `null` sin factura. */
   invoice: OrderInvoice | null;
 }
@@ -28,24 +28,18 @@ export interface FilaPedido extends OrOrderTableRow {
 const SIN_DATO = "—";
 
 /**
- * `Order` real (`GET /orders`, ya con `statusGroup`) a fila de tabla. "Departamento" sale de
- * `GET /companies/:id/departments`; "Usuario" y "Tipo de pedido" son huecos documentados (ver
- * `_data/nombre-usuario.ts` y DECISIONES T-28b): sin nombre real de otros usuarios, "Tipo" siempre "—".
+ * `Order` real (`GET /orders`) a fila de tabla. "Usuario" y "Departamento" vienen del back (T-38: `user` y
+ * `department`). "Tipo de pedido" sigue sin campo en el back (hueco de T-28, DECISIONES T-28b): siempre "—".
  */
-export function construirFilaPedido(
-  order: Order,
-  departamentos: Department[],
-  currentUser: Pick<User, "id" | "name"> | null,
-): FilaPedido {
-  const departamento = departamentos.find((d) => d.id === order.departmentId)?.name ?? SIN_DATO;
-  const filterUserId = order.userId ?? order.createdById;
+export function construirFilaPedido(order: Order): FilaPedido {
+  const filterUserId = order.user?.id ?? order.userId ?? order.createdById;
   return {
     id: order.id,
     orderNumber: order.orderNumber ?? order.id.slice(-8).toUpperCase(),
     dateLabel: formatCaracasDateSlash(order.createdAt),
     dateTime: order.createdAt,
-    departmentLabel: departamento,
-    userLabel: nombreUsuarioPedido(filterUserId, currentUser),
+    departmentLabel: order.department?.name ?? SIN_DATO,
+    userLabel: order.user?.name ?? SIN_DATO,
     typeLabel: SIN_DATO,
     amountLabel: order.total !== null ? formatPrice(order.total) : SIN_DATO,
     statusGroup: order.statusGroup,
@@ -55,7 +49,8 @@ export function construirFilaPedido(
     branchId: order.branchId,
     filterUserId,
     createdAt: order.createdAt,
-    repetir: sePuedeRepetir(order) ? pedidoARepetir(order) : null,
+    repetirHref: sePuedeRepetir(order) ? rutaRepetirPedido(order.id) : null,
+    productos: (order.items ?? []).map((item) => item.name).filter(Boolean),
     invoice: order.invoice ?? null,
   };
 }
@@ -71,13 +66,14 @@ function dentroDelRango(createdAt: string, fecha: FiltrosPedidos["fecha"], ahora
 function coincideBusqueda(fila: FilaPedido, q: string): boolean {
   const texto = q.trim().toLowerCase();
   if (!texto) return true;
-  // T-06: también por número de factura (proforma o fiscal).
+  // T-06: también por número de factura (proforma o fiscal); T-38: por nombre de producto.
   const candidatos = [
     fila.orderNumber,
     fila.userLabel,
     fila.departmentLabel,
     fila.invoice?.invoiceNumber ?? "",
     fila.invoice?.fiscalNumber ?? "",
+    ...fila.productos,
   ];
   return candidatos.some((valor) => valor.toLowerCase().includes(texto));
 }
@@ -86,12 +82,11 @@ function coincideBusqueda(fila: FilaPedido, q: string): boolean {
  * Filtra las filas con los 4 dropdowns, la fecha y el buscador. `GET /orders` de T-28a ya filtra y pagina
  * en servidor (`statusGroup`, `branchId`, `userId`, `search` por nº de pedido, `skip`/`take`), pero aquí
  * se aplica todo en **cliente** sobre el array completo (sin filtros ni paginación en la petición): con
- * los pedidos de una empresa normal esto es instantáneo y evita que el filtro "Usuario" (que depende de
- * los propios pedidos cargados, sin endpoint de nombres) se quede sin opciones al filtrar por otra cosa.
- * Repetir el filtrado en servidor queda para cuando el volumen lo justifique (ver DECISIONES T-28b).
- * Sin filtro de estado activo, los cancelados/rechazados siguen saliendo (decisión 2026-10-20: "Cancelado"
- * no es un tab, pero el pedido se ve igual en la tabla). La búsqueda no cubre nombre de producto: la
- * respuesta de `GET /orders` no trae nombres de ítem (el back lo marcó pendiente en CONTRATOS-API).
+ * los pedidos de una empresa normal esto es instantáneo y evita que el filtro "Usuario" (que sale de los
+ * propios pedidos cargados) se quede sin opciones al filtrar por otra cosa. Repetir el filtrado en servidor
+ * queda para cuando el volumen lo justifique (ver DECISIONES T-28b). Sin filtro de estado activo, los
+ * cancelados/rechazados siguen saliendo (decisión 2026-10-20: "Cancelado" no es un tab, pero el pedido se ve
+ * igual en la tabla).
  */
 export function filtrarPedidos(
   filas: FilaPedido[],

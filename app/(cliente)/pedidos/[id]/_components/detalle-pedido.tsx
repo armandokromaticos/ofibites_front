@@ -1,30 +1,18 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
 
-import {
-  cn,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@heroui/react";
+import { cn } from "@heroui/react";
 import { ChevronLeft } from "lucide-react";
 
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
-import { useDepartments } from "@/domain/hooks/departments";
-import { useOrder } from "@/domain/hooks/orders";
+import { EscenarioQaPedido, useOrder } from "@/domain/hooks/orders";
 import {
   ORDER_STATUS_GROUP_LABELS,
   ORDER_STATUS_GROUP_STEPS,
   ORDER_STATUS_GROUP_TONES,
   orderStatusGroupStepIndex,
 } from "@/domain/models";
-import { useAuthStore } from "@/domain/stores";
-import { OrderStatusGroup } from "@/domain/types";
 import { formatCaracasDateSlash, formatPrice, isApiError } from "@/shared/utils";
 import {
   AtButton,
@@ -33,18 +21,17 @@ import {
   MlEmptyState,
   MlNoticeBanner,
   MlOrderTimeline,
-  OrConfirmModal,
   OrOrderSummary,
 } from "@/ui/atomic";
 
 import { filasResumen } from "../../../_data/resumen-pedido";
-import { RUTA_PEDIDOS } from "../../../_navegacion";
-import { pedidoARepetir, sePuedeRepetir, useRepetirPedido } from "../../_components/use-repetir-pedido";
-import { nombreUsuarioPedido } from "../../_data/nombre-usuario";
-import { diaMesPura, fechaPura, hora, horaPared } from "../../_data/textos-pago";
+import { RUTA_PEDIDOS, rutaRepetirPedido } from "../../../_navegacion";
+import { personasTexto } from "../../_data/lineas-pedido";
+import { sePuedeRepetir } from "../../_data/repetir";
+import { ayudasSeguimiento, cuandoCancelado, pasosCumplidos, textoEstadoPedido } from "../../_data/seguimiento";
+import { fechaPura, hora, horaPared } from "../../_data/textos-pago";
 
-import { ProductosARepetir } from "./productos-a-repetir";
-import { useNombresCatalogo } from "./use-nombres-catalogo";
+import { ProductosPedido } from "./productos-pedido";
 import { usePagoPedido } from "./use-pago-pedido";
 
 const TITULO_ID = "pedido-detalle-titulo";
@@ -57,36 +44,6 @@ const CLASE_BOTON_BORDE = "border-1 border-primary bg-content1 text-primary";
 function fechaPuraONull(value: string | null): string | null {
   const fecha = fechaPura(value);
   return fecha === "—" ? null : fecha;
-}
-
-/**
- * Chip de "Estado del pedido" (Figma 3632:1686 / 3567:1374). Sin historial de transiciones no hay fecha de entrega
- * real: "Entregado" va sin hora; Programado y En tránsito dicen para cuándo está programado.
- */
-function textoEstadoPedido(grupo: OrderStatusGroup, deliveryDate: string | null): string {
-  if (grupo === "scheduled" || grupo === "in_transit") {
-    const fecha = fechaPuraONull(deliveryDate);
-    return fecha ? `Programado para el ${diaMesPura(deliveryDate)}` : ORDER_STATUS_GROUP_LABELS[grupo];
-  }
-  return ORDER_STATUS_GROUP_LABELS[grupo];
-}
-
-/** Ayudas de los pasos del seguimiento: solo las derivables sin historial (el en curso de Programado y "Pendiente"). */
-function ayudasSeguimiento(
-  grupo: OrderStatusGroup,
-  completados: number,
-  deliveryDate: string | null,
-  deliveryTime: string | null,
-): (string | undefined)[] {
-  return ORDER_STATUS_GROUP_STEPS.map((paso, index) => {
-    if (index > completados) return "Pendiente";
-    if (index < completados || paso !== "scheduled") return undefined;
-    if (grupo === "in_transit") return "En camino";
-    const fecha = fechaPuraONull(deliveryDate);
-    if (!fecha) return undefined;
-    const horaEntrega = horaPared(deliveryTime);
-    return `Para el ${diaMesPura(deliveryDate)}${horaEntrega ? ` a las ${horaEntrega}` : ""}`;
-  });
 }
 
 function Esqueleto() {
@@ -102,16 +59,22 @@ function Esqueleto() {
   );
 }
 
-export function DetallePedido({ orderId }: { orderId: string }) {
-  const orderQuery = useOrder(orderId);
-  const order = orderQuery.data;
-  const user = useAuthStore((state) => state.user);
+interface DetallePedidoProps {
+  orderId: string;
+  /** Pedido de ejemplo del Figma (`?qa=`, solo desarrollo). */
+  qa?: EscenarioQaPedido;
+}
 
+/**
+ * Detalle del pedido (Figma 3632:1686 aprobado, 3634:1842 por confirmar, 3628:1608 rechazado, 3724:3013/3729:3090 a
+ * crédito) sobre `GET /orders/:id` con los campos de T-38: comensales, cajas y complementos, "IVA (N%)", seguimiento
+ * desde `statusHistory` y usuario y departamento del back. El pago y la factura salen de `usePagoPedido` (T-06d).
+ * "Repetir pedido" lleva al editor `/pedidos/<id>/repetir`.
+ */
+export function DetallePedido({ orderId, qa }: DetallePedidoProps) {
+  const orderQuery = useOrder(orderId, { qa });
+  const order = orderQuery.data;
   const addressesQuery = useCompanyAddresses();
-  const departmentsQuery = useDepartments();
-  const catalogNamesQuery = useNombresCatalogo();
-  const errorRef = useRef<HTMLParagraphElement>(null);
-  const repetir = useRepetirPedido(errorRef);
   const pago = usePagoPedido(order);
 
   if (!order) {
@@ -149,32 +112,28 @@ export function DetallePedido({ orderId }: { orderId: string }) {
   const numero = order.orderNumber ?? order.id.slice(-8).toUpperCase();
   const estadoLabel = ORDER_STATUS_GROUP_LABELS[order.statusGroup];
   const pasoActual = orderStatusGroupStepIndex(order.statusGroup);
-  // El paso del grupo actual va "en curso" (no cumplido); Entregado deja los tres cumplidos.
-  const pasosCumplidos = order.statusGroup === "delivered" ? ORDER_STATUS_GROUP_STEPS.length : pasoActual;
-  const ayudas = ayudasSeguimiento(
-    order.statusGroup,
-    pasosCumplidos,
-    order.deliveryDate,
-    order.deliveryTime,
-  );
-  const departamento = departmentsQuery.data?.find((d) => d.id === order.departmentId)?.name ?? null;
-  const usuario = nombreUsuarioPedido(order.userId ?? order.createdById, user);
-  const sedeAddress = addressesQuery.data?.find((a) => a.id === order.deliveryAddressId);
-  const direccion = [sedeAddress?.label || sedeAddress?.line1, order.addressDetail].filter(Boolean).join(" · ") || null;
+  const cumplidos = pasosCumplidos(order);
+  const ayudas = ayudasSeguimiento(order);
+  const usuario = order.user?.name ?? null;
+  const departamento = order.department?.name ?? null;
+  const quien = [usuario, departamento].filter(Boolean).join(" · ") || null;
+  const sede = addressesQuery.data?.find((a) => a.id === order.deliveryAddressId);
+  // Figma: "Torre Principal · Av. Francisco de Miranda, piso 8, Caracas".
+  const calle = [sede?.line1, order.addressDetail, sede?.city].filter(Boolean).join(", ");
+  const direccion = [sede?.label, calle].filter(Boolean).join(" · ") || null;
   const contacto = [order.receiverName, order.receiverPhone].filter(Boolean).join(" · ") || null;
-  const nombres = catalogNamesQuery.data;
 
   const items = order.items ?? [];
-  const unidades = items.reduce((total, item) => total + item.quantity, 0);
   const tieneImportes = order.subtotal !== null && order.total !== null;
 
   const detalle = [
     { label: "Fecha de creación", value: `${formatCaracasDateSlash(order.createdAt)}, ${hora(order.createdAt)}` },
     { label: "Fecha de entrega", value: fechaPuraONull(order.deliveryDate) },
     { label: "Hora de entrega", value: horaPared(order.deliveryTime) },
+    { label: "Nº de comensales", value: order.diners ? personasTexto(order.diners) : null },
     { label: "Dirección de entrega", value: direccion },
     { label: "Contacto en recepción", value: contacto },
-    { label: "Usuario que realizó el pedido", value: departamento ? `${usuario} · ${departamento}` : usuario },
+    { label: "Usuario que realizó el pedido", value: quien },
     { label: "Método de pago", value: pago.metodoPago },
     { label: "Notas", value: order.notes },
   ].filter((fila) => fila.value);
@@ -182,17 +141,17 @@ export function DetallePedido({ orderId }: { orderId: string }) {
   const puedeRepetir = sePuedeRepetir(order);
   const repetirEnCabecera = puedeRepetir && pago.muestraRepetirEnCabecera;
   const repetirEnTotal = puedeRepetir && pago.muestraRepetirEnTotal;
-  const abrirConfirmacion = () => repetir.abrir(pedidoARepetir(order));
+  const hrefRepetir = rutaRepetirPedido(order.id);
   const accion = pago.accionCabecera;
   // Con una acción principal (Pagar factura), "Repetir pedido" va a su izquierda con borde; si no, a la derecha y sólido.
   const accionPrincipal = accion?.variant === "primary";
   const botonRepetir = repetirEnCabecera && (
     <AtButton
+      as={Link}
+      href={hrefRepetir}
       size="md"
       variant={accionPrincipal ? "bordered" : "solid"}
       className={cn(CLASE_BOTON_CABECERA, accionPrincipal && CLASE_BOTON_BORDE)}
-      onPress={abrirConfirmacion}
-      isLoading={repetir.isPending}
     >
       Repetir pedido
     </AtButton>
@@ -224,8 +183,8 @@ export function DetallePedido({ orderId }: { orderId: string }) {
               {pago.chip && <AtStatusChip tone={pago.chip.tone}>{pago.chip.label}</AtStatusChip>}
             </div>
             <p className="text-sm leading-5 text-brand">
-              Creado el {formatCaracasDateSlash(order.createdAt)} por {usuario}
-              {departamento ? ` · ${departamento}` : ""}
+              Creado el {formatCaracasDateSlash(order.createdAt)}
+              {quien ? ` por ${quien}` : ""}
             </p>
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -247,11 +206,6 @@ export function DetallePedido({ orderId }: { orderId: string }) {
             {!accionPrincipal && botonRepetir}
           </div>
         </div>
-        {repetir.error && (
-          <p ref={errorRef} role="alert" tabIndex={-1} className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700 outline-none">
-            {repetir.error.message}
-          </p>
-        )}
       </section>
 
       <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
@@ -273,63 +227,14 @@ export function DetallePedido({ orderId }: { orderId: string }) {
                 <dt className="text-[11px] font-semibold leading-4 text-muted">Estado del pedido</dt>
                 <dd>
                   <AtStatusChip tone={ORDER_STATUS_GROUP_TONES[order.statusGroup]}>
-                    {textoEstadoPedido(order.statusGroup, order.deliveryDate)}
+                    {textoEstadoPedido(order)}
                   </AtStatusChip>
                 </dd>
               </div>
             </dl>
           </section>
 
-          <section aria-labelledby="pedido-productos-titulo" className="flex flex-col gap-4 rounded-card bg-content1 p-5 sm:p-6">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 id="pedido-productos-titulo" className={CLASE_TITULO_BLOQUE}>
-                Productos del pedido
-              </h2>
-              <p className="text-xs text-muted">
-                {items.length} {items.length === 1 ? "producto" : "productos"} · {unidades} {unidades === 1 ? "unidad" : "unidades"}
-              </p>
-            </div>
-            <Table
-              aria-label="Productos del pedido"
-              shadow="none"
-              radius="none"
-              removeWrapper
-              // Figma: cabecera sin fondo (10 px), filas de 63 px separadas por una línea `track` (no sobre la primera)
-              // e importes a la derecha.
-              classNames={{
-                th: cn(
-                  "h-8 bg-transparent px-0 text-[10px] font-semibold text-foreground first:rounded-none last:rounded-none",
-                  "[&:not(:first-child)]:pl-4 [&:not(:first-child)]:text-right",
-                ),
-                td: cn(
-                  "h-[63px] border-track px-0 text-[13px] [&:not(:first-child)]:pl-4 [&:not(:first-child)]:text-right",
-                  "[tr:not([data-first=true])>&]:border-t",
-                ),
-              }}
-            >
-              <TableHeader>
-                <TableColumn>PRODUCTO</TableColumn>
-                <TableColumn>PRECIO UNIT.</TableColumn>
-                <TableColumn>CANTIDAD</TableColumn>
-                <TableColumn>TOTAL</TableColumn>
-              </TableHeader>
-              <TableBody emptyContent="Sin productos.">
-                {items.map((item) => {
-                  const key = item.comboId ? `combo:${item.comboId}` : `product:${item.productId}`;
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-semibold text-foreground">{nombres?.get(key) ?? "Producto"}</TableCell>
-                      <TableCell>{item.unitPrice !== null ? formatPrice(item.unitPrice) : "—"}</TableCell>
-                      <TableCell className="font-semibold text-foreground">{item.quantity}</TableCell>
-                      <TableCell className="font-semibold text-foreground">
-                        {item.subtotal !== null ? formatPrice(item.subtotal) : "—"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </section>
+          <ProductosPedido items={items} diners={order.diners} />
         </div>
 
         {/* Figma 3632:1686: columna derecha con el total (sin repetir las líneas, que ya están en la tabla) y el
@@ -347,6 +252,7 @@ export function DetallePedido({ orderId }: { orderId: string }) {
                       discount: order.discount,
                       shipping: order.shipping ?? 0,
                       tax: order.tax ?? 0,
+                      taxRate: order.taxRate,
                     },
                     "Envío",
                     "Subtotal",
@@ -359,7 +265,7 @@ export function DetallePedido({ orderId }: { orderId: string }) {
             {/* Orden (Figma): nota de estado → línea de crédito → botón principal → Repetir → enlaces. */}
             {pago.resumen}
             {repetirEnTotal && (
-              <AtButton size="lg" className="h-[52px] w-full text-sm" onPress={abrirConfirmacion} isLoading={repetir.isPending}>
+              <AtButton as={Link} href={hrefRepetir} size="lg" className="h-[52px] w-full text-sm">
                 Repetir este pedido
               </AtButton>
             )}
@@ -381,27 +287,17 @@ export function DetallePedido({ orderId }: { orderId: string }) {
                   label: ORDER_STATUS_GROUP_LABELS[grupo],
                   hint: ayudas[index],
                 }))}
-                completedCount={pasosCumplidos}
+                completedCount={cumplidos}
               />
             ) : (
               <p className="text-sm leading-5 text-foreground">
-                Este pedido está <strong className="font-semibold">{estadoLabel.toLowerCase()}</strong>.
+                Este pedido está <strong className="font-semibold">{estadoLabel.toLowerCase()}</strong>
+                {cuandoCancelado(order)}.
               </p>
             )}
           </section>
         </div>
       </div>
-
-      <OrConfirmModal {...repetir.modalProps} size="lg">
-        <ProductosARepetir
-          productos={items.map((item) => ({
-            id: item.id,
-            nombre: nombres?.get(item.comboId ? `combo:${item.comboId}` : `product:${item.productId}`) ?? "Producto",
-            cantidad: item.quantity,
-            precioUnitario: item.unitPrice,
-          }))}
-        />
-      </OrConfirmModal>
       {pago.modales}
     </div>
   );

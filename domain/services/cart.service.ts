@@ -1,4 +1,11 @@
-import { AddCartItemRequest, ApplyCartCouponRequest, CartResponse, RepeatCartResponse } from "@/domain/types";
+import {
+  AddCartItemRequest,
+  ApplyCartCouponRequest,
+  CartResponse,
+  RepeatCartResponse,
+  RepeatOrderRequest,
+  RepeatPreviewResponse,
+} from "@/domain/types";
 import { authFetcher } from "@/shared/utils/fetch";
 
 /**
@@ -32,10 +39,24 @@ export const cartService = {
 
   /**
    * `POST /cart/repeat/:orderId`: copia al carrito las líneas disponibles de ese pedido (de la empresa y visible
-   * para el usuario). 400 si ninguna sigue disponible, 403 sin acceso, 404 si no es de la empresa.
+   * para el usuario). 400 si ninguna sigue disponible, 403 sin acceso, 404 si no es de la empresa. Con `body.items`
+   * (T-38, editor "Repetir pedido") copia solo esas líneas con esas cantidades.
    */
-  repeatOrder: (orderId: string): Promise<RepeatCartResponse> =>
-    authFetcher<RepeatCartResponse>(`/cart/repeat/${encodeURIComponent(orderId)}`, { method: "POST" }),
+  repeatOrder: (orderId: string, body?: RepeatOrderRequest): Promise<RepeatCartResponse> =>
+    authFetcher<RepeatCartResponse>(`/cart/repeat/${encodeURIComponent(orderId)}`, {
+      method: "POST",
+      ...(body && { body: JSON.stringify(body) }),
+    }),
+
+  /**
+   * `POST /cart/repeat/:orderId/preview` (T-38): precios de hoy, disponibilidad y resumen de lo elegido, sin tocar el
+   * carrito. Sin body, todas las líneas con su cantidad original.
+   */
+  previewRepeat: (orderId: string, body?: RepeatOrderRequest): Promise<RepeatPreviewResponse> =>
+    authFetcher<RepeatPreviewResponse>(`/cart/repeat/${encodeURIComponent(orderId)}/preview`, {
+      method: "POST",
+      ...(body && { body: JSON.stringify(body) }),
+    }),
 
   /**
    * `POST /cart/coupon`: aplica (o sustituye) el cupón del carrito. Un 400 trae `message` en español listo para

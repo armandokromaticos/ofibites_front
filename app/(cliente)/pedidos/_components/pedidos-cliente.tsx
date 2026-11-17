@@ -6,11 +6,9 @@ import Link from "next/link";
 import { ClipboardList, CloudOff, Plus } from "lucide-react";
 
 import { useBranches } from "@/domain/hooks/branches";
-import { useDepartments } from "@/domain/hooks/departments";
 import { useCanReportPayments, useDownloadInvoice } from "@/domain/hooks/invoices";
 import { EstadoQaPedidos, useOrders } from "@/domain/hooks/orders";
 import { isInvoicePayable, ORDER_STATUS_GROUP_FILTERS, ORDER_STATUS_GROUP_LABELS } from "@/domain/models";
-import { useAuthStore } from "@/domain/stores";
 import { OrderStatusGroup } from "@/domain/types";
 import { getApiErrorMessage } from "@/shared/utils";
 import {
@@ -18,7 +16,6 @@ import {
   AtSkeleton,
   MlEmptyState,
   MlPagination,
-  OrConfirmModal,
   OrOrderFiltersBar,
   OrOrderTable,
   OrOrderTableAction,
@@ -28,7 +25,6 @@ import { RUTA_ORDENAR, rutaPagarFactura } from "../../_navegacion";
 
 import { construirFilaPedido, FilaPedido, filtrarPedidos, ordenarPedidos } from "./filtrar-pedidos";
 import { RangoFechaPedidos, useFiltrosPedidos } from "./use-filtros-pedidos";
-import { useRepetirPedido } from "./use-repetir-pedido";
 
 // 6 por página, como el Figma (3562:1180). Todo se pagina en cliente sobre el resultado completo de `GET /orders`.
 const PAGE_SIZE = 6;
@@ -38,13 +34,14 @@ const ACCION_PAGAR = "pagar-factura";
 const ACCION_DESCARGAR = "descargar-factura";
 
 /**
- * Menú "···" del Figma `3562:1180` (después de "Ver pedido", que pone la tabla): "Repetir pedido" si tiene líneas;
+ * Menú "···" del Figma `3562:1180` (después de "Ver pedido", que pone la tabla): "Repetir pedido" (al editor
+ * `/pedidos/<id>/repetir`, T-38d) si tiene líneas;
  * "Pagar factura" si la factura admite pago (`PENDING`, `REJECTED`, `OVERDUE`) y el usuario puede reportar pagos;
  * "Descargar factura" si hay factura (también anulada: sale con el sello "ANULADA").
  */
 function accionesFila(fila: FilaPedido, puedePagar: boolean): OrOrderTableAction[] {
   const acciones: OrOrderTableAction[] = [];
-  if (fila.repetir) acciones.push({ key: ACCION_REPETIR, label: "Repetir pedido" });
+  if (fila.repetirHref) acciones.push({ key: ACCION_REPETIR, label: "Repetir pedido", href: fila.repetirHref });
   if (fila.invoice && puedePagar && isInvoicePayable(fila.invoice)) {
     acciones.push({ key: ACCION_PAGAR, label: "Pagar factura", href: rutaPagarFactura(fila.id) });
   }
@@ -86,13 +83,10 @@ interface PedidosClienteProps {
  * todavía no filtra ni pagina, así que todo pasa en cliente (ver DECISIONES 2026-10-20 · T-28b).
  */
 export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
-  const user = useAuthStore((state) => state.user);
   const { filtros, actualizar } = useFiltrosPedidos();
   const ordersQuery = useOrders({ qaState: estadoQa });
   const branchesQuery = useBranches();
-  const departmentsQuery = useDepartments();
   const errorRef = useRef<HTMLParagraphElement>(null);
-  const repetir = useRepetirPedido(errorRef);
   const puedePagar = useCanReportPayments();
   const descargar = useDownloadInvoice();
   const [descargandoId, setDescargandoId] = useState<string | null>(null);
@@ -116,13 +110,9 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
   // En su propio `useMemo`: así la referencia no cambia en cada render mientras los datos no cambien, y los
   // `useMemo` que dependen de ellos no se recalculan de más (react-hooks/exhaustive-deps).
   const orders = useMemo(() => ordersQuery.data ?? [], [ordersQuery.data]);
-  const departments = useMemo(() => departmentsQuery.data ?? [], [departmentsQuery.data]);
   const branches = useMemo(() => branchesQuery.data ?? [], [branchesQuery.data]);
 
-  const filas = useMemo(
-    () => ordenarPedidos(orders.map((order) => construirFilaPedido(order, departments, user))),
-    [orders, departments, user],
-  );
+  const filas = useMemo(() => ordenarPedidos(orders.map(construirFilaPedido)), [orders]);
   const filasFiltradas = useMemo(() => filtrarPedidos(filas, filtros), [filas, filtros]);
 
   const totalPages = Math.max(1, Math.ceil(filasFiltradas.length / PAGE_SIZE));
@@ -131,7 +121,7 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
   const filasPagina = filasFiltradas
     .slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE)
     .map((fila) => ({ ...fila, actions: accionesFila(fila, puedePagar) }));
-  const errorAccion = repetir.error?.message ?? errorDescarga;
+  const errorAccion = errorDescarga;
 
   const statusOptions = useMemo(
     () => [
@@ -149,8 +139,8 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
     [branches],
   );
 
-  // Las opciones salen de los pedidos ya cargados (sin descargar el equipo completo de la empresa): el nombre
-  // de cada uno es el mismo respaldo documentado en `_data/nombre-usuario.ts`.
+  // Las opciones salen de los pedidos ya cargados (sin descargar el equipo completo de la empresa), con el nombre que
+  // manda el back en `Order.user` (T-38).
   const userOptions = useMemo(() => {
     const vistos = new Map<string, string>();
     for (const fila of filas) {
@@ -219,14 +209,10 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
             secundario. */}
         <OrOrderTable
           rows={filasPagina}
-          busyOrderId={repetir.pedidoEnCurso ?? descargandoId}
+          busyOrderId={descargandoId}
           onRowAction={(row, key) => {
             const fila = filasPagina.find((item) => item.id === row.id);
             if (!fila) return;
-            if (key === ACCION_REPETIR && fila.repetir) {
-              setErrorDescarga(null);
-              repetir.abrir(fila.repetir);
-            }
             if (key === ACCION_DESCARGAR) descargarFactura(fila);
           }}
           topContent={
@@ -304,8 +290,6 @@ export function PedidosCliente({ estadoQa }: PedidosClienteProps) {
       </div>
 
       {content}
-
-      <OrConfirmModal {...repetir.modalProps} />
     </div>
   );
 }
