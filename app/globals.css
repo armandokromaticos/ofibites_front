@@ -457,6 +457,29 @@
   pointer-events: none;
 }
 
+/*
+ * Importe que el servidor está recalculando (carrito: subtotal de la línea, filas y total del resumen). El texto
+ * sigue visible (atenuado a `muted` por el componente, con el mismo retardo) y una franja del color de la card
+ * (`content1`) le pasa por encima: sobre el fondo blanco no se ve, así que el brillo solo se nota en las cifras.
+ * El retardo evita el parpadeo cuando la respuesta es rápida; durante él la franja espera fuera, a la izquierda.
+ * El elemento lleva siempre `relative` + `clip-path: inset(0)` (en el componente): recorta la franja sin
+ * cambiar de caja ni de línea base (`overflow: hidden` en un inline-block la movería).
+ */
+:root {
+  --busy-delay: 150ms;
+  --busy-shimmer: 1.4s;
+}
+
+.ofi-busy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, hsl(var(--heroui-content1) / 0.75), transparent);
+  translate: -100% 0;
+  animation: ofi-shine var(--busy-shimmer) var(--ease-in-out) var(--busy-delay) infinite;
+  pointer-events: none;
+}
+
 /* T-22b: la campana "suena" al abrir sus notificaciones (microfeedback, una vez). */
 @keyframes ofi-ring {
   20% {
@@ -498,7 +521,8 @@
   .ofi-drift,
   .ofi-bob,
   .ofi-progress-fill,
-  .ofi-shine::after {
+  .ofi-shine::after,
+  .ofi-busy::after {
     animation: none;
   }
 

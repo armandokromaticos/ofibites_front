@@ -83,15 +83,19 @@ export function OrCartLineItem({
       </div>
 
       <div className="col-span-2 flex items-center justify-between gap-4 sm:col-span-1 sm:flex-col sm:items-end sm:justify-start sm:gap-2">
-        <p
-          className={cn(
-            "order-2 text-[17px] font-bold leading-6 text-foreground tabular-nums sm:order-none",
-            isUpdating && "text-muted",
-          )}
-          aria-live="polite"
-        >
+        <p className="order-2 text-[17px] font-bold leading-6 tabular-nums sm:order-none" aria-live="polite">
           <span className="sr-only">Subtotal de {label}: </span>
-          {subtotalLabel}
+          {/* Caja fija con o sin brillo (`ofi-busy` no cambia el layout). `clip-path` y no `overflow-hidden`: en un
+              inline-block, el overflow movería la línea base. */}
+          <span
+            className={cn(
+              "relative inline-block [clip-path:inset(0)] transition-colors duration-(--duration-fast) ease-out",
+              isUpdating ? "ofi-busy text-muted delay-(--busy-delay)" : "text-foreground",
+            )}
+          >
+            {subtotalLabel}
+          </span>
+          {isUpdating && <span className="sr-only">Actualizando {label}</span>}
         </p>
         <div className="order-1 flex items-center gap-3 sm:order-none sm:flex-col sm:items-end sm:gap-1.5">
           <MlQuantityStepper

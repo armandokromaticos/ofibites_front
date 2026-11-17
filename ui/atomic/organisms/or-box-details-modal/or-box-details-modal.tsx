@@ -32,8 +32,9 @@ const PANEL = "rounded-[15px] bg-content1";
 /**
  * Pop-up "Detalles de la caja" (Figma 3163:3051): foto a sangre arriba con botón de cerrar circular, ingredientes
  * (imagen redonda y nombre, 2 columnas desde `sm`) e información nutricional (lista de definición). `AtModal` da
- * el motion, la trampa de foco, Esc y la vuelta del foco al botón que lo abrió; el contenido se desplaza dentro y
- * el botón de cerrar queda fijo arriba.
+ * el motion, la trampa de foco, Esc y la vuelta del foco al botón que lo abrió. La card crece con su contenido y lo
+ * que se desplaza es el fondo (`scrollBehavior="outside"`): la barra de scroll queda en el borde de la ventana, fuera
+ * de la card, y esta conserva sus esquinas redondeadas sin una barra pegada.
  */
 export function OrBoxDetailsModal({
   isOpen,
@@ -60,13 +61,13 @@ export function OrBoxDetailsModal({
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       placement="center"
-      scrollBehavior="inside"
+      scrollBehavior="outside"
       hideCloseButton
       classNames={{
         wrapper: "px-4",
-        // Márgenes también en `sm`: el tema de HeroUI pone `sm:my-16 sm:mx-6` y el modal desbordaba el wrapper, que
-        // también scrollea (doble scroll). `100%` es la altura del wrapper (viewport visual), no `100dvh`.
-        base: "mx-0 my-4 sm:mx-0 sm:my-4 max-h-[calc(100%-2rem)] w-full max-w-[782px] overflow-hidden rounded-card bg-surface-cream shadow-none",
+        // Sin alto máximo: scrollea el wrapper. Márgenes también en `sm` (el tema de HeroUI pone `sm:my-16 sm:mx-6`)
+        // para que la card respire arriba y abajo al desplazarse.
+        base: "mx-0 my-8 sm:mx-0 sm:my-10 w-full max-w-[782px] overflow-hidden rounded-card bg-surface-cream shadow-none",
         backdrop: "bg-primary/25 backdrop-blur-[2px]",
       }}
     >
@@ -90,13 +91,13 @@ export function OrBoxDetailsModal({
             </button>
 
             {/* Un `div` y no `ModalBody`: este pondría `aria-describedby` y el lector leería todo el contenido al abrir.
-                Enfocable para desplazarlo con el teclado (no tiene otros controles). */}
+                Enfocable para desplazar con el teclado (las flechas mueven el wrapper). */}
             <div
               tabIndex={0}
               role="region"
               aria-label="Ingredientes e información nutricional"
               className={cn(
-                "flex flex-1 flex-col overflow-y-auto",
+                "flex flex-col",
                 "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus",
               )}
             >

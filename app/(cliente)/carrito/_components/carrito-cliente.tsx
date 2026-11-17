@@ -7,7 +7,14 @@ import { useRouter } from "next/navigation";
 
 import { ChevronLeft, Truck } from "lucide-react";
 
-import { useCart, useCartLines, useClearCart, useQuickAddCartItem, useRepeatOrder } from "@/domain/hooks/cart";
+import {
+  useCart,
+  useCartLines,
+  useClearCart,
+  useIsCartMutating,
+  useQuickAddCartItem,
+  useRepeatOrder,
+} from "@/domain/hooks/cart";
 import { useCatalog } from "@/domain/hooks/catalog";
 import { useCompanyAddresses } from "@/domain/hooks/company-addresses";
 import { useCanReportPayments } from "@/domain/hooks/invoices";
@@ -301,6 +308,7 @@ export function CarritoCliente() {
   const cartQuery = useCart();
   const lines = useCartLines(cartQuery.data);
   const clear = useClearCart();
+  const isRecalculando = useIsCartMutating();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Aviso que deja otra pantalla al traer aquí un pedido repetido (dashboard): se lee al montar (antes de los
@@ -442,6 +450,7 @@ export function CarritoCliente() {
           subtitle={sede ? `Entrega en: ${[sede.label, sede.city].filter(Boolean).join(" · ")}` : undefined}
           rows={filasResumenCarrito(cart.summary, `Subtotal (${unidades(cart.totalUnits)})`, cart.coupon?.code)}
           totalLabel={formatPrice(cart.summary.total)}
+          isUpdating={isRecalculando}
           className="lg:sticky lg:top-0"
         >
           <p className="-mt-2 text-right text-[11px] leading-4 text-secondary-600">

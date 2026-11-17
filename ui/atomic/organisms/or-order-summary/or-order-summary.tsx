@@ -23,10 +23,20 @@ export function OrOrderSummary({
   children,
   className,
   variant = "default",
+  isUpdating = false,
 }: OrOrderSummaryProps) {
   const esPedido = variant === "order";
+  /**
+   * Caja de cada importe, igual con o sin `isUpdating`: con él se atenúa a `muted` (sigue en AA sobre blanco) y le
+   * pasa el brillo `ofi-busy` tras `--busy-delay`. `clip-path` recorta la franja sin tocar la línea base.
+   */
+  const valorAtenuado = "relative [clip-path:inset(0)] transition-colors duration-(--duration-fast) ease-out";
   return (
-    <aside aria-labelledby={titleId} className={cn("flex flex-col rounded-card bg-content1 p-5 sm:p-6", className)}>
+    <aside
+      aria-labelledby={titleId}
+      aria-busy={isUpdating || undefined}
+      className={cn("flex flex-col rounded-card bg-content1 p-5 sm:p-6", className)}
+    >
       <div className={cn("flex flex-col gap-0.5", esPedido ? "pb-2" : "border-b border-border-subtle pb-4")}>
         <h2 id={titleId} className="font-display text-xl font-bold leading-7 text-foreground">
           {title}
@@ -69,8 +79,13 @@ export function OrOrderSummary({
             <dd
               className={cn(
                 "tabular-nums",
+                valorAtenuado,
                 esPedido ? "font-normal" : "font-semibold",
-                row.isHighlighted ? "text-secondary-600" : "text-foreground",
+                isUpdating
+                  ? "ofi-busy text-muted delay-(--busy-delay)"
+                  : row.isHighlighted
+                    ? "text-secondary-600"
+                    : "text-foreground",
               )}
             >
               {row.value}
@@ -83,10 +98,13 @@ export function OrOrderSummary({
         <dt className={cn("font-semibold text-foreground", esPedido ? "text-sm" : "text-[15px]")}>Total</dt>
         <dd
           className={cn(
-            "font-bold tracking-[-0.01em] tabular-nums text-foreground",
+            "font-bold tracking-[-0.01em] tabular-nums",
+            valorAtenuado,
+            isUpdating ? "ofi-busy text-muted delay-(--busy-delay)" : "text-foreground",
             esPedido ? "text-[22px] leading-7" : "text-[26px] leading-8",
           )}
         >
+          {isUpdating && <span className="sr-only">Recalculando el total: </span>}
           {totalLabel}
         </dd>
       </dl>

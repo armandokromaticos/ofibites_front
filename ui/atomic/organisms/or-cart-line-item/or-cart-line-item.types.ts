@@ -16,7 +16,11 @@ export interface OrCartLineItemProps {
   subtotalLabel: string;
   quantity: number;
   onQuantityChange: (quantity: number) => void;
-  /** Hay un cambio de cantidad pendiente de confirmar por el servidor. */
+  /**
+   * Hay un cambio de cantidad pendiente de confirmar por el servidor (incluida la espera del debounce): atenúa el
+   * subtotal y le pasa un brillo (`ofi-busy`, tras 150 ms; sin animación con movimiento reducido), sin mover el
+   * layout, con "Actualizando <nombre>" para lectores de pantalla.
+   */
   isUpdating?: boolean;
   /** Aviso de la línea ("Ya no está disponible…"), en `danger-700`. */
   notice?: string | null;
