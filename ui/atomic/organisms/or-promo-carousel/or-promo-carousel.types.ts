@@ -16,4 +16,6 @@ export interface OrPromoCarouselProps {
    */
   autoplayInterval?: number;
   className?: string;
+  /** Clases extra para cada banner (p. ej. una altura mínima para alinearlo con lo que tiene al lado). */
+  bannerClassName?: string;
 }

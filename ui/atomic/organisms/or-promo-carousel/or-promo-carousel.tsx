@@ -43,6 +43,7 @@ export function OrPromoCarousel({
   headingLevel = 2,
   autoplayInterval = carousel.interval,
   className,
+  bannerClassName,
 }: OrPromoCarouselProps) {
   const [current, setCurrent] = useState(0);
   // La primera diapositiva llega con la página; las siguientes entran con su propia animación.
@@ -178,6 +179,7 @@ export function OrPromoCarousel({
           headingLevel={headingLevel}
           animateEntrance={hasNavigated}
           {...bannerProps}
+          className={bannerClassName}
         />
       </div>
 
@@ -193,7 +195,7 @@ export function OrPromoCarousel({
             variant="main"
             headingLevel={headingLevel}
             {...leavingProps}
-            className="h-full"
+            className={cn("h-full", bannerClassName)}
           />
         </div>
       )}
