@@ -139,7 +139,7 @@ function toRecentOrderItem(order: ClientRecentOrder): OrRecentOrdersItem {
 function TopSkeleton() {
   return (
     <div className="flex flex-col gap-[27px]">
-      <AtSkeleton className="h-[307px] rounded-card" />
+      <AtSkeleton className="h-[307px] xl:h-[320px] rounded-card" />
       <div className="grid gap-[27px] lg:grid-cols-2">
         <AtSkeleton className="h-[188px] rounded-card" />
         <AtSkeleton className="h-[188px] rounded-card" />
@@ -315,7 +315,8 @@ export function DashboardCliente({
               </>
             ) : (
               <div className="flex flex-col gap-[27px]">
-                <OrPromoCarousel slides={data.promotions} />
+                {/* Alto común con "Tu actividad" (320 px, ver abajo). */}
+                <OrPromoCarousel slides={data.promotions} bannerClassName="xl:min-h-[320px]" />
 
                 {/* Cada categoría enlaza a Ordenar filtrado (la pantalla real llega con T-19). */}
                 <motion.div
@@ -356,9 +357,9 @@ export function DashboardCliente({
           <div className="contents xl:sticky xl:top-0 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:flex xl:flex-col xl:gap-[14px] xl:self-start">
             <section
               aria-label="Tu actividad"
-              // xl: mide lo mismo que el banner principal (`min-h-[307px]` de `MlPromoBanner` main) y el pedido en curso se
-              // estira: el borde inferior de ambas columnas queda alineado (feedback Gaby, D3).
-              className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:flex xl:min-h-[307px] xl:gap-[14px]"
+              // xl: alto común con el banner principal (320 px, mayor que estas cards con los pasos del pedido desplegados,
+              // ~313 px): ambas columnas acaban a la misma altura y el hover se despliega dentro, sin mover nada.
+              className="flex min-w-0 flex-col gap-[14px] md:grid md:grid-cols-2 md:gap-[27px] xl:flex xl:min-h-[320px] xl:gap-[14px]"
             >
               <MlGreetingCard
                 name={user?.displayName ?? ""}
