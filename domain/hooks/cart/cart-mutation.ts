@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 
 import { useAuthStore } from "@/domain/stores";
 import { CartResponse } from "@/domain/types";
@@ -7,6 +7,14 @@ import { cartQueryKey } from "./useCart";
 
 /** Clave común de todas las escrituras del carrito (popover, página y ficha). */
 export const CART_MUTATION_KEY = ["cart"] as const;
+
+/**
+ * Hay alguna escritura del carrito en curso (cantidad, quitar, vaciar, cupón, añadir desde cualquier sitio): para
+ * marcar como "recalculando" los importes que devuelve el servidor (resumen del carrito).
+ */
+export function useIsCartMutating(): boolean {
+  return useIsMutating({ mutationKey: CART_MUTATION_KEY }) > 0;
+}
 
 /**
  * Opciones compartidas por las mutaciones del carrito:

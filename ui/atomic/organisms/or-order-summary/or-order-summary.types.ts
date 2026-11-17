@@ -45,4 +45,11 @@ export interface OrOrderSummaryProps {
    * título, filas en peso regular con etiqueta `placeholder` y separador `surface-sand` antes del total.
    */
   variant?: "default" | "order";
+  /**
+   * Hay una escritura en curso que va a cambiar los importes (p. ej. cantidad, quitar una línea o cupón en el
+   * carrito): atenúa los valores de las filas y el total y les pasa un brillo (`ofi-busy`, tras 150 ms; sin animación
+   * con movimiento reducido), con `aria-busy` en el `aside` y "Recalculando el total" para lectores de pantalla.
+   * No cambia el layout. Por defecto `false`.
+   */
+  isUpdating?: boolean;
 }
