@@ -138,9 +138,9 @@ function toRecentOrderItem(order: ClientRecentOrder): OrRecentOrdersItem {
 
 function TopSkeleton() {
   return (
-    <div className="flex flex-col gap-[27px]">
+    <div className="flex flex-col gap-[27px] xl:gap-[14px]">
       <AtSkeleton className="h-[307px] xl:h-[320px] rounded-card" />
-      <div className="grid gap-[27px] lg:grid-cols-2">
+      <div className="grid gap-[27px] lg:grid-cols-2 xl:gap-[14px]">
         <AtSkeleton className="h-[188px] rounded-card" />
         <AtSkeleton className="h-[188px] rounded-card" />
       </div>
@@ -314,13 +314,15 @@ export function DashboardCliente({
                 <TopSkeleton />
               </>
             ) : (
-              <div className="flex flex-col gap-[27px]">
-                {/* Alto común con "Tu actividad" (320 px, ver abajo). */}
+              <div className="flex flex-col gap-[27px] xl:gap-[14px]">
+                {/* Alto común con "Tu actividad" (320 px, ver abajo). En xl, el mismo gap vertical que la columna
+                    derecha (14 px): las categorías arrancan a la altura de "Últimos pedidos" y se
+                    separan igual entre sí. */}
                 <OrPromoCarousel slides={data.promotions} bannerClassName="xl:min-h-[320px]" />
 
                 {/* Cada categoría enlaza a Ordenar filtrado (la pantalla real llega con T-19). */}
                 <motion.div
-                  className="grid gap-[27px] lg:grid-cols-2"
+                  className="grid gap-[27px] lg:grid-cols-2 xl:gap-[14px]"
                   variants={categoriesMotion.container}
                   initial={startedLoading ? "hidden" : false}
                   animate="visible"
