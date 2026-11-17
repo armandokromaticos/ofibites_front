@@ -6,6 +6,7 @@ import {
   RefObject,
   useEffect,
   useRef,
+  useState,
   ViewTransition,
 } from "react";
 import Image from "next/image";
@@ -114,16 +115,37 @@ function SidebarLink({
   isOpen,
   onNavigate,
 }: SidebarLinkProps) {
+  // Al elegir el ítem el cursor (o el foco) sigue encima: sin esto, el tooltip seguía abierto al arrancar la
+  // transición de página y se veía debajo de la página que entra. Se cierra al pulsar y no vuelve a abrirse
+  // hasta que el cursor sale del ítem o el foco lo deja.
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const tooltipSuprimido = useRef(false);
+  const liberarTooltip = () => {
+    tooltipSuprimido.current = false;
+  };
+
   if (!item.href) return <SidebarSoonItem item={item} index={index} isOpen={isOpen} />;
 
   // Cerrado, el nombre lo da el aria-label y el tooltip lo muestra (hover y foco de teclado).
   return (
-    <AtTooltip content={item.label} isDisabled={isOpen} offset={TOOLTIP_OFFSET}>
+    <AtTooltip
+      content={item.label}
+      isDisabled={isOpen}
+      offset={TOOLTIP_OFFSET}
+      isOpen={isTooltipOpen}
+      onOpenChange={(abierto) => setIsTooltipOpen(abierto && !tooltipSuprimido.current)}
+    >
       <Link
         href={item.href}
         aria-current={isActive ? "page" : undefined}
         aria-label={isOpen ? undefined : item.label}
-        onClick={onNavigate}
+        onClick={() => {
+          tooltipSuprimido.current = true;
+          setIsTooltipOpen(false);
+          onNavigate?.();
+        }}
+        onPointerLeave={liberarTooltip}
+        onBlur={liberarTooltip}
         className={cn(
           ITEM_BOX,
           isActive ? "bg-nav-active shadow-xs" : "hover:bg-background",
